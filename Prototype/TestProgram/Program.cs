@@ -7,35 +7,35 @@ using System.IO.Pipes;
 using System.IO;
 using System.Threading;
 
-namespace PipeTestClient
+namespace TestProgram
 {
     class Program
     {
+        private static int a = 2;
+        private static int b = 3;
+
         static void Main(string[] args)
         {
             while (true)
             {
-                int a = 0;
-                a += 2;
-                Task.Factory.StartNew(() => {
+                Test();
+                Task.Factory.StartNew(() =>
+                {
                     Test2();
                 });
-                Thread.Sleep(1000);
-                Console.WriteLine("DONE");
-
-                Test();
             }
-            
         }
 
         public static void Test()
         {
-            Console.WriteLine(123);
+            int temp = a;
+            Console.WriteLine(a);
         }
 
         public static void Test2()
         {
-            Console.WriteLine(323332);
+            int temp = b;
+            Console.WriteLine(b);
         }
     }
 }

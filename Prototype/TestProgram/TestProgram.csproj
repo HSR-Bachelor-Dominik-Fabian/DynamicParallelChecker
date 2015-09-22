@@ -7,8 +7,8 @@
     <ProjectGuid>{ED85DBE2-6EAC-4971-B787-E4363F2B6FD9}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PipeTestClient</RootNamespace>
-    <AssemblyName>PipeTestClient</AssemblyName>
+    <RootNamespace>TestProgram</RootNamespace>
+    <AssemblyName>TestProgram</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
