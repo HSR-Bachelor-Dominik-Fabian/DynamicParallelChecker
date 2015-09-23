@@ -6,7 +6,7 @@ namespace TestProgram
     class Program
     {
         private static object a = 2;
-        private static readonly object _b = 3;
+        private static readonly object b = 3;
 
         // ReSharper disable once UnusedParameter.Local
         static void Main(string[] args)
@@ -24,7 +24,7 @@ namespace TestProgram
         public static void Test2()
         {
             //TODO:Fabian: Luag das aa :)
-            Console.WriteLine(_b.ToString());
+            Console.WriteLine(b.ToString());
         }
     }
 }
