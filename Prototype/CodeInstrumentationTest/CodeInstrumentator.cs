@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System.Collections;
+using System.Reflection;
 using Mono.CompilerServices.SymbolWriter;
 
 namespace CodeInstrumentationTest
@@ -41,28 +42,20 @@ namespace CodeInstrumentationTest
                         {
                             if (ins.OpCode.Equals(OpCodes.Ldsfld))
                             {
+                                FieldDefinition fieldDefinition = (FieldDefinition)ins.Operand;
                                 var processor = method.Body.GetILProcessor();
-                                var dupInstruction = processor.Create(OpCodes.Dup);
+                                var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
                                 var readAccessLibraryCall = processor.Create(OpCodes.Call, referencedReadAccessMethod);
-                                processor.InsertAfter(ins, dupInstruction);
-                                processor.InsertAfter(dupInstruction, readAccessLibraryCall);
+                                processor.InsertAfter(ins, loadAddressInstruction);
+                                processor.InsertAfter(loadAddressInstruction, readAccessLibraryCall);
                             }
                             else if (ins.OpCode.Equals(OpCodes.Ldsflda))
                             {
                                 var processor = method.Body.GetILProcessor();
                                 var dupInstruction = processor.Create(OpCodes.Dup);
-                                var dupInstruction2 = processor.Create(OpCodes.Dup);
-                                var makeRefAnyTypeInstuction = processor.Create(OpCodes.Mkrefany);
-                                var refAnyTypeInstruction = processor.Create(OpCodes.Refanytype);
-                                var popInstruciton = processor.Create(OpCodes.Pop);
-                                var boxInstruction = processor.Create(OpCodes.Box, popInstruciton);
                                 var readAccessLibraryCall = processor.Create(OpCodes.Call, referencedReadAccessMethod);
                                 processor.InsertAfter(ins, dupInstruction);
-                                processor.InsertAfter(dupInstruction, dupInstruction2);
-                                processor.InsertAfter(dupInstruction2, makeRefAnyTypeInstuction);
-                                processor.InsertAfter(makeRefAnyTypeInstuction, refAnyTypeInstruction);
-                                processor.InsertAfter(refAnyTypeInstruction, boxInstruction);
-                                processor.InsertAfter(boxInstruction, readAccessLibraryCall);
+                                processor.InsertAfter(dupInstruction, readAccessLibraryCall);
                             }
                         }
                     }

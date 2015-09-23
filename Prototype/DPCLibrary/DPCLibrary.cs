@@ -5,7 +5,7 @@ namespace DPCLibrary
 {
     public static class DpcLibrary
     {
-        public static void ReadAccess(object obj)
+        public static void ReadAccess(ref object obj)
         {
             int currentThreadId = Thread.CurrentThread.ManagedThreadId;
             Console.WriteLine(currentThreadId + ": Reading object " + obj);
