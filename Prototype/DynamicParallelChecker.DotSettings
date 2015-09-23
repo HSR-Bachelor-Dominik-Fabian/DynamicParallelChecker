@@ -1,0 +1,15 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/PredefinedNamingRules/=PrivateStaticReadonly/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="_" Suffix="" Style="aaBb" /&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UserInterface/ThemedIcon/IconThemeSelection/@EntryValue">Gray</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=028E8F578D3B164CA4DA2077E3D444B2/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=028E8F578D3B164CA4DA2077E3D444B2/Color/@EntryValue">DarkGreen</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=028E8F578D3B164CA4DA2077E3D444B2/MatchComments/@EntryValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=028E8F578D3B164CA4DA2077E3D444B2/Name/@EntryValue">TodoFabian</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=028E8F578D3B164CA4DA2077E3D444B2/Pattern/@EntryValue">(?&lt;=\W|^)(?&lt;TAG&gt;TODO:Fabian:)(\W|$)(.*)</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=028E8F578D3B164CA4DA2077E3D444B2/TodoIconStyle/@EntryValue">Normal</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=9CBC947C4BE0254C9A15D3C3CB3D1CE6/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=9CBC947C4BE0254C9A15D3C3CB3D1CE6/Color/@EntryValue">Blue</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=9CBC947C4BE0254C9A15D3C3CB3D1CE6/MatchComments/@EntryValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=9CBC947C4BE0254C9A15D3C3CB3D1CE6/Name/@EntryValue">TodoDominik</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=9CBC947C4BE0254C9A15D3C3CB3D1CE6/Pattern/@EntryValue">(?&lt;=\W|^)(?&lt;TAG&gt;TODO:Dominik:)(\W|$)(.*)</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=9CBC947C4BE0254C9A15D3C3CB3D1CE6/TodoIconStyle/@EntryValue">Normal</s:String></wpf:ResourceDictionary>

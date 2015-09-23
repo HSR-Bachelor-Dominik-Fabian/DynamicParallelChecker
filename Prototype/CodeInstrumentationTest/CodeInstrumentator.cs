@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO.Pipes;
-using System.IO;
-using System.Threading;
 using System.Diagnostics;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -15,12 +9,12 @@ namespace CodeInstrumentationTest
 {
     class CodeInstrumentator
     {
+        // ReSharper disable once UnusedParameter.Local
         static void Main(string[] args)
         {
             string fileName = @"TestProgram.exe";
             PrintTypes(fileName);
-            Process process = new Process();
-            process.StartInfo.FileName = fileName;
+            Process process = new Process {StartInfo = {FileName = fileName}};
             process.Start();
             Console.WriteLine("Enter to stop");
             Console.ReadLine();
@@ -43,9 +37,8 @@ namespace CodeInstrumentationTest
                         ArrayList tempList = new ArrayList(method.Body.Instructions.ToList());
                         foreach (Instruction ins in tempList)
                         {
-                            if (OpCodes.Ldsfld.Equals(ins.OpCode))
+                            if (ins.OpCode.Equals(OpCodes.Ldsfld))
                             {
-                                Type insType = ins.GetType();
                                 var processor = method.Body.GetILProcessor();
                                 var dupInstruction = processor.Create(OpCodes.Dup);
                                 var readAccessLibraryCall = processor.Create(OpCodes.Call, referencedReadAccessMethod);
@@ -53,7 +46,7 @@ namespace CodeInstrumentationTest
                                 processor.InsertAfter(dupInstruction, readAccessLibraryCall);
                             }
                         }
-                    };
+                    }
                 }
                 
             }

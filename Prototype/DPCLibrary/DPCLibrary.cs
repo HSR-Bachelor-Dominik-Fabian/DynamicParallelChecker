@@ -1,21 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.IO.Pipes;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace DPCLibrary
 {
-    public static class DPCLibrary
+    internal static class DpcLibrary
     {
-        public static void readAccess(Object obj)
+        public static void ReadAccess(object obj)
         {
             int currentThreadId = Thread.CurrentThread.ManagedThreadId;
-            Console.WriteLine(currentThreadId + ": Reading object " + obj.ToString());
+            Console.WriteLine(currentThreadId + ": Reading object " + obj);
             Console.ReadLine();
         }
     }
