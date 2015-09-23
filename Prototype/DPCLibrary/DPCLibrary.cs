@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace DPCLibrary
 {
-    internal static class DpcLibrary
+    public static class DpcLibrary
     {
         public static void ReadAccess(object obj)
         {
