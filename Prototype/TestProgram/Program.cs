@@ -5,7 +5,7 @@ namespace TestProgram
 {
     class Program
     {
-        private static object _a = 2;
+        private static object a = 2;
         private static readonly object _b = 3;
 
         // ReSharper disable once UnusedParameter.Local
@@ -17,8 +17,8 @@ namespace TestProgram
 
         public static void Test()
         {
-            _a = 123;
-            Console.WriteLine(_a.ToString());
+            a = 123;
+            Console.WriteLine(a.ToString());
         }
 
         public static void Test2()
