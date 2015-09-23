@@ -16,6 +16,7 @@ namespace DPCLibrary
         {
             int currentThreadId = Thread.CurrentThread.ManagedThreadId;
             Console.WriteLine(currentThreadId + ": Reading object " + obj.ToString());
+            Console.ReadLine();
         }
     }
 }

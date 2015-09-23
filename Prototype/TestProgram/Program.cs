@@ -11,31 +11,28 @@ namespace TestProgram
 {
     class Program
     {
-        private static int a = 2;
-        private static int b = 3;
+        private static Object a = 2;
+        private static Object b = 3;
 
         static void Main(string[] args)
         {
-            while (true)
+            Test();
+            Task.Factory.StartNew(() =>
             {
-                Test();
-                Task.Factory.StartNew(() =>
-                {
-                    Test2();
-                });
-            }
+                Test2();
+            });
         }
 
         public static void Test()
         {
-            int temp = a;
-            Console.WriteLine(a);
+            Object temp = a;
+            Console.WriteLine(a.ToString());
         }
 
         public static void Test2()
         {
-            int temp = b;
-            Console.WriteLine(b);
+            Object temp = b;
+            Console.WriteLine(b.ToString());
         }
     }
 }
