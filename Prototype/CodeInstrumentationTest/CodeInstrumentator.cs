@@ -1,12 +1,9 @@
 ﻿using System;
-using System.CodeDom;
 using System.Linq;
 using System.Diagnostics;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System.Collections;
-using System.Reflection;
-using Mono.CompilerServices.SymbolWriter;
 
 namespace CodeInstrumentationTest
 {
@@ -26,11 +23,13 @@ namespace CodeInstrumentationTest
         public static void PrintTypes(string fileName)
         {
             ModuleDefinition refModul = ModuleDefinition.ReadModule("DPCLibrary.dll");
-            TypeDefinition pipecommdef =refModul.Types.First(x => x.Name == "DpcLibrary");
-            MethodDefinition readAccessDef = pipecommdef.Methods.Single(x => x.Name == "ReadAccess");
+            TypeDefinition typeDefinition =refModul.Types.First(x => x.Name == "DpcLibrary");
+            MethodDefinition readAccessDef = typeDefinition.Methods.Single(x => x.Name == "ReadAccess");
+            MethodDefinition writeAccessDef = typeDefinition.Methods.Single(x => x.Name == "WriteAccess");
 
             ModuleDefinition module = ModuleDefinition.ReadModule(fileName);
             MethodReference referencedReadAccessMethod = module.Import(readAccessDef);
+            MethodReference referencedWriteAccessMethod = module.Import(writeAccessDef);
             foreach (TypeDefinition type in module.Types)
             {
                 if (type.HasMethods)
@@ -56,6 +55,15 @@ namespace CodeInstrumentationTest
                                 var readAccessLibraryCall = processor.Create(OpCodes.Call, referencedReadAccessMethod);
                                 processor.InsertAfter(ins, dupInstruction);
                                 processor.InsertAfter(dupInstruction, readAccessLibraryCall);
+                            }
+                            else if (ins.OpCode.Equals(OpCodes.Stsfld))
+                            {
+                                FieldDefinition fieldDefinition = (FieldDefinition) ins.Operand;
+                                var processor = method.Body.GetILProcessor();
+                                var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
+                                var writeAccessLibraryCall = processor.Create(OpCodes.Call, referencedWriteAccessMethod);
+                                processor.InsertBefore(ins, writeAccessLibraryCall);
+                                processor.InsertBefore(writeAccessLibraryCall, loadAddressInstruction);
                             }
                         }
                     }
