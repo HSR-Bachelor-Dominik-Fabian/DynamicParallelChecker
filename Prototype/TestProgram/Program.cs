@@ -7,6 +7,7 @@ namespace TestProgram
     {
         private static int _a = 2;
         private static readonly object _b = 3;
+        private static int[] _k = {11, 12, 13, 14, 15};
 
         // ReSharper disable once UnusedParameter.Local
         static void Main(string[] args)
@@ -20,6 +21,7 @@ namespace TestProgram
             NewObject newObject = new NewObject(123);
             _a = newObject.C;
             Console.WriteLine(_a.ToString());
+            Console.WriteLine(_k[2].ToString());
             Console.ReadLine();
         }
 

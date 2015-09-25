@@ -48,7 +48,7 @@ namespace CodeInstrumentationTest
                                 processor.InsertAfter(ins, loadAddressInstruction);
                                 processor.InsertAfter(loadAddressInstruction, readAccessLibraryCall);
                             }
-                            else if (ins.OpCode.Equals(OpCodes.Ldsflda) || ins.OpCode.Equals(OpCodes.Ldflda))
+                            else if (ins.OpCode.Equals(OpCodes.Ldsflda) || ins.OpCode.Equals(OpCodes.Ldflda) || ins.OpCode.Equals(OpCodes.Ldelema))
                             {
                                 var processor = method.Body.GetILProcessor();
                                 var dupInstruction = processor.Create(OpCodes.Dup);
