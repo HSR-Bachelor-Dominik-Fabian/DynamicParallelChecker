@@ -4,6 +4,11 @@ using System.Diagnostics;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System.Collections;
+using System.Net.Configuration;
+using System.Reflection.Emit;
+using Mono.CompilerServices.SymbolWriter;
+using OpCodes = Mono.Cecil.Cil.OpCodes;
+using TypeAttributes = System.Reflection.TypeAttributes;
 
 namespace CodeInstrumentationTest
 {
@@ -95,6 +100,20 @@ namespace CodeInstrumentationTest
                                 processor.InsertBefore(loadAddressInstruction,dupInstruction);
                                 processor.InsertBefore(dupInstruction,storeLocalInstrution);
                             }
+                            else if (ins.OpCode.Equals(OpCodes.Ldelem_Any))
+                            {
+                                TypeReference typeReference = (TypeReference) ins.Operand;
+                                InjectArrayLdElement(module, typeReference, method, referencedReadAccessMethod, ins);
+                                //TODO:Dominik:Testfall nicht vorhanden
+                            }
+                            else if(ins.OpCode.Equals(OpCodes.Ldelem_I)|| ins.OpCode.Equals(OpCodes.Ldelem_I1) 
+                                || ins.OpCode.Equals(OpCodes.Ldelem_I2) || ins.OpCode.Equals(OpCodes.Ldelem_I4) || ins.OpCode.Equals(OpCodes.Ldelem_I8)
+                                || ins.OpCode.Equals(OpCodes.Ldelem_R4) || ins.OpCode.Equals(OpCodes.Ldelem_R8) || ins.OpCode.Equals(OpCodes.Ldelem_Ref)
+                                || ins.OpCode.Equals(OpCodes.Ldelem_U1) || ins.OpCode.Equals(OpCodes.Ldelem_U2) || ins.OpCode.Equals(OpCodes.Ldelem_U4))
+                            {
+                                TypeReference arrayTypeReference = module.Import(typeof(int));
+                                InjectArrayLdElement(module, arrayTypeReference, method, referencedReadAccessMethod, ins);
+                            }
                         }
                     }
                 }
@@ -102,6 +121,35 @@ namespace CodeInstrumentationTest
             }
 
             module.Write(fileName);
+        }
+
+        private static void InjectArrayLdElement(ModuleDefinition module, TypeReference arrayTypeReference, MethodDefinition method,
+            MethodReference referencedReadAccessMethod, Instruction ins)
+        {
+            TypeReference typeReference = module.Import(typeof (int));
+            
+            VariableDefinition variableValueDefinition = new VariableDefinition(typeReference);
+            VariableDefinition variableArrayDefinition = new VariableDefinition(typeReference);
+            method.Body.Variables.Add(variableValueDefinition);
+            method.Body.Variables.Add(variableArrayDefinition);
+            var processor = method.Body.GetILProcessor();
+            var storeValueInstrution = processor.Create(OpCodes.Stloc, variableValueDefinition);
+            var storeArrayInstrution = processor.Create(OpCodes.Stloc, variableArrayDefinition);
+            var loadValueInstrucion = processor.Create(OpCodes.Ldloc, variableValueDefinition);
+            var loadArrayInstrucion = processor.Create(OpCodes.Ldloc, variableArrayDefinition);
+            var loadValueInstrucion2 = processor.Create(OpCodes.Ldloc, variableValueDefinition);
+            var loadArrayInstrucion2 = processor.Create(OpCodes.Ldloc, variableArrayDefinition);
+            var loadAddressInstruction = processor.Create(OpCodes.Ldelema, arrayTypeReference);
+            var readAccessLibraryCall = processor.Create(OpCodes.Call, referencedReadAccessMethod);
+
+            processor.InsertBefore(ins, readAccessLibraryCall);
+            processor.InsertBefore(readAccessLibraryCall, loadAddressInstruction);
+            processor.InsertBefore(loadAddressInstruction, loadValueInstrucion2);
+            processor.InsertBefore(loadValueInstrucion2, loadArrayInstrucion2);
+            processor.InsertBefore(loadArrayInstrucion2, loadValueInstrucion);
+            processor.InsertBefore(loadValueInstrucion, loadArrayInstrucion);
+            processor.InsertBefore(loadArrayInstrucion, storeArrayInstrution);
+            processor.InsertBefore(storeArrayInstrution, storeValueInstrution);
         }
     }
 }
