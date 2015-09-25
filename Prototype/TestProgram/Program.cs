@@ -17,7 +17,8 @@ namespace TestProgram
 
         public static void Test()
         {
-            _a = 123;
+            NewObject newObject = new NewObject(123);
+            _a = newObject.C;
             Console.WriteLine(_a.ToString());
             Console.ReadLine();
         }

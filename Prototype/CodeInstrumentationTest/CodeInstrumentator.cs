@@ -48,7 +48,7 @@ namespace CodeInstrumentationTest
                                 processor.InsertAfter(ins, loadAddressInstruction);
                                 processor.InsertAfter(loadAddressInstruction, readAccessLibraryCall);
                             }
-                            else if (ins.OpCode.Equals(OpCodes.Ldsflda))
+                            else if (ins.OpCode.Equals(OpCodes.Ldsflda) || ins.OpCode.Equals(OpCodes.Ldflda))
                             {
                                 var processor = method.Body.GetILProcessor();
                                 var dupInstruction = processor.Create(OpCodes.Dup);
@@ -64,6 +64,17 @@ namespace CodeInstrumentationTest
                                 var writeAccessLibraryCall = processor.Create(OpCodes.Call, referencedWriteAccessMethod);
                                 processor.InsertBefore(ins, writeAccessLibraryCall);
                                 processor.InsertBefore(writeAccessLibraryCall, loadAddressInstruction);
+                            }
+                            else if (ins.OpCode.Equals(OpCodes.Ldfld))
+                            {
+                                FieldDefinition fieldDefinition = (FieldDefinition) ins.Operand;
+                                var processor = method.Body.GetILProcessor();
+                                var dupInstruction = processor.Create(OpCodes.Dup);
+                                var loadAddressInstruction = processor.Create(OpCodes.Ldflda, fieldDefinition);
+                                var readAccessLibraryCall = processor.Create(OpCodes.Call, referencedReadAccessMethod);
+                                processor.InsertBefore(ins,readAccessLibraryCall);
+                                processor.InsertBefore(readAccessLibraryCall,loadAddressInstruction);
+                                processor.InsertBefore(loadAddressInstruction, dupInstruction);
                             }
                         }
                     }
