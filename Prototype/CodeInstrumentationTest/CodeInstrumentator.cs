@@ -76,6 +76,25 @@ namespace CodeInstrumentationTest
                                 processor.InsertBefore(readAccessLibraryCall,loadAddressInstruction);
                                 processor.InsertBefore(loadAddressInstruction, dupInstruction);
                             }
+                            else if (ins.OpCode.Equals(OpCodes.Stfld))
+                            {
+                                FieldDefinition fieldDefinition = (FieldDefinition)ins.Operand;
+                                VariableDefinition varDefinition = new VariableDefinition(fieldDefinition.FieldType);
+                                method.Body.Variables.Add(varDefinition);
+                                var processor = method.Body.GetILProcessor();
+                                var storeLocalInstrution = processor.Create(OpCodes.Stloc, varDefinition);
+                                var dupInstruction = processor.Create(OpCodes.Dup);
+                                var loadAddressInstruction = processor.Create(OpCodes.Ldflda, fieldDefinition);
+                                var writeAccessLibraryCall = processor.Create(OpCodes.Call, referencedWriteAccessMethod);
+                                var loadLocaleInstrucion = processor.Create(OpCodes.Ldloc, varDefinition);
+
+
+                                processor.InsertBefore(ins, loadLocaleInstrucion);
+                                processor.InsertBefore(loadLocaleInstrucion, writeAccessLibraryCall);
+                                processor.InsertBefore(writeAccessLibraryCall,loadAddressInstruction);
+                                processor.InsertBefore(loadAddressInstruction,dupInstruction);
+                                processor.InsertBefore(dupInstruction,storeLocalInstrution);
+                            }
                         }
                     }
                 }
