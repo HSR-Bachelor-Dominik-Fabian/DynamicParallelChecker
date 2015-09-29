@@ -27,22 +27,21 @@ namespace TestProgram
 
             f += 12;
             h += 22;
-            //_f[0].C = 12231; //Uncomment to analyse Error
-            //TODO:Dominik: Fehler analysieren
+            _f[0].C = 12231; //Uncomment to analyse Error
+        //TODO: Dominik: Fehler analysieren
 
-            Console.WriteLine("Vor f");
+            //Console.WriteLine("Vor f");
             _k[1] = f;
-            Console.WriteLine("Vor h");
-            _i[2] = h;
+            //Console.WriteLine("Vor h");
+            //_i[2] = h;
 
-            Console.WriteLine(_a.ToString());
-            Console.WriteLine(_k[2].ToString());
-            Console.ReadLine();
+            //Console.WriteLine(_a.ToString());
+            //Console.WriteLine(_k[2].ToString());
+            //Console.ReadLine();
         }
 
         public static void Test2()
         {
-            //TODO:Fabian: Luag das aa :)
             Console.WriteLine(_b.ToString());
             Console.ReadLine();
         }

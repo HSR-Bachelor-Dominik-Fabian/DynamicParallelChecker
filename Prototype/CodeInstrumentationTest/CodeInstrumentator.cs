@@ -28,11 +28,13 @@ namespace CodeInstrumentationTest
             MethodDefinition readAccessDef = typeDefinition.Methods.Single(x => x.Name == "ReadAccess");
             MethodDefinition writeAccessDef = typeDefinition.Methods.Single(x => x.Name == "WriteAccess");
             MethodDefinition lockObjectDef = typeDefinition.Methods.Single(x => x.Name == "LockObject");
+            MethodDefinition unlockObjectDef = typeDefinition.Methods.Single(x => x.Name == "UnlockObject");
 
             ModuleDefinition module = ModuleDefinition.ReadModule(fileName);
             MethodReference referencedReadAccessMethod = module.Import(readAccessDef);
             MethodReference referencedWriteAccessMethod = module.Import(writeAccessDef);
             MethodReference referencedLockObjectMethod = module.Import(lockObjectDef);
+            MethodReference referencedUnlockObjectMethod = module.Import(unlockObjectDef);
             foreach (TypeDefinition type in module.Types)
             {
                 if (type.HasMethods)
@@ -129,29 +131,44 @@ namespace CodeInstrumentationTest
                             {
                                 MethodReference methodReference = (MethodReference)ins.Operand;
                                 TypeReference typeReference = module.Import(typeof (int));
-                                VariableDefinition variableLockDefinition = new VariableDefinition(typeReference);
                                 VariableDefinition variableTempDefinition = new VariableDefinition(typeReference);
 
-                                method.Body.Variables.Add(variableLockDefinition);
                                 method.Body.Variables.Add(variableTempDefinition);
+                                string monitorEnterFullName =
+                                    "System.Void System.Threading.Monitor::Enter(System.Object,System.Boolean&)";
+                                string monitorExitFullName = "System.Void System.Threading.Monitor::Exit(System.Object)";
 
-                                if ("".Equals(methodReference.FullName))
+                                if (monitorEnterFullName.Equals(methodReference.FullName))
                                 {
-                                    
-                                }
-                                var processor = method.Body.GetILProcessor();
-                                var dupInstruction = processor.Create(OpCodes.Dup);
-                                var storeTempInstruction = processor.Create(OpCodes.Stloc, variableTempDefinition);
-                                var loadLockInstruction = processor.Create(OpCodes.Ldloc, variableLockDefinition);
-                                var loadTempInstruction = processor.Create(OpCodes.Ldloc, variableTempDefinition);
-                                var loadLockInstruction2 = processor.Create(OpCodes.Ldloc, variableLockDefinition);
-                                var lockObjectLibraryCall = processor.Create(OpCodes.Call, referencedLockObjectMethod);
+                                    // TODO:Fabian Bessere Lösung für Vergleich finden.
+                                    var processor = method.Body.GetILProcessor();
+                                    var dupInstruction = processor.Create(OpCodes.Dup);
+                                    var storeTempInstruction = processor.Create(OpCodes.Stloc, variableTempDefinition);
+                                    var loadTempInstruction = processor.Create(OpCodes.Ldloc, variableTempDefinition);
+                                    var lockObjectLibraryCall = processor.Create(OpCodes.Call, referencedLockObjectMethod);
 
-                                processor.InsertBefore(ins, loadTempInstruction);
-                                processor.InsertBefore(loadTempInstruction, lockObjectLibraryCall);
-                                processor.InsertBefore(lockObjectLibraryCall, loadTempInstruction);
-                                processor.InsertBefore(loadTempInstruction, dupInstruction);
-                                processor.InsertBefore(dupInstruction, storeTempInstruction);
+                                    processor.InsertBefore(ins, loadTempInstruction);
+                                    processor.InsertBefore(loadTempInstruction, lockObjectLibraryCall);
+                                    processor.InsertBefore(lockObjectLibraryCall, loadTempInstruction);
+                                    processor.InsertBefore(loadTempInstruction, dupInstruction);
+                                    processor.InsertBefore(dupInstruction, storeTempInstruction);
+                                }
+                                else if (monitorExitFullName.Equals(methodReference.FullName))
+                                {
+                                    var processor = method.Body.GetILProcessor();
+                                    var dupInstruction = processor.Create(OpCodes.Dup);
+                                    var storeTempInstruction = processor.Create(OpCodes.Stloc, variableTempDefinition);
+                                    var loadTempInstruction = processor.Create(OpCodes.Ldloc, variableTempDefinition);
+                                    var unlockObjectLibraryCall = processor.Create(OpCodes.Call, referencedUnlockObjectMethod);
+
+                                    processor.InsertBefore(ins, loadTempInstruction);
+                                    processor.InsertBefore(loadTempInstruction, unlockObjectLibraryCall);
+                                    processor.InsertBefore(unlockObjectLibraryCall, loadTempInstruction);
+                                    processor.InsertBefore(loadTempInstruction, dupInstruction);
+                                    processor.InsertBefore(dupInstruction, storeTempInstruction);
+                                }
+
+
                             }
                         }
                     }
@@ -185,16 +202,16 @@ namespace CodeInstrumentationTest
             var loadAddressInstruction = processor.Create(OpCodes.Ldelema, typeReference);
             var writeAccessLibraryCall = processor.Create(OpCodes.Call, referencedWriteAccessMethod);
 
-            //processor.InsertBefore(ins,writeAccessLibraryCall);
-            //processor.InsertBefore(writeAccessLibraryCall, loadAddressInstruction);
-            //processor.InsertBefore(loadAddressInstruction, loadIndexInstrucion2);
-            //processor.InsertBefore(loadIndexInstrucion2, loadArrayInstrucion2);
-            //processor.InsertBefore(loadArrayInstrucion2, loadValueInstrucion);
-            //processor.InsertBefore(loadValueInstrucion, loadIndexInstrucion);
-            //processor.InsertBefore(loadIndexInstrucion, loadArrayInstrucion);
-            //processor.InsertBefore(loadArrayInstrucion, storeArrayInstrution);
-            //processor.InsertBefore(storeArrayInstrution, storeIndexInstrution);
-            //processor.InsertBefore(storeIndexInstrution, storeValueInstruction);
+            processor.InsertBefore(ins, writeAccessLibraryCall);
+            processor.InsertBefore(writeAccessLibraryCall, loadAddressInstruction);
+            processor.InsertBefore(loadAddressInstruction, loadIndexInstrucion2);
+            processor.InsertBefore(loadIndexInstrucion2, loadArrayInstrucion2);
+            processor.InsertBefore(loadArrayInstrucion2, loadValueInstrucion);
+            processor.InsertBefore(loadValueInstrucion, loadIndexInstrucion);
+            processor.InsertBefore(loadIndexInstrucion, loadArrayInstrucion);
+            processor.InsertBefore(loadArrayInstrucion, storeArrayInstrution);
+            processor.InsertBefore(storeArrayInstrution, storeIndexInstrution);
+            processor.InsertBefore(storeIndexInstrution, storeValueInstruction);
 
             /*processor.InsertBefore(ins, loadValueInstrucion);
             processor.InsertBefore(loadValueInstrucion, loadIndexInstrucion);

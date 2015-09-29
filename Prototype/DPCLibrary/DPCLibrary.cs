@@ -25,5 +25,12 @@ namespace DPCLibrary
             Console.WriteLine("Thread: " + currentThreadId + ": Locking object " + obj);
             Console.ReadLine();
         }
+
+        public static void UnLockObject(int obj)
+        {
+            int currentThreadId = Thread.CurrentThread.ManagedThreadId;
+            Console.WriteLine("Thread: " + currentThreadId + ": Unlocking object " + obj);
+            Console.ReadLine();
+        }
     }
 }
