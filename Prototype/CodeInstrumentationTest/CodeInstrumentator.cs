@@ -28,7 +28,7 @@ namespace CodeInstrumentationTest
             MethodDefinition readAccessDef = typeDefinition.Methods.Single(x => x.Name == "ReadAccess");
             MethodDefinition writeAccessDef = typeDefinition.Methods.Single(x => x.Name == "WriteAccess");
             MethodDefinition lockObjectDef = typeDefinition.Methods.Single(x => x.Name == "LockObject");
-            MethodDefinition unlockObjectDef = typeDefinition.Methods.Single(x => x.Name == "UnlockObject");
+            MethodDefinition unlockObjectDef = typeDefinition.Methods.Single(x => x.Name == "UnLockObject");
 
             ModuleDefinition module = ModuleDefinition.ReadModule(fileName);
             MethodReference referencedReadAccessMethod = module.Import(readAccessDef);
@@ -149,26 +149,18 @@ namespace CodeInstrumentationTest
 
                                     processor.InsertBefore(ins, loadTempInstruction);
                                     processor.InsertBefore(loadTempInstruction, lockObjectLibraryCall);
-                                    processor.InsertBefore(lockObjectLibraryCall, loadTempInstruction);
-                                    processor.InsertBefore(loadTempInstruction, dupInstruction);
+                                    processor.InsertBefore(lockObjectLibraryCall, dupInstruction);
                                     processor.InsertBefore(dupInstruction, storeTempInstruction);
                                 }
                                 else if (monitorExitFullName.Equals(methodReference.FullName))
                                 {
                                     var processor = method.Body.GetILProcessor();
                                     var dupInstruction = processor.Create(OpCodes.Dup);
-                                    var storeTempInstruction = processor.Create(OpCodes.Stloc, variableTempDefinition);
-                                    var loadTempInstruction = processor.Create(OpCodes.Ldloc, variableTempDefinition);
                                     var unlockObjectLibraryCall = processor.Create(OpCodes.Call, referencedUnlockObjectMethod);
 
-                                    processor.InsertBefore(ins, loadTempInstruction);
-                                    processor.InsertBefore(loadTempInstruction, unlockObjectLibraryCall);
-                                    processor.InsertBefore(unlockObjectLibraryCall, loadTempInstruction);
-                                    processor.InsertBefore(loadTempInstruction, dupInstruction);
-                                    processor.InsertBefore(dupInstruction, storeTempInstruction);
+                                    processor.InsertBefore(ins, unlockObjectLibraryCall);
+                                    processor.InsertBefore(unlockObjectLibraryCall, dupInstruction);
                                 }
-
-
                             }
                         }
                     }
@@ -227,27 +219,21 @@ namespace CodeInstrumentationTest
             TypeReference typeReference = module.Import(typeof (int));
             
             VariableDefinition variableIndexDefinition = new VariableDefinition(typeReference);
-            VariableDefinition variableArrayDefinition = new VariableDefinition(typeReference);
             method.Body.Variables.Add(variableIndexDefinition);
-            method.Body.Variables.Add(variableArrayDefinition);
             var processor = method.Body.GetILProcessor();
             var storeIndexInstrution = processor.Create(OpCodes.Stloc, variableIndexDefinition);
-            var storeArrayInstrution = processor.Create(OpCodes.Stloc, variableArrayDefinition);
+            var dupInstruction = processor.Create(OpCodes.Dup);
             var loadIndexInstrucion = processor.Create(OpCodes.Ldloc, variableIndexDefinition);
-            var loadArrayInstrucion = processor.Create(OpCodes.Ldloc, variableArrayDefinition);
             var loadIndexInstrucion2 = processor.Create(OpCodes.Ldloc, variableIndexDefinition);
-            var loadArrayInstrucion2 = processor.Create(OpCodes.Ldloc, variableArrayDefinition);
             var loadAddressInstruction = processor.Create(OpCodes.Ldelema, arrayTypeReference);
             var readAccessLibraryCall = processor.Create(OpCodes.Call, referencedReadAccessMethod);
 
-            processor.InsertBefore(ins, readAccessLibraryCall);
+            processor.InsertBefore(ins, loadIndexInstrucion2);
+            processor.InsertBefore(loadIndexInstrucion2, readAccessLibraryCall);
             processor.InsertBefore(readAccessLibraryCall, loadAddressInstruction);
-            processor.InsertBefore(loadAddressInstruction, loadIndexInstrucion2);
-            processor.InsertBefore(loadIndexInstrucion2, loadArrayInstrucion2);
-            processor.InsertBefore(loadArrayInstrucion2, loadIndexInstrucion);
-            processor.InsertBefore(loadIndexInstrucion, loadArrayInstrucion);
-            processor.InsertBefore(loadArrayInstrucion, storeArrayInstrution);
-            processor.InsertBefore(storeArrayInstrution, storeIndexInstrution);
+            processor.InsertBefore(loadAddressInstruction, loadIndexInstrucion);
+            processor.InsertBefore(loadIndexInstrucion, dupInstruction);
+            processor.InsertBefore(dupInstruction, storeIndexInstrution);
         }
     }
 }
