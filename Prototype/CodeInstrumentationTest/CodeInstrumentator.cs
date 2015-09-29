@@ -27,10 +27,12 @@ namespace CodeInstrumentationTest
             TypeDefinition typeDefinition =refModul.Types.First(x => x.Name == "DpcLibrary");
             MethodDefinition readAccessDef = typeDefinition.Methods.Single(x => x.Name == "ReadAccess");
             MethodDefinition writeAccessDef = typeDefinition.Methods.Single(x => x.Name == "WriteAccess");
+            MethodDefinition lockObjectDef = typeDefinition.Methods.Single(x => x.Name == "LockObject");
 
             ModuleDefinition module = ModuleDefinition.ReadModule(fileName);
             MethodReference referencedReadAccessMethod = module.Import(readAccessDef);
             MethodReference referencedWriteAccessMethod = module.Import(writeAccessDef);
+            MethodReference referencedLockObjectMethod = module.Import(lockObjectDef);
             foreach (TypeDefinition type in module.Types)
             {
                 if (type.HasMethods)
@@ -149,6 +151,34 @@ namespace CodeInstrumentationTest
                                 processor.InsertBefore(loadArrayInstrucion, storeArrayInstrution);
                                 processor.InsertBefore(storeArrayInstrution, storeIndexInstrution);
                                 processor.InsertBefore(storeIndexInstrution, storeValueInstruction);
+                            }
+                            else if (ins.OpCode.Equals(OpCodes.Call))
+                            {
+                                MethodReference methodReference = (MethodReference)ins.Operand;
+                                TypeReference typeReference = module.Import(typeof (int));
+                                VariableDefinition variableLockDefinition = new VariableDefinition(typeReference);
+                                VariableDefinition variableTempDefinition = new VariableDefinition(typeReference);
+
+                                method.Body.Variables.Add(variableLockDefinition);
+                                method.Body.Variables.Add(variableTempDefinition);
+
+                                if ("".Equals(methodReference.FullName))
+                                {
+                                    
+                                }
+                                var processor = method.Body.GetILProcessor();
+                                var dupInstruction = processor.Create(OpCodes.Dup);
+                                var storeTempInstruction = processor.Create(OpCodes.Stloc, variableTempDefinition);
+                                var loadLockInstruction = processor.Create(OpCodes.Ldloc, variableLockDefinition);
+                                var loadTempInstruction = processor.Create(OpCodes.Ldloc, variableTempDefinition);
+                                var loadLockInstruction2 = processor.Create(OpCodes.Ldloc, variableLockDefinition);
+                                var lockObjectLibraryCall = processor.Create(OpCodes.Call, referencedLockObjectMethod);
+
+                                processor.InsertBefore(ins, loadTempInstruction);
+                                processor.InsertBefore(loadTempInstruction, lockObjectLibraryCall);
+                                processor.InsertBefore(lockObjectLibraryCall, loadTempInstruction);
+                                processor.InsertBefore(loadTempInstruction, dupInstruction);
+                                processor.InsertBefore(dupInstruction, storeTempInstruction);
                             }
                         }
                     }
