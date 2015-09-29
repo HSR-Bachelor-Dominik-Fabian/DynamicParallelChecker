@@ -1,12 +1,28 @@
-﻿namespace TestProgram
+﻿using System;
+
+namespace TestProgram
 {
     internal class NewObject
     {
-        public int C { get; set; }
+        private int _c;
+
+        public int C
+        {
+            get
+            {
+                Console.WriteLine("GetC");
+                return _c;
+            }
+            set
+            {
+                Console.WriteLine("SetC");
+                _c = value;
+            }
+        }
 
         public NewObject(int i)
         {
-            C = i;
+            _c = i;
         }
     }
 }

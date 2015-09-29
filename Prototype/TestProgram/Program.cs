@@ -24,11 +24,10 @@ namespace TestProgram
             _a = newObject.C;
             int f = _k[1];
             long h = _i[2];
-            NewObject hallo = _f[0];
 
             f += 12;
             h += 22;
-            //hallo.C = 12231; Uncomment to analyse Error
+            //_f[0].C = 12231; //Uncomment to analyse Error
             //TODO:Dominik: Fehler analysieren
 
             Console.WriteLine("Vor f");

@@ -112,43 +112,16 @@ namespace CodeInstrumentationTest
                             }
                             else if (ins.OpCode.Equals(OpCodes.Stelem_Any))
                             {
-                                throw new NotImplementedException();
+                                TypeReference typeReference = (TypeReference)ins.Operand;
+                                InjectStrElement(typeReference, method, referencedWriteAccessMethod, ins);
+                                //TODO:Dominik:Testfall nicht vorhanden
                             }
                             else if (ins.OpCode.Equals(OpCodes.Stelem_I) || ins.OpCode.Equals(OpCodes.Stelem_I1)
                                 || ins.OpCode.Equals(OpCodes.Stelem_I2) || ins.OpCode.Equals(OpCodes.Stelem_I4) || ins.OpCode.Equals(OpCodes.Stelem_I8)
                                 || ins.OpCode.Equals(OpCodes.Stelem_R4) || ins.OpCode.Equals(OpCodes.Stelem_R8) || ins.OpCode.Equals(OpCodes.Stelem_Ref))
                             {
                                 TypeReference typeReference = module.Import(typeof(int));
-                                VariableDefinition variableValueDefinition = new VariableDefinition(typeReference);
-                                VariableDefinition variableIndexDefinition = new VariableDefinition(typeReference);
-                                VariableDefinition variableArrayDefinition = new VariableDefinition(typeReference);
-
-                                method.Body.Variables.Add(variableValueDefinition);
-                                method.Body.Variables.Add(variableIndexDefinition);
-                                method.Body.Variables.Add(variableArrayDefinition);
-
-                                var processor = method.Body.GetILProcessor();
-                                var storeValueInstruction = processor.Create(OpCodes.Stloc, variableValueDefinition);
-                                var storeIndexInstrution = processor.Create(OpCodes.Stloc, variableIndexDefinition);
-                                var storeArrayInstrution = processor.Create(OpCodes.Stloc, variableArrayDefinition);
-                                var loadValueInstrucion = processor.Create(OpCodes.Ldloc, variableValueDefinition);
-                                var loadIndexInstrucion = processor.Create(OpCodes.Ldloc, variableIndexDefinition);
-                                var loadArrayInstrucion = processor.Create(OpCodes.Ldloc, variableArrayDefinition);
-                                var loadIndexInstrucion2 = processor.Create(OpCodes.Ldloc, variableIndexDefinition);
-                                var loadArrayInstrucion2 = processor.Create(OpCodes.Ldloc, variableArrayDefinition);
-                                var loadAddressInstruction = processor.Create(OpCodes.Ldelema, typeReference);
-                                var writeAccessLibraryCall = processor.Create(OpCodes.Call, referencedWriteAccessMethod);
-
-                                processor.InsertBefore(ins,writeAccessLibraryCall);
-                                processor.InsertBefore(writeAccessLibraryCall, loadAddressInstruction);
-                                processor.InsertBefore(loadAddressInstruction, loadIndexInstrucion2);
-                                processor.InsertBefore(loadIndexInstrucion2, loadArrayInstrucion2);
-                                processor.InsertBefore(loadArrayInstrucion2, loadValueInstrucion);
-                                processor.InsertBefore(loadValueInstrucion, loadIndexInstrucion);
-                                processor.InsertBefore(loadIndexInstrucion, loadArrayInstrucion);
-                                processor.InsertBefore(loadArrayInstrucion, storeArrayInstrution);
-                                processor.InsertBefore(storeArrayInstrution, storeIndexInstrution);
-                                processor.InsertBefore(storeIndexInstrution, storeValueInstruction);
+                                InjectStrElement(typeReference, method, referencedWriteAccessMethod, ins);
                             }
                         }
                     }
@@ -157,6 +130,48 @@ namespace CodeInstrumentationTest
             }
 
             module.Write(fileName);
+        }
+
+        private static void InjectStrElement(TypeReference typeReference, MethodDefinition method,
+            MethodReference referencedWriteAccessMethod, Instruction ins)
+        {
+            VariableDefinition variableValueDefinition = new VariableDefinition(typeReference);
+            VariableDefinition variableIndexDefinition = new VariableDefinition(typeReference);
+            VariableDefinition variableArrayDefinition = new VariableDefinition(typeReference);
+
+            method.Body.Variables.Add(variableValueDefinition);
+            method.Body.Variables.Add(variableIndexDefinition);
+            method.Body.Variables.Add(variableArrayDefinition);
+
+            var processor = method.Body.GetILProcessor();
+            var storeValueInstruction = processor.Create(OpCodes.Stloc, variableValueDefinition);
+            var storeIndexInstrution = processor.Create(OpCodes.Stloc, variableIndexDefinition);
+            var storeArrayInstrution = processor.Create(OpCodes.Stloc, variableArrayDefinition);
+            var loadValueInstrucion = processor.Create(OpCodes.Ldloc, variableValueDefinition);
+            var loadIndexInstrucion = processor.Create(OpCodes.Ldloc, variableIndexDefinition);
+            var loadArrayInstrucion = processor.Create(OpCodes.Ldloc, variableArrayDefinition);
+            var loadIndexInstrucion2 = processor.Create(OpCodes.Ldloc, variableIndexDefinition);
+            var loadArrayInstrucion2 = processor.Create(OpCodes.Ldloc, variableArrayDefinition);
+            var loadAddressInstruction = processor.Create(OpCodes.Ldelema, typeReference);
+            var writeAccessLibraryCall = processor.Create(OpCodes.Call, referencedWriteAccessMethod);
+
+            //processor.InsertBefore(ins,writeAccessLibraryCall);
+            //processor.InsertBefore(writeAccessLibraryCall, loadAddressInstruction);
+            //processor.InsertBefore(loadAddressInstruction, loadIndexInstrucion2);
+            //processor.InsertBefore(loadIndexInstrucion2, loadArrayInstrucion2);
+            //processor.InsertBefore(loadArrayInstrucion2, loadValueInstrucion);
+            //processor.InsertBefore(loadValueInstrucion, loadIndexInstrucion);
+            //processor.InsertBefore(loadIndexInstrucion, loadArrayInstrucion);
+            //processor.InsertBefore(loadArrayInstrucion, storeArrayInstrution);
+            //processor.InsertBefore(storeArrayInstrution, storeIndexInstrution);
+            //processor.InsertBefore(storeIndexInstrution, storeValueInstruction);
+
+            /*processor.InsertBefore(ins, loadValueInstrucion);
+            processor.InsertBefore(loadValueInstrucion, loadIndexInstrucion);
+            processor.InsertBefore(loadIndexInstrucion, loadArrayInstrucion);
+            processor.InsertBefore(loadArrayInstrucion, storeArrayInstrution);
+            processor.InsertBefore(storeArrayInstrution, storeIndexInstrution);
+            processor.InsertBefore(storeIndexInstrution, storeValueInstruction);*/
         }
 
         private static void InjectArrayLdElement(ModuleDefinition module, TypeReference arrayTypeReference, MethodDefinition method,
