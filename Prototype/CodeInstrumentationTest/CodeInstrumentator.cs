@@ -175,18 +175,29 @@ namespace CodeInstrumentationTest
                                 //TODO:Dominik:Testfall nicht vorhanden
                             }
                             else if (ins.OpCode.Equals(OpCodes.Stelem_I) || ins.OpCode.Equals(OpCodes.Stelem_I1)
-                                     || ins.OpCode.Equals(OpCodes.Stelem_I2) || ins.OpCode.Equals(OpCodes.Stelem_I4))
+                                     || ins.OpCode.Equals(OpCodes.Stelem_I2) || ins.OpCode.Equals(OpCodes.Stelem_I4)
+                                     || ins.OpCode.Equals(OpCodes.Stelem_Ref))
                             {
-                                
+                                TypeReference indexTypeReference = module.Import(typeof(int));
+                                TypeReference valueTypeReference = module.Import(typeof(int));
+                                InjectStrElement(valueTypeReference, indexTypeReference, method, referencedWriteAccessMethod, ins);
                             }
                             else if (ins.OpCode.Equals(OpCodes.Stelem_I8))
                             {
-                                
-                            }
-                            else if( ins.OpCode.Equals(OpCodes.Stelem_R4) || ins.OpCode.Equals(OpCodes.Stelem_R8) || ins.OpCode.Equals(OpCodes.Stelem_Ref))
-                            {
                                 TypeReference indexTypeReference = module.Import(typeof(int));
                                 TypeReference valueTypeReference = module.Import(typeof(long));
+                                InjectStrElement(valueTypeReference, indexTypeReference, method, referencedWriteAccessMethod, ins);
+                            }
+                            else if (ins.OpCode.Equals(OpCodes.Stelem_R4))
+                            {
+                                TypeReference indexTypeReference = module.Import(typeof(int));
+                                TypeReference valueTypeReference = module.Import(typeof(float));
+                                InjectStrElement(valueTypeReference, indexTypeReference, method, referencedWriteAccessMethod, ins);
+                            }
+                            else if (ins.OpCode.Equals(OpCodes.Stelem_R8))
+                            {
+                                TypeReference indexTypeReference = module.Import(typeof(int));
+                                TypeReference valueTypeReference = module.Import(typeof(double));
                                 InjectStrElement(valueTypeReference, indexTypeReference, method, referencedWriteAccessMethod, ins);
                             }
                             else if (ins.OpCode.Equals(OpCodes.Call))
@@ -234,7 +245,6 @@ namespace CodeInstrumentationTest
         private static void InjectStrElement(TypeReference valueTypeReference, TypeReference indexTypeReference, MethodDefinition method,
             MethodReference referencedWriteAccessMethod, Instruction ins)
         {
-            //TypeReference valueTypeReference = getValueTypeReferenceStelem(ins);
             VariableDefinition variableValueDefinition = new VariableDefinition(valueTypeReference);
             VariableDefinition variableIndexDefinition = new VariableDefinition(indexTypeReference);
 
@@ -250,11 +260,6 @@ namespace CodeInstrumentationTest
             var loadValueInstruction = processor.Create(OpCodes.Ldloc, variableValueDefinition);
             var loadAddressInstruction = processor.Create(OpCodes.Ldelema, indexTypeReference);
             var writeAccessLibraryCall = processor.Create(OpCodes.Call, referencedWriteAccessMethod);
-
-            //processor.InsertBefore(ins, loadValueInstruction);
-            //processor.InsertBefore(loadValueInstruction, loadIndexInstruction);
-            //processor.InsertBefore(loadIndexInstruction, storeIndexInstruction);
-            //processor.InsertBefore(storeIndexInstruction, storeValueInstruction);
             
             processor.InsertBefore(ins, loadValueInstruction);
             processor.InsertBefore(loadValueInstruction, loadIndexInstruction);
@@ -264,23 +269,6 @@ namespace CodeInstrumentationTest
             processor.InsertBefore(loadIndexInstruction2, dupInstruction);
             processor.InsertBefore(dupInstruction, storeIndexInstruction);
             processor.InsertBefore(storeIndexInstruction, storeValueInstruction);
-
-            /*processor.InsertBefore(ins, loadValueInstrucion);
-            processor.InsertBefore(loadValueInstruction, loadIndexInstruction);
-            processor.InsertBefore(loadIndexInstruction, loadArrayInstruction);
-            processor.InsertBefore(loadArrayInstruction, storeArrayInstruction);
-            processor.InsertBefore(storeArrayInstruction, storeIndexInstruction);
-            processor.InsertBefore(storeIndexInstruction, storeValueInstruction);*/
-        }
-
-        private static TypeReference getValueTypeReferenceStelem(Instruction ins)
-        {
-            /*TypeReference valueTypeReference;
-            if (ins.OpCode.Equals(OpCodes.Stelem_))
-            {
-                
-            }*/
-            return null;
         }
 
         private static void InjectArrayLdElement(VariableDefinition int32Variable, TypeReference arrayTypeReference, MethodDefinition method,
