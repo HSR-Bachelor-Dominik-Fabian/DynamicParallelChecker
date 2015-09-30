@@ -8,10 +8,10 @@ using OpCodes = Mono.Cecil.Cil.OpCodes;
 
 namespace CodeInstrumentationTest
 {
-    class CodeInstrumentator
+    internal class CodeInstrumentator
     {
         // ReSharper disable once UnusedParameter.Local
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             string fileName = @"TestProgram.exe";
             PrintTypes(fileName);
@@ -24,7 +24,7 @@ namespace CodeInstrumentationTest
         public static void PrintTypes(string fileName)
         {
             ModuleDefinition refModul = ModuleDefinition.ReadModule("DPCLibrary.dll");
-            TypeDefinition typeDefinition =refModul.Types.First(x => x.Name == "DpcLibrary");
+            TypeDefinition typeDefinition = refModul.Types.First(x => x.Name == "DpcLibrary");
             MethodDefinition readAccessDef = typeDefinition.Methods.Single(x => x.Name == "ReadAccess");
             MethodDefinition writeAccessDef = typeDefinition.Methods.Single(x => x.Name == "WriteAccess");
             MethodDefinition lockObjectDef = typeDefinition.Methods.Single(x => x.Name == "LockObject");
@@ -36,9 +36,9 @@ namespace CodeInstrumentationTest
             MethodReference referencedLockObjectMethod = module.Import(lockObjectDef);
             MethodReference referencedUnlockObjectMethod = module.Import(unlockObjectDef);
 
-            TypeReference int8TypeReference = module.Import(typeof(byte));
-            TypeReference int16TypeReference = module.Import(typeof(short));
-            TypeReference int32TypeReference = module.Import(typeof(int));
+            TypeReference int8TypeReference = module.Import(typeof (byte));
+            TypeReference int16TypeReference = module.Import(typeof (short));
+            TypeReference int32TypeReference = module.Import(typeof (int));
             TypeReference int64TypeReference = module.Import(typeof (long));
             TypeReference float32TypeReference = module.Import(typeof (float));
             TypeReference float64TypeReference = module.Import(typeof (double));
@@ -55,7 +55,7 @@ namespace CodeInstrumentationTest
             {
                 if (type.HasMethods)
                 {
-                    foreach(MethodDefinition method in type.Methods)
+                    foreach (MethodDefinition method in type.Methods)
                     {
                         method.Body.Variables.Add(firstInt32VariableDefinition);
                         method.Body.Variables.Add(secondInt32VariableDefinition);
@@ -70,18 +70,20 @@ namespace CodeInstrumentationTest
                         {
                             if (ins.OpCode.Equals(OpCodes.Ldsfld))
                             {
-                                FieldDefinition fieldDefinition = (FieldDefinition)ins.Operand;
+                                FieldDefinition fieldDefinition = (FieldDefinition) ins.Operand;
                                 var processor = method.Body.GetILProcessor();
                                 var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
                                 var readAccessLibraryCall = processor.Create(OpCodes.Call, referencedReadAccessMethod);
                                 processor.InsertAfter(ins, loadAddressInstruction);
                                 processor.InsertAfter(loadAddressInstruction, readAccessLibraryCall);
                             }
-                            else if (ins.OpCode.Equals(OpCodes.Ldsflda) || ins.OpCode.Equals(OpCodes.Ldflda) || ins.OpCode.Equals(OpCodes.Ldelema))
+                            else if (ins.OpCode.Equals(OpCodes.Ldsflda) || ins.OpCode.Equals(OpCodes.Ldflda) ||
+                                     ins.OpCode.Equals(OpCodes.Ldelema))
                             {
                                 var processor = method.Body.GetILProcessor();
                                 var dupInstruction = processor.Create(OpCodes.Dup);
-                                var readAccessLibraryCall = processor.Create(OpCodes.Call, referencedReadAccessMethod);
+                                var readAccessLibraryCall = processor.Create(OpCodes.Call,
+                                    referencedReadAccessMethod);
                                 processor.InsertAfter(ins, dupInstruction);
                                 processor.InsertAfter(dupInstruction, readAccessLibraryCall);
                             }
@@ -90,7 +92,8 @@ namespace CodeInstrumentationTest
                                 FieldDefinition fieldDefinition = (FieldDefinition) ins.Operand;
                                 var processor = method.Body.GetILProcessor();
                                 var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
-                                var writeAccessLibraryCall = processor.Create(OpCodes.Call, referencedWriteAccessMethod);
+                                var writeAccessLibraryCall = processor.Create(OpCodes.Call,
+                                    referencedWriteAccessMethod);
                                 processor.InsertBefore(ins, writeAccessLibraryCall);
                                 processor.InsertBefore(writeAccessLibraryCall, loadAddressInstruction);
                             }
@@ -100,14 +103,15 @@ namespace CodeInstrumentationTest
                                 var processor = method.Body.GetILProcessor();
                                 var dupInstruction = processor.Create(OpCodes.Dup);
                                 var loadAddressInstruction = processor.Create(OpCodes.Ldflda, fieldDefinition);
-                                var readAccessLibraryCall = processor.Create(OpCodes.Call, referencedReadAccessMethod);
-                                processor.InsertBefore(ins,readAccessLibraryCall);
-                                processor.InsertBefore(readAccessLibraryCall,loadAddressInstruction);
+                                var readAccessLibraryCall = processor.Create(OpCodes.Call,
+                                    referencedReadAccessMethod);
+                                processor.InsertBefore(ins, readAccessLibraryCall);
+                                processor.InsertBefore(readAccessLibraryCall, loadAddressInstruction);
                                 processor.InsertBefore(loadAddressInstruction, dupInstruction);
                             }
                             else if (ins.OpCode.Equals(OpCodes.Stfld))
                             {
-                                FieldDefinition fieldDefinition = (FieldDefinition)ins.Operand;
+                                FieldDefinition fieldDefinition = (FieldDefinition) ins.Operand;
                                 VariableDefinition varDefinition;
 
                                 if (fieldDefinition.FieldType.Equals(int8TypeReference))
@@ -143,79 +147,116 @@ namespace CodeInstrumentationTest
                                 var storeLocalInstrution = processor.Create(OpCodes.Stloc, varDefinition);
                                 var dupInstruction = processor.Create(OpCodes.Dup);
                                 var loadAddressInstruction = processor.Create(OpCodes.Ldflda, fieldDefinition);
-                                var writeAccessLibraryCall = processor.Create(OpCodes.Call, referencedWriteAccessMethod);
+                                var writeAccessLibraryCall = processor.Create(OpCodes.Call,
+                                    referencedWriteAccessMethod);
                                 var loadLocaleInstrucion = processor.Create(OpCodes.Ldloc, varDefinition);
 
 
                                 processor.InsertBefore(ins, loadLocaleInstrucion);
                                 processor.InsertBefore(loadLocaleInstrucion, writeAccessLibraryCall);
-                                processor.InsertBefore(writeAccessLibraryCall,loadAddressInstruction);
-                                processor.InsertBefore(loadAddressInstruction,dupInstruction);
-                                processor.InsertBefore(dupInstruction,storeLocalInstrution);
+                                processor.InsertBefore(writeAccessLibraryCall, loadAddressInstruction);
+                                processor.InsertBefore(loadAddressInstruction, dupInstruction);
+                                processor.InsertBefore(dupInstruction, storeLocalInstrution);
                             }
                             else if (ins.OpCode.Equals(OpCodes.Ldelem_Any))
                             {
                                 TypeReference arrayTypeReference = (TypeReference) ins.Operand;
-                                InjectArrayLdElement(firstInt32VariableDefinition, arrayTypeReference, method, referencedReadAccessMethod, ins);
+                                InjectArrayLdElement(firstInt32VariableDefinition, arrayTypeReference, method,
+                                    referencedReadAccessMethod, ins);
                                 //TODO:Dominik:Testfall nicht vorhanden
                             }
-                            else if(ins.OpCode.Equals(OpCodes.Ldelem_I)|| ins.OpCode.Equals(OpCodes.Ldelem_I1) 
-                                || ins.OpCode.Equals(OpCodes.Ldelem_I2) || ins.OpCode.Equals(OpCodes.Ldelem_I4) || ins.OpCode.Equals(OpCodes.Ldelem_I8)
-                                || ins.OpCode.Equals(OpCodes.Ldelem_R4) || ins.OpCode.Equals(OpCodes.Ldelem_R8) || ins.OpCode.Equals(OpCodes.Ldelem_Ref)
-                                || ins.OpCode.Equals(OpCodes.Ldelem_U1) || ins.OpCode.Equals(OpCodes.Ldelem_U2) || ins.OpCode.Equals(OpCodes.Ldelem_U4))
+                            else if (ins.OpCode.Equals(OpCodes.Ldelem_I) || ins.OpCode.Equals(OpCodes.Ldelem_I1)
+                                     || ins.OpCode.Equals(OpCodes.Ldelem_I2) || ins.OpCode.Equals(OpCodes.Ldelem_I4) ||
+                                     ins.OpCode.Equals(OpCodes.Ldelem_I8)
+                                     || ins.OpCode.Equals(OpCodes.Ldelem_R4) || ins.OpCode.Equals(OpCodes.Ldelem_R8) ||
+                                     ins.OpCode.Equals(OpCodes.Ldelem_Ref)
+                                     || ins.OpCode.Equals(OpCodes.Ldelem_U1) || ins.OpCode.Equals(OpCodes.Ldelem_U2) ||
+                                     ins.OpCode.Equals(OpCodes.Ldelem_U4))
                             {
-                                TypeReference arrayTypeReference = module.Import(typeof(int));
-                                InjectArrayLdElement(firstInt32VariableDefinition, arrayTypeReference, method, referencedReadAccessMethod, ins);
+                                TypeReference arrayTypeReference = module.Import(typeof (int));
+                                InjectArrayLdElement(firstInt32VariableDefinition, arrayTypeReference, method,
+                                    referencedReadAccessMethod, ins);
                             }
                             else if (ins.OpCode.Equals(OpCodes.Stelem_Any))
                             {
-                                TypeReference indexTypeReference = module.Import(typeof(int));
-                                TypeReference valueTypeReference = (TypeReference)ins.Operand;
-                                InjectStrElement(valueTypeReference, indexTypeReference, method, referencedWriteAccessMethod, ins);
+                                TypeReference valueTypeReference = (TypeReference) ins.Operand;
+                                VariableDefinition varDefinition;
+
+                                if (valueTypeReference.Equals(int8TypeReference))
+                                {
+                                    varDefinition = int8VariableDefinition;
+                                }
+                                else if (valueTypeReference.Equals(int16TypeReference))
+                                {
+                                    varDefinition = int16VariableDefinition;
+                                }
+                                else if (valueTypeReference.Equals(int32TypeReference))
+                                {
+                                    varDefinition = firstInt32VariableDefinition;
+                                }
+                                else if (valueTypeReference.Equals(int64TypeReference))
+                                {
+                                    varDefinition = int64VariableDefinition;
+                                }
+                                else if (valueTypeReference.Equals(float32TypeReference))
+                                {
+                                    varDefinition = float32VariableDefinition;
+                                }
+                                else if (valueTypeReference.Equals(float64TypeReference))
+                                {
+                                    varDefinition = float64VariableDefinition;
+                                }
+                                else
+                                {
+                                    varDefinition = new VariableDefinition(valueTypeReference);
+                                    method.Body.Variables.Add(varDefinition);
+                                }
+                                InjectStrElement(varDefinition, secondInt32VariableDefinition, valueTypeReference,
+                                    method, referencedWriteAccessMethod, ins);
                                 //TODO:Dominik:Testfall nicht vorhanden
                             }
                             else if (ins.OpCode.Equals(OpCodes.Stelem_I) || ins.OpCode.Equals(OpCodes.Stelem_I1)
                                      || ins.OpCode.Equals(OpCodes.Stelem_I2) || ins.OpCode.Equals(OpCodes.Stelem_I4)
                                      || ins.OpCode.Equals(OpCodes.Stelem_Ref))
                             {
-                                TypeReference indexTypeReference = module.Import(typeof(int));
-                                TypeReference valueTypeReference = module.Import(typeof(int));
-                                InjectStrElement(valueTypeReference, indexTypeReference, method, referencedWriteAccessMethod, ins);
+                                InjectStrElement(firstInt32VariableDefinition, secondInt32VariableDefinition,
+                                    int32TypeReference, method, referencedWriteAccessMethod, ins);
                             }
                             else if (ins.OpCode.Equals(OpCodes.Stelem_I8))
                             {
-                                TypeReference indexTypeReference = module.Import(typeof(int));
-                                TypeReference valueTypeReference = module.Import(typeof(long));
-                                InjectStrElement(valueTypeReference, indexTypeReference, method, referencedWriteAccessMethod, ins);
+                                InjectStrElement(int64VariableDefinition, firstInt32VariableDefinition,
+                                    int64TypeReference, method, referencedWriteAccessMethod, ins);
                             }
                             else if (ins.OpCode.Equals(OpCodes.Stelem_R4))
                             {
-                                TypeReference indexTypeReference = module.Import(typeof(int));
-                                TypeReference valueTypeReference = module.Import(typeof(float));
-                                InjectStrElement(valueTypeReference, indexTypeReference, method, referencedWriteAccessMethod, ins);
+                                InjectStrElement(float32VariableDefinition, firstInt32VariableDefinition,
+                                    float32TypeReference, method, referencedWriteAccessMethod, ins);
                             }
                             else if (ins.OpCode.Equals(OpCodes.Stelem_R8))
                             {
-                                TypeReference indexTypeReference = module.Import(typeof(int));
-                                TypeReference valueTypeReference = module.Import(typeof(double));
-                                InjectStrElement(valueTypeReference, indexTypeReference, method, referencedWriteAccessMethod, ins);
+                                InjectStrElement(float64VariableDefinition, firstInt32VariableDefinition,
+                                    float64TypeReference, method, referencedWriteAccessMethod, ins);
                             }
                             else if (ins.OpCode.Equals(OpCodes.Call))
                             {
-                                MethodReference methodReference = (MethodReference)ins.Operand;
-                                
+                                MethodReference methodReference = (MethodReference) ins.Operand;
+
                                 string monitorEnterFullName =
                                     "System.Void System.Threading.Monitor::Enter(System.Object,System.Boolean&)";
-                                string monitorExitFullName = "System.Void System.Threading.Monitor::Exit(System.Object)";
+                                string monitorExitFullName =
+                                    "System.Void System.Threading.Monitor::Exit(System.Object)";
 
                                 if (monitorEnterFullName.Equals(methodReference.FullName))
                                 {
                                     // TODO:Fabian Bessere Lösung für Vergleich finden.
                                     var processor = method.Body.GetILProcessor();
                                     var dupInstruction = processor.Create(OpCodes.Dup);
-                                    var storeTempInstruction = processor.Create(OpCodes.Stloc, firstInt32VariableDefinition);
-                                    var loadTempInstruction = processor.Create(OpCodes.Ldloc, firstInt32VariableDefinition);
-                                    var lockObjectLibraryCall = processor.Create(OpCodes.Call, referencedLockObjectMethod);
+                                    var storeTempInstruction = processor.Create(OpCodes.Stloc,
+                                        firstInt32VariableDefinition);
+                                    var loadTempInstruction = processor.Create(OpCodes.Ldloc,
+                                        firstInt32VariableDefinition);
+                                    var lockObjectLibraryCall = processor.Create(OpCodes.Call,
+                                        referencedLockObjectMethod);
 
                                     processor.InsertBefore(ins, loadTempInstruction);
                                     processor.InsertBefore(loadTempInstruction, lockObjectLibraryCall);
@@ -226,31 +267,25 @@ namespace CodeInstrumentationTest
                                 {
                                     var processor = method.Body.GetILProcessor();
                                     var dupInstruction = processor.Create(OpCodes.Dup);
-                                    var unlockObjectLibraryCall = processor.Create(OpCodes.Call, referencedUnlockObjectMethod);
+                                    var unlockObjectLibraryCall = processor.Create(OpCodes.Call,
+                                        referencedUnlockObjectMethod);
 
                                     processor.InsertBefore(ins, unlockObjectLibraryCall);
                                     processor.InsertBefore(unlockObjectLibraryCall, dupInstruction);
                                 }
                             }
-
                         }
                     }
                 }
-                
             }
 
             module.Write(fileName);
         }
 
-        private static void InjectStrElement(TypeReference valueTypeReference, TypeReference indexTypeReference, MethodDefinition method,
+        private static void InjectStrElement(VariableDefinition variableValueDefinition,
+            VariableDefinition variableIndexDefinition, TypeReference valueTypeReference, MethodDefinition method,
             MethodReference referencedWriteAccessMethod, Instruction ins)
         {
-            VariableDefinition variableValueDefinition = new VariableDefinition(valueTypeReference);
-            VariableDefinition variableIndexDefinition = new VariableDefinition(indexTypeReference);
-
-            method.Body.Variables.Add(variableValueDefinition);
-            method.Body.Variables.Add(variableIndexDefinition);
-
             var processor = method.Body.GetILProcessor();
             var dupInstruction = processor.Create(OpCodes.Dup);
             var storeValueInstruction = processor.Create(OpCodes.Stloc, variableValueDefinition);
@@ -258,9 +293,9 @@ namespace CodeInstrumentationTest
             var loadIndexInstruction = processor.Create(OpCodes.Ldloc, variableIndexDefinition);
             var loadIndexInstruction2 = processor.Create(OpCodes.Ldloc, variableIndexDefinition);
             var loadValueInstruction = processor.Create(OpCodes.Ldloc, variableValueDefinition);
-            var loadAddressInstruction = processor.Create(OpCodes.Ldelema, indexTypeReference);
+            var loadAddressInstruction = processor.Create(OpCodes.Ldelema, valueTypeReference);
             var writeAccessLibraryCall = processor.Create(OpCodes.Call, referencedWriteAccessMethod);
-            
+
             processor.InsertBefore(ins, loadValueInstruction);
             processor.InsertBefore(loadValueInstruction, loadIndexInstruction);
             processor.InsertBefore(loadIndexInstruction, writeAccessLibraryCall);
@@ -271,7 +306,8 @@ namespace CodeInstrumentationTest
             processor.InsertBefore(storeIndexInstruction, storeValueInstruction);
         }
 
-        private static void InjectArrayLdElement(VariableDefinition int32Variable, TypeReference arrayTypeReference, MethodDefinition method,
+        private static void InjectArrayLdElement(VariableDefinition int32Variable, TypeReference arrayTypeReference,
+            MethodDefinition method,
             MethodReference referencedReadAccessMethod, Instruction ins)
         {
             var processor = method.Body.GetILProcessor();
@@ -289,7 +325,5 @@ namespace CodeInstrumentationTest
             processor.InsertBefore(loadIndexInstrucion, dupInstruction);
             processor.InsertBefore(dupInstruction, storeIndexInstrution);
         }
-
-        
     }
 }
