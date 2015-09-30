@@ -116,16 +116,25 @@ namespace CodeInstrumentationTest
                             }
                             else if (ins.OpCode.Equals(OpCodes.Stelem_Any))
                             {
-                                TypeReference typeReference = (TypeReference)ins.Operand;
-                                InjectStrElement(typeReference, method, referencedWriteAccessMethod, ins);
+                                TypeReference indexTypeReference = module.Import(typeof(int));
+                                TypeReference valueTypeReference = (TypeReference)ins.Operand;
+                                InjectStrElement(valueTypeReference, indexTypeReference, method, referencedWriteAccessMethod, ins);
                                 //TODO:Dominik:Testfall nicht vorhanden
                             }
                             else if (ins.OpCode.Equals(OpCodes.Stelem_I) || ins.OpCode.Equals(OpCodes.Stelem_I1)
-                                || ins.OpCode.Equals(OpCodes.Stelem_I2) || ins.OpCode.Equals(OpCodes.Stelem_I4) || ins.OpCode.Equals(OpCodes.Stelem_I8)
-                                || ins.OpCode.Equals(OpCodes.Stelem_R4) || ins.OpCode.Equals(OpCodes.Stelem_R8) || ins.OpCode.Equals(OpCodes.Stelem_Ref))
+                                     || ins.OpCode.Equals(OpCodes.Stelem_I2) || ins.OpCode.Equals(OpCodes.Stelem_I4))
                             {
-                                TypeReference typeReference = module.Import(typeof(int));
-                                InjectStrElement(typeReference, method, referencedWriteAccessMethod, ins);
+                                
+                            }
+                            else if (ins.OpCode.Equals(OpCodes.Stelem_I8))
+                            {
+                                
+                            }
+                            else if( ins.OpCode.Equals(OpCodes.Stelem_R4) || ins.OpCode.Equals(OpCodes.Stelem_R8) || ins.OpCode.Equals(OpCodes.Stelem_Ref))
+                            {
+                                TypeReference indexTypeReference = module.Import(typeof(int));
+                                TypeReference valueTypeReference = module.Import(typeof(long));
+                                InjectStrElement(valueTypeReference, indexTypeReference, method, referencedWriteAccessMethod, ins);
                             }
                             else if (ins.OpCode.Equals(OpCodes.Call))
                             {
@@ -162,6 +171,7 @@ namespace CodeInstrumentationTest
                                     processor.InsertBefore(unlockObjectLibraryCall, dupInstruction);
                                 }
                             }
+
                         }
                     }
                 }
@@ -171,46 +181,56 @@ namespace CodeInstrumentationTest
             module.Write(fileName);
         }
 
-        private static void InjectStrElement(TypeReference typeReference, MethodDefinition method,
+        private static void InjectStrElement(TypeReference valueTypeReference, TypeReference indexTypeReference, MethodDefinition method,
             MethodReference referencedWriteAccessMethod, Instruction ins)
         {
-            VariableDefinition variableValueDefinition = new VariableDefinition(typeReference);
-            VariableDefinition variableIndexDefinition = new VariableDefinition(typeReference);
-            VariableDefinition variableArrayDefinition = new VariableDefinition(typeReference);
+            //TypeReference valueTypeReference = getValueTypeReferenceStelem(ins);
+            VariableDefinition variableValueDefinition = new VariableDefinition(valueTypeReference);
+            VariableDefinition variableIndexDefinition = new VariableDefinition(indexTypeReference);
 
             method.Body.Variables.Add(variableValueDefinition);
             method.Body.Variables.Add(variableIndexDefinition);
-            method.Body.Variables.Add(variableArrayDefinition);
 
             var processor = method.Body.GetILProcessor();
+            var dupInstruction = processor.Create(OpCodes.Dup);
             var storeValueInstruction = processor.Create(OpCodes.Stloc, variableValueDefinition);
-            var storeIndexInstrution = processor.Create(OpCodes.Stloc, variableIndexDefinition);
-            var storeArrayInstrution = processor.Create(OpCodes.Stloc, variableArrayDefinition);
-            var loadValueInstrucion = processor.Create(OpCodes.Ldloc, variableValueDefinition);
-            var loadIndexInstrucion = processor.Create(OpCodes.Ldloc, variableIndexDefinition);
-            var loadArrayInstrucion = processor.Create(OpCodes.Ldloc, variableArrayDefinition);
-            var loadIndexInstrucion2 = processor.Create(OpCodes.Ldloc, variableIndexDefinition);
-            var loadArrayInstrucion2 = processor.Create(OpCodes.Ldloc, variableArrayDefinition);
-            var loadAddressInstruction = processor.Create(OpCodes.Ldelema, typeReference);
+            var storeIndexInstruction = processor.Create(OpCodes.Stloc, variableIndexDefinition);
+            var loadIndexInstruction = processor.Create(OpCodes.Ldloc, variableIndexDefinition);
+            var loadIndexInstruction2 = processor.Create(OpCodes.Ldloc, variableIndexDefinition);
+            var loadValueInstruction = processor.Create(OpCodes.Ldloc, variableValueDefinition);
+            var loadAddressInstruction = processor.Create(OpCodes.Ldelema, indexTypeReference);
             var writeAccessLibraryCall = processor.Create(OpCodes.Call, referencedWriteAccessMethod);
 
-            processor.InsertBefore(ins, writeAccessLibraryCall);
+            //processor.InsertBefore(ins, loadValueInstruction);
+            //processor.InsertBefore(loadValueInstruction, loadIndexInstruction);
+            //processor.InsertBefore(loadIndexInstruction, storeIndexInstruction);
+            //processor.InsertBefore(storeIndexInstruction, storeValueInstruction);
+            
+            processor.InsertBefore(ins, loadValueInstruction);
+            processor.InsertBefore(loadValueInstruction, loadIndexInstruction);
+            processor.InsertBefore(loadIndexInstruction, writeAccessLibraryCall);
             processor.InsertBefore(writeAccessLibraryCall, loadAddressInstruction);
-            processor.InsertBefore(loadAddressInstruction, loadIndexInstrucion2);
-            processor.InsertBefore(loadIndexInstrucion2, loadArrayInstrucion2);
-            processor.InsertBefore(loadArrayInstrucion2, loadValueInstrucion);
-            processor.InsertBefore(loadValueInstrucion, loadIndexInstrucion);
-            processor.InsertBefore(loadIndexInstrucion, loadArrayInstrucion);
-            processor.InsertBefore(loadArrayInstrucion, storeArrayInstrution);
-            processor.InsertBefore(storeArrayInstrution, storeIndexInstrution);
-            processor.InsertBefore(storeIndexInstrution, storeValueInstruction);
+            processor.InsertBefore(loadAddressInstruction, loadIndexInstruction2);
+            processor.InsertBefore(loadIndexInstruction2, dupInstruction);
+            processor.InsertBefore(dupInstruction, storeIndexInstruction);
+            processor.InsertBefore(storeIndexInstruction, storeValueInstruction);
 
             /*processor.InsertBefore(ins, loadValueInstrucion);
-            processor.InsertBefore(loadValueInstrucion, loadIndexInstrucion);
-            processor.InsertBefore(loadIndexInstrucion, loadArrayInstrucion);
-            processor.InsertBefore(loadArrayInstrucion, storeArrayInstrution);
-            processor.InsertBefore(storeArrayInstrution, storeIndexInstrution);
-            processor.InsertBefore(storeIndexInstrution, storeValueInstruction);*/
+            processor.InsertBefore(loadValueInstruction, loadIndexInstruction);
+            processor.InsertBefore(loadIndexInstruction, loadArrayInstruction);
+            processor.InsertBefore(loadArrayInstruction, storeArrayInstruction);
+            processor.InsertBefore(storeArrayInstruction, storeIndexInstruction);
+            processor.InsertBefore(storeIndexInstruction, storeValueInstruction);*/
+        }
+
+        private static TypeReference getValueTypeReferenceStelem(Instruction ins)
+        {
+            /*TypeReference valueTypeReference;
+            if (ins.OpCode.Equals(OpCodes.Stelem_))
+            {
+                
+            }*/
+            return null;
         }
 
         private static void InjectArrayLdElement(ModuleDefinition module, TypeReference arrayTypeReference, MethodDefinition method,

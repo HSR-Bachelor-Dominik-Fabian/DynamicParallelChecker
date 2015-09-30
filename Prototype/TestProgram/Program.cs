@@ -6,7 +6,7 @@ namespace TestProgram
     class Program
     {
         private static int _a = 2;
-        private static readonly object _b = 3;
+        private static object _b = 3;
         private static readonly int[] _k = { 11, 12, 13, 14, 15 };
         private static readonly long[] _i = { 1233123132, 123, 123, 123132123 };
         private static readonly NewObject[] _f = { new NewObject(12), new NewObject(14), new NewObject(15) };
@@ -26,7 +26,7 @@ namespace TestProgram
             long h = _i[2];
             lock (_b)
             {
-                
+                _b = 4;
             }
 
             f += 12;
