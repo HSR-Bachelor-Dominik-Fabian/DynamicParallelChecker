@@ -35,12 +35,36 @@ namespace CodeInstrumentationTest
             MethodReference referencedWriteAccessMethod = module.Import(writeAccessDef);
             MethodReference referencedLockObjectMethod = module.Import(lockObjectDef);
             MethodReference referencedUnlockObjectMethod = module.Import(unlockObjectDef);
+
+            TypeReference int8TypeReference = module.Import(typeof(byte));
+            TypeReference int16TypeReference = module.Import(typeof(short));
+            TypeReference int32TypeReference = module.Import(typeof(int));
+            TypeReference int64TypeReference = module.Import(typeof (long));
+            TypeReference float32TypeReference = module.Import(typeof (float));
+            TypeReference float64TypeReference = module.Import(typeof (double));
+
+            VariableDefinition firstInt32VariableDefinition = new VariableDefinition(int32TypeReference);
+            VariableDefinition secondInt32VariableDefinition = new VariableDefinition(int32TypeReference);
+            VariableDefinition int8VariableDefinition = new VariableDefinition(int8TypeReference);
+            VariableDefinition int16VariableDefinition = new VariableDefinition(int16TypeReference);
+            VariableDefinition int64VariableDefinition = new VariableDefinition(int64TypeReference);
+            VariableDefinition float32VariableDefinition = new VariableDefinition(float32TypeReference);
+            VariableDefinition float64VariableDefinition = new VariableDefinition(float64TypeReference);
+
             foreach (TypeDefinition type in module.Types)
             {
                 if (type.HasMethods)
                 {
                     foreach(MethodDefinition method in type.Methods)
                     {
+                        method.Body.Variables.Add(firstInt32VariableDefinition);
+                        method.Body.Variables.Add(secondInt32VariableDefinition);
+                        method.Body.Variables.Add(int8VariableDefinition);
+                        method.Body.Variables.Add(int16VariableDefinition);
+                        method.Body.Variables.Add(int64VariableDefinition);
+                        method.Body.Variables.Add(float32VariableDefinition);
+                        method.Body.Variables.Add(float64VariableDefinition);
+
                         ArrayList tempList = new ArrayList(method.Body.Instructions.ToList());
                         foreach (Instruction ins in tempList)
                         {
@@ -84,8 +108,37 @@ namespace CodeInstrumentationTest
                             else if (ins.OpCode.Equals(OpCodes.Stfld))
                             {
                                 FieldDefinition fieldDefinition = (FieldDefinition)ins.Operand;
-                                VariableDefinition varDefinition = new VariableDefinition(fieldDefinition.FieldType);
-                                method.Body.Variables.Add(varDefinition);
+                                VariableDefinition varDefinition;
+
+                                if (fieldDefinition.FieldType.Equals(int8TypeReference))
+                                {
+                                    varDefinition = int8VariableDefinition;
+                                }
+                                else if (fieldDefinition.FieldType.Equals(int16TypeReference))
+                                {
+                                    varDefinition = int16VariableDefinition;
+                                }
+                                else if (fieldDefinition.FieldType.Equals(int32TypeReference))
+                                {
+                                    varDefinition = firstInt32VariableDefinition;
+                                }
+                                else if (fieldDefinition.FieldType.Equals(int64TypeReference))
+                                {
+                                    varDefinition = int64VariableDefinition;
+                                }
+                                else if (fieldDefinition.FieldType.Equals(float32TypeReference))
+                                {
+                                    varDefinition = float32VariableDefinition;
+                                }
+                                else if (fieldDefinition.FieldType.Equals(float64TypeReference))
+                                {
+                                    varDefinition = float64VariableDefinition;
+                                }
+                                else
+                                {
+                                    varDefinition = new VariableDefinition(fieldDefinition.FieldType);
+                                    method.Body.Variables.Add(varDefinition);
+                                }
                                 var processor = method.Body.GetILProcessor();
                                 var storeLocalInstrution = processor.Create(OpCodes.Stloc, varDefinition);
                                 var dupInstruction = processor.Create(OpCodes.Dup);
@@ -102,8 +155,8 @@ namespace CodeInstrumentationTest
                             }
                             else if (ins.OpCode.Equals(OpCodes.Ldelem_Any))
                             {
-                                TypeReference typeReference = (TypeReference) ins.Operand;
-                                InjectArrayLdElement(module, typeReference, method, referencedReadAccessMethod, ins);
+                                TypeReference arrayTypeReference = (TypeReference) ins.Operand;
+                                InjectArrayLdElement(firstInt32VariableDefinition, arrayTypeReference, method, referencedReadAccessMethod, ins);
                                 //TODO:Dominik:Testfall nicht vorhanden
                             }
                             else if(ins.OpCode.Equals(OpCodes.Ldelem_I)|| ins.OpCode.Equals(OpCodes.Ldelem_I1) 
@@ -112,7 +165,7 @@ namespace CodeInstrumentationTest
                                 || ins.OpCode.Equals(OpCodes.Ldelem_U1) || ins.OpCode.Equals(OpCodes.Ldelem_U2) || ins.OpCode.Equals(OpCodes.Ldelem_U4))
                             {
                                 TypeReference arrayTypeReference = module.Import(typeof(int));
-                                InjectArrayLdElement(module, arrayTypeReference, method, referencedReadAccessMethod, ins);
+                                InjectArrayLdElement(firstInt32VariableDefinition, arrayTypeReference, method, referencedReadAccessMethod, ins);
                             }
                             else if (ins.OpCode.Equals(OpCodes.Stelem_Any))
                             {
@@ -139,10 +192,7 @@ namespace CodeInstrumentationTest
                             else if (ins.OpCode.Equals(OpCodes.Call))
                             {
                                 MethodReference methodReference = (MethodReference)ins.Operand;
-                                TypeReference typeReference = module.Import(typeof (int));
-                                VariableDefinition variableTempDefinition = new VariableDefinition(typeReference);
-
-                                method.Body.Variables.Add(variableTempDefinition);
+                                
                                 string monitorEnterFullName =
                                     "System.Void System.Threading.Monitor::Enter(System.Object,System.Boolean&)";
                                 string monitorExitFullName = "System.Void System.Threading.Monitor::Exit(System.Object)";
@@ -152,8 +202,8 @@ namespace CodeInstrumentationTest
                                     // TODO:Fabian Bessere Lösung für Vergleich finden.
                                     var processor = method.Body.GetILProcessor();
                                     var dupInstruction = processor.Create(OpCodes.Dup);
-                                    var storeTempInstruction = processor.Create(OpCodes.Stloc, variableTempDefinition);
-                                    var loadTempInstruction = processor.Create(OpCodes.Ldloc, variableTempDefinition);
+                                    var storeTempInstruction = processor.Create(OpCodes.Stloc, firstInt32VariableDefinition);
+                                    var loadTempInstruction = processor.Create(OpCodes.Ldloc, firstInt32VariableDefinition);
                                     var lockObjectLibraryCall = processor.Create(OpCodes.Call, referencedLockObjectMethod);
 
                                     processor.InsertBefore(ins, loadTempInstruction);
@@ -233,18 +283,14 @@ namespace CodeInstrumentationTest
             return null;
         }
 
-        private static void InjectArrayLdElement(ModuleDefinition module, TypeReference arrayTypeReference, MethodDefinition method,
+        private static void InjectArrayLdElement(VariableDefinition int32Variable, TypeReference arrayTypeReference, MethodDefinition method,
             MethodReference referencedReadAccessMethod, Instruction ins)
         {
-            TypeReference typeReference = module.Import(typeof (int));
-            
-            VariableDefinition variableIndexDefinition = new VariableDefinition(typeReference);
-            method.Body.Variables.Add(variableIndexDefinition);
             var processor = method.Body.GetILProcessor();
-            var storeIndexInstrution = processor.Create(OpCodes.Stloc, variableIndexDefinition);
+            var storeIndexInstrution = processor.Create(OpCodes.Stloc, int32Variable);
             var dupInstruction = processor.Create(OpCodes.Dup);
-            var loadIndexInstrucion = processor.Create(OpCodes.Ldloc, variableIndexDefinition);
-            var loadIndexInstrucion2 = processor.Create(OpCodes.Ldloc, variableIndexDefinition);
+            var loadIndexInstrucion = processor.Create(OpCodes.Ldloc, int32Variable);
+            var loadIndexInstrucion2 = processor.Create(OpCodes.Ldloc, int32Variable);
             var loadAddressInstruction = processor.Create(OpCodes.Ldelema, arrayTypeReference);
             var readAccessLibraryCall = processor.Create(OpCodes.Call, referencedReadAccessMethod);
 
@@ -255,5 +301,7 @@ namespace CodeInstrumentationTest
             processor.InsertBefore(loadIndexInstrucion, dupInstruction);
             processor.InsertBefore(dupInstruction, storeIndexInstrution);
         }
+
+        
     }
 }
