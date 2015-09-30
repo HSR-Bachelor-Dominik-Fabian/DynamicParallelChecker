@@ -16,6 +16,7 @@ namespace TestProgram
         {
             Test();
             Task.Factory.StartNew(Test2).Wait();
+            Test3();
         }
 
         public static void Test()
@@ -47,6 +48,22 @@ namespace TestProgram
         public static void Test2()
         {
             Console.WriteLine(_b.ToString());
+            Console.ReadLine();
+        }
+
+        public static void Test3()
+        {
+            int[] intArray = new int[5];
+            long[] longArray = new long[5];
+            float[] floatArray = new float[5];
+            double[] doubleArray = new double[5];
+            NewObject[] newObjectArray = new NewObject[5];
+
+            intArray[0] = 5;
+            longArray[0] = 4294967296L;
+            floatArray[0] = 3.5F;
+            doubleArray[0] = 3D;
+            newObjectArray[0] = new NewObject(6);
             Console.ReadLine();
         }
     }
