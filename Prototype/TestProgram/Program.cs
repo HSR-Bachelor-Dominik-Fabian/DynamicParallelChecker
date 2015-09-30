@@ -18,6 +18,7 @@ namespace TestProgram
             Test();
             Task.Factory.StartNew(Test2).Wait();
             Test3();
+            Test6();
         }
 
         public static void Test()
@@ -74,6 +75,11 @@ namespace TestProgram
             float tempFloat = floatArray[0];
             double tempDouble = doubleArray[0];
             NewObject tempObject = newObjectArray[0];
+        }
+
+        public static void Test6()
+        {
+            
         }
     }
 }
