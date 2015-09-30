@@ -167,14 +167,25 @@ namespace CodeInstrumentationTest
                             }
                             else if (ins.OpCode.Equals(OpCodes.Ldelem_I) || ins.OpCode.Equals(OpCodes.Ldelem_I1)
                                      || ins.OpCode.Equals(OpCodes.Ldelem_I2) || ins.OpCode.Equals(OpCodes.Ldelem_I4) ||
-                                     ins.OpCode.Equals(OpCodes.Ldelem_I8)
-                                     || ins.OpCode.Equals(OpCodes.Ldelem_R4) || ins.OpCode.Equals(OpCodes.Ldelem_R8) ||
-                                     ins.OpCode.Equals(OpCodes.Ldelem_Ref)
-                                     || ins.OpCode.Equals(OpCodes.Ldelem_U1) || ins.OpCode.Equals(OpCodes.Ldelem_U2) ||
+                                     ins.OpCode.Equals(OpCodes.Ldelem_Ref) || ins.OpCode.Equals(OpCodes.Ldelem_U1) || ins.OpCode.Equals(OpCodes.Ldelem_U2) ||
                                      ins.OpCode.Equals(OpCodes.Ldelem_U4))
                             {
-                                TypeReference arrayTypeReference = module.Import(typeof (int));
-                                InjectArrayLdElement(firstInt32VariableDefinition, arrayTypeReference, method,
+                                InjectArrayLdElement(firstInt32VariableDefinition, int32TypeReference, method,
+                                    referencedReadAccessMethod, ins);
+                            }     
+                            else if (ins.OpCode.Equals(OpCodes.Ldelem_I8))
+                            {
+                                InjectArrayLdElement(firstInt32VariableDefinition, int64TypeReference, method,
+                                    referencedReadAccessMethod, ins);
+                            }
+                            else if (ins.OpCode.Equals(OpCodes.Ldelem_R4))
+                            {
+                                InjectArrayLdElement(firstInt32VariableDefinition, float32TypeReference, method,
+                                    referencedReadAccessMethod, ins);
+                            }
+                            else if (ins.OpCode.Equals(OpCodes.Ldelem_R8))
+                            {
+                                InjectArrayLdElement(firstInt32VariableDefinition, float64TypeReference, method,
                                     referencedReadAccessMethod, ins);
                             }
                             else if (ins.OpCode.Equals(OpCodes.Stelem_Any))
