@@ -14,14 +14,14 @@ namespace CodeInstrumentationTest
         private static void Main(string[] args)
         {
             string fileName = @"TestProgram.exe";
-            PrintTypes(fileName);
+            InjectCodeInstrumentation(fileName);
             Process process = new Process {StartInfo = {FileName = fileName}};
             process.Start();
             Console.WriteLine("Enter to stop");
             Console.ReadLine();
         }
 
-        public static void PrintTypes(string fileName)
+        private static void InjectCodeInstrumentation(string fileName)
         {
             ModuleDefinition refModul = ModuleDefinition.ReadModule("DPCLibrary.dll");
             TypeDefinition typeDefinition = refModul.Types.First(x => x.Name == "DpcLibrary");
@@ -42,21 +42,20 @@ namespace CodeInstrumentationTest
             TypeReference int64TypeReference = module.Import(typeof (long));
             TypeReference float32TypeReference = module.Import(typeof (float));
             TypeReference float64TypeReference = module.Import(typeof (double));
-
-            VariableDefinition firstInt32VariableDefinition = new VariableDefinition(int32TypeReference);
-            VariableDefinition secondInt32VariableDefinition = new VariableDefinition(int32TypeReference);
-            VariableDefinition int8VariableDefinition = new VariableDefinition(int8TypeReference);
-            VariableDefinition int16VariableDefinition = new VariableDefinition(int16TypeReference);
-            VariableDefinition int64VariableDefinition = new VariableDefinition(int64TypeReference);
-            VariableDefinition float32VariableDefinition = new VariableDefinition(float32TypeReference);
-            VariableDefinition float64VariableDefinition = new VariableDefinition(float64TypeReference);
-
             foreach (TypeDefinition type in module.Types)
             {
                 if (type.HasMethods)
                 {
                     foreach (MethodDefinition method in type.Methods)
                     {
+                        VariableDefinition firstInt32VariableDefinition = new VariableDefinition(int32TypeReference);
+                        VariableDefinition secondInt32VariableDefinition = new VariableDefinition(int32TypeReference);
+                        VariableDefinition int8VariableDefinition = new VariableDefinition(int8TypeReference);
+                        VariableDefinition int16VariableDefinition = new VariableDefinition(int16TypeReference);
+                        VariableDefinition int64VariableDefinition = new VariableDefinition(int64TypeReference);
+                        VariableDefinition float32VariableDefinition = new VariableDefinition(float32TypeReference);
+                        VariableDefinition float64VariableDefinition = new VariableDefinition(float64TypeReference);
+
                         method.Body.Variables.Add(firstInt32VariableDefinition);
                         method.Body.Variables.Add(secondInt32VariableDefinition);
                         method.Body.Variables.Add(int8VariableDefinition);

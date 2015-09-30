@@ -15,38 +15,38 @@ namespace TestProgram
         static void Main(string[] args)
         {
             Console.WriteLine("Main()");
-            //Test();
+            Test();
             Task.Factory.StartNew(Test2).Wait();
             Test3();
         }
 
-        //public static void Test()
-        //{
-        //    Console.WriteLine("Test()");
-        //    NewObject newObject = new NewObject(123);
-        //    Console.WriteLine("nach new NewObject()");
-        //    _a = newObject.C;
-        //    int f = _k[1];
-        //    long h = _i[2];
-        //    lock (_b)
-        //    {
-        //        _b = 4;
-        //    }
+        public static void Test()
+        {
+            Console.WriteLine("Test()");
+            NewObject newObject = new NewObject(123);
+            Console.WriteLine("nach new NewObject()");
+            _a = newObject.C;
+            int f = _k[1];
+            long h = _i[2];
+            lock (_b)
+            {
+                _b = 4;
+            }
 
-        //    f += 12;
-        //    h += 22;
-        //    _f[0].C = 12231; //Uncomment to analyse Error
-        //    //TODO: Dominik: Fehler analysieren
+            f += 12;
+            h += 22;
+            _f[0].C = 12231; //Uncomment to analyse Error
+            //TODO: Dominik: Fehler analysieren
 
-        //    Console.WriteLine("Vor f");
-        //    _k[1] = f;
-        //    Console.WriteLine("Vor h");
-        //    _i[2] = h;
+            Console.WriteLine("Vor f");
+            _k[1] = f;
+            Console.WriteLine("Vor h");
+            _i[2] = h;
 
-        //    Console.WriteLine(_a.ToString());
-        //    Console.WriteLine(_k[2].ToString());
-        //    Console.ReadLine();
-        //}
+            Console.WriteLine(_a.ToString());
+            Console.WriteLine(_k[2].ToString());
+            Console.ReadLine();
+        }
 
         public static void Test2()
         {
