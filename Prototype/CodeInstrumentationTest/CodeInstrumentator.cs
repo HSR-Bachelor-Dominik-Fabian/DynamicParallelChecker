@@ -29,12 +29,14 @@ namespace CodeInstrumentationTest
             MethodDefinition writeAccessDef = typeDefinition.Methods.Single(x => x.Name == "WriteAccess");
             MethodDefinition lockObjectDef = typeDefinition.Methods.Single(x => x.Name == "LockObject");
             MethodDefinition unlockObjectDef = typeDefinition.Methods.Single(x => x.Name == "UnLockObject");
+            MethodDefinition genericListDef = typeDefinition.Methods.Single(x => x.Name == "GenericList");
 
             ModuleDefinition module = ModuleDefinition.ReadModule(fileName);
             MethodReference referencedReadAccessMethod = module.Import(readAccessDef);
             MethodReference referencedWriteAccessMethod = module.Import(writeAccessDef);
             MethodReference referencedLockObjectMethod = module.Import(lockObjectDef);
             MethodReference referencedUnlockObjectMethod = module.Import(unlockObjectDef);
+            MethodReference referencedGenericListMethod = module.Import(genericListDef);
 
             TypeReference int8TypeReference = module.Import(typeof (byte));
             TypeReference int16TypeReference = module.Import(typeof (short));
@@ -282,6 +284,41 @@ namespace CodeInstrumentationTest
 
                                     processor.InsertBefore(ins, unlockObjectLibraryCall);
                                     processor.InsertBefore(unlockObjectLibraryCall, dupInstruction);
+                                }
+                            }
+                            else if (ins.OpCode.Equals(OpCodes.Callvirt))
+                            {
+                                MethodReference methodReference = (MethodReference) ins.Operand;
+                                TypeReference typeReference = methodReference.DeclaringType;
+                                if (typeReference.FullName.Equals(
+                                        "System.Collections.Generic.List`1<System.Int32>") && methodReference.Name.Equals("get_Item"))
+                                {
+                                    TypeReference intReference = module.Import(typeof(int));
+
+                                    var genericCall = new GenericInstanceMethod(referencedGenericListMethod);
+                                    genericCall.GenericArguments.Add(intReference);
+
+                                    var processor = method.Body.GetILProcessor();
+                                    var dupInstruction = processor.Create(OpCodes.Dup);
+                                    var storeTempInstruction = processor.Create(OpCodes.Stloc,
+                                        firstInt32VariableDefinition);
+                                    var loadTempInstruction = processor.Create(OpCodes.Ldloc,
+                                        firstInt32VariableDefinition);
+                                    var loadTempInstruction2 = processor.Create(OpCodes.Ldloc,
+                                        firstInt32VariableDefinition);
+                                    var loadelema = processor.Create(OpCodes.Ldelema, intReference);
+                                    var readAccessLibraryCall = processor.Create(OpCodes.Call,
+                                        referencedReadAccessMethod);
+                                    var genericListLibraryCall = processor.Create(OpCodes.Call,
+                                        genericCall);
+
+                                    processor.InsertBefore(ins, loadTempInstruction2);
+                                    processor.InsertBefore(loadTempInstruction2, readAccessLibraryCall);
+                                    processor.InsertBefore(readAccessLibraryCall, loadelema);
+                                    processor.InsertBefore(loadelema, loadTempInstruction);
+                                    processor.InsertBefore(loadTempInstruction, genericListLibraryCall);
+                                    processor.InsertBefore(genericListLibraryCall, dupInstruction);
+                                    processor.InsertBefore(dupInstruction, storeTempInstruction);
                                 }
                             }
                         }

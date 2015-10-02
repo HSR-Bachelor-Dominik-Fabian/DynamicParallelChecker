@@ -82,8 +82,8 @@ namespace TestProgram
         public static void Test4()
         {
             Console.WriteLine("Test4()");
-            short[][] shortArray = new short[2][] { new short[]{1,3}, new short[]{1,3} };
-            int[][] intArray = new int[4][] {new []{2,123213}, new[] { 1232, 423 } , new[] { 421452, 1233 } , new[] { 2123, 3432 } };
+            short[][] shortArray = { new short[]{1,3}, new short[]{1,3} };
+            int[][] intArray = {new []{2,123213}, new[] { 1232, 423 } , new[] { 421452, 1233 } , new[] { 2123, 3432 } };
             var objectArray = new[] { new[] {new[]{new NewObject(122),new NewObject(3322) }, new[] { new NewObject(122), new NewObject(3322) } , new[] { new NewObject(122), new NewObject(3322) } }, new[] { new[] { new NewObject(122), new NewObject(3322) }, new[] { new NewObject(122), new NewObject(3322) }, new[] { new NewObject(122), new NewObject(3322) } } };
             short a = shortArray[0][1];
             a += 2;
@@ -101,6 +101,7 @@ namespace TestProgram
             Console.WriteLine("Test5()");
             List<int> listArray = new List<int> {1,23,54,1231,213};
             List<NewObject> objectArray = new List<NewObject> {new NewObject(332),new NewObject(13331), new NewObject(3323241)};
+            
             int a = listArray[3];
             NewObject obj = objectArray[2];
             a += 231;

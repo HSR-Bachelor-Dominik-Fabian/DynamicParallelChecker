@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 
 namespace DPCLibrary
@@ -31,6 +34,12 @@ namespace DPCLibrary
             int currentThreadId = Thread.CurrentThread.ManagedThreadId;
             Console.WriteLine("Thread: " + currentThreadId + ": Unlocking object " + obj);
             Console.ReadLine();
+        }
+
+        public static T[] GenericList<T>(List<T> genericList)
+        {
+            Console.WriteLine("GenericListCall");
+            return (T[])genericList.GetType().GetRuntimeFields().First(x => x.Name == "_items").GetValue(genericList);
         }
     }
 }
