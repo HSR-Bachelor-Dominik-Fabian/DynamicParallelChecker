@@ -5,6 +5,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System.Collections;
 using OpCodes = Mono.Cecil.Cil.OpCodes;
+using Mono.Cecil.Rocks;
 
 namespace CodeInstrumentationTest
 {
@@ -50,6 +51,7 @@ namespace CodeInstrumentationTest
                 {
                     foreach (MethodDefinition method in type.Methods)
                     {
+                        method.Body.SimplifyMacros();
                         VariableDefinition firstInt32VariableDefinition = new VariableDefinition(int32TypeReference);
                         VariableDefinition secondInt32VariableDefinition = new VariableDefinition(int32TypeReference);
                         VariableDefinition int8VariableDefinition = new VariableDefinition(int8TypeReference);
@@ -322,6 +324,7 @@ namespace CodeInstrumentationTest
                                 }
                             }
                         }
+                        method.Body.OptimizeMacros();
                     }
                 }
             }
