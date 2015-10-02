@@ -292,13 +292,14 @@ namespace CodeInstrumentationTest
                             {
                                 MethodReference methodReference = (MethodReference) ins.Operand;
                                 TypeReference typeReference = methodReference.DeclaringType;
-                                if (typeReference.FullName.Equals(
-                                        "System.Collections.Generic.List`1<System.Int32>") && methodReference.Name.Equals("get_Item"))
+                                TypeReference listTypeReference = module.Import(typeof(System.Collections.Generic.List<>));
+                                if (typeReference.GetElementType().FullName.Equals(listTypeReference.FullName) && methodReference.Name.Equals("get_Item"))
                                 {
-                                    TypeReference intReference = module.Import(typeof(int));
-
+                                    GenericInstanceType instanceType = (GenericInstanceType) methodReference.DeclaringType;
+                                    TypeReference listtTypeReference = instanceType.GenericArguments[0];
+                                    
                                     var genericCall = new GenericInstanceMethod(referencedGenericListMethod);
-                                    genericCall.GenericArguments.Add(intReference);
+                                    genericCall.GenericArguments.Add(listtTypeReference);
 
                                     var processor = method.Body.GetILProcessor();
                                     var dupInstruction = processor.Create(OpCodes.Dup);
@@ -308,7 +309,7 @@ namespace CodeInstrumentationTest
                                         firstInt32VariableDefinition);
                                     var loadTempInstruction2 = processor.Create(OpCodes.Ldloc,
                                         firstInt32VariableDefinition);
-                                    var loadelema = processor.Create(OpCodes.Ldelema, intReference);
+                                    var loadelema = processor.Create(OpCodes.Ldelema, listtTypeReference);
                                     var readAccessLibraryCall = processor.Create(OpCodes.Call,
                                         referencedReadAccessMethod);
                                     var genericListLibraryCall = processor.Create(OpCodes.Call,
@@ -321,6 +322,75 @@ namespace CodeInstrumentationTest
                                     processor.InsertBefore(loadTempInstruction, genericListLibraryCall);
                                     processor.InsertBefore(genericListLibraryCall, dupInstruction);
                                     processor.InsertBefore(dupInstruction, storeTempInstruction);
+                                }
+                                else if (typeReference.GetElementType().FullName.Equals(listTypeReference.FullName) && methodReference.Name.Equals("set_Item"))
+                                {
+                                    GenericInstanceType instanceType = (GenericInstanceType)methodReference.DeclaringType;
+                                    TypeReference listtTypeReference = instanceType.GenericArguments[0];
+                                    VariableDefinition varDefinition;
+
+                                    if (listtTypeReference.Equals(int8TypeReference))
+                                    {
+                                        varDefinition = int8VariableDefinition;
+                                    }
+                                    else if (listtTypeReference.Equals(int16TypeReference))
+                                    {
+                                        varDefinition = int16VariableDefinition;
+                                    }
+                                    else if (listtTypeReference.Equals(int32TypeReference))
+                                    {
+                                        varDefinition = firstInt32VariableDefinition;
+                                    }
+                                    else if (listtTypeReference.Equals(int64TypeReference))
+                                    {
+                                        varDefinition = int64VariableDefinition;
+                                    }
+                                    else if (listtTypeReference.Equals(float32TypeReference))
+                                    {
+                                        varDefinition = float32VariableDefinition;
+                                    }
+                                    else if (listtTypeReference.Equals(float64TypeReference))
+                                    {
+                                        varDefinition = float64VariableDefinition;
+                                    }
+                                    else
+                                    {
+                                        varDefinition = new VariableDefinition(listtTypeReference);
+                                        method.Body.Variables.Add(varDefinition);
+                                    }
+
+                                    //TODO:Dominik: Equals funktioniert nicht
+
+                                    var genericCall = new GenericInstanceMethod(referencedGenericListMethod);
+                                    genericCall.GenericArguments.Add(listtTypeReference);
+
+                                    var processor = method.Body.GetILProcessor();
+                                    var dupInstruction = processor.Create(OpCodes.Dup);
+                                    var storeTempInstruction = processor.Create(OpCodes.Stloc,
+                                        firstInt32VariableDefinition);
+                                    var storeValueInstruction = processor.Create(OpCodes.Stloc, 
+                                        varDefinition);
+                                    var loadValueInstruction = processor.Create(OpCodes.Ldloc,
+                                        varDefinition);
+                                    var loadTempInstruction = processor.Create(OpCodes.Ldloc,
+                                        firstInt32VariableDefinition);
+                                    var loadTempInstruction2 = processor.Create(OpCodes.Ldloc,
+                                        firstInt32VariableDefinition);
+                                    var loadelema = processor.Create(OpCodes.Ldelema, listtTypeReference);
+                                    var writeAccessLibraryCall = processor.Create(OpCodes.Call,
+                                        referencedWriteAccessMethod);
+                                    var genericListLibraryCall = processor.Create(OpCodes.Call,
+                                        genericCall);
+
+                                    processor.InsertBefore(ins, loadValueInstruction);
+                                    processor.InsertBefore(loadValueInstruction, loadTempInstruction2);
+                                    processor.InsertBefore(loadTempInstruction2, writeAccessLibraryCall);
+                                    processor.InsertBefore(writeAccessLibraryCall, loadelema);
+                                    processor.InsertBefore(loadelema, loadTempInstruction);
+                                    processor.InsertBefore(loadTempInstruction, genericListLibraryCall);
+                                    processor.InsertBefore(genericListLibraryCall, dupInstruction);
+                                    processor.InsertBefore(dupInstruction, storeTempInstruction);
+                                    processor.InsertBefore(storeTempInstruction, storeValueInstruction);
                                 }
                             }
                         }
