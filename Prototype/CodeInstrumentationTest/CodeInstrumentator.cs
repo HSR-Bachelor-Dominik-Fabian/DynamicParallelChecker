@@ -49,7 +49,7 @@ namespace CodeInstrumentationTest
                 {
                     foreach (MethodDefinition method in type.Methods)
                     {
-                        method.Body.SimplifyMacros();
+                        method.Body.SimplifyMacros(); // convert every br.s (short branch) to a normal branch
                         VariableDefinition firstInt32VariableDefinition = new VariableDefinition(int32TypeReference);
                         VariableDefinition secondInt32VariableDefinition = new VariableDefinition(int32TypeReference);
                         VariableDefinition int8VariableDefinition = new VariableDefinition(int8TypeReference);
@@ -267,13 +267,15 @@ namespace CodeInstrumentationTest
                                         firstInt32VariableDefinition);
                                     var loadTempInstruction = processor.Create(OpCodes.Ldloc,
                                         firstInt32VariableDefinition);
+                                    var loadAddressObjectInstruction = processor.Create(OpCodes.Ldloca,
+                                        firstInt32VariableDefinition);
                                     var lockObjectLibraryCall = processor.Create(OpCodes.Call,
                                         referencedLockObjectMethod);
 
                                     processor.InsertBefore(ins, loadTempInstruction);
                                     processor.InsertBefore(loadTempInstruction, lockObjectLibraryCall);
-                                    processor.InsertBefore(lockObjectLibraryCall, dupInstruction);
-                                    processor.InsertBefore(dupInstruction, storeTempInstruction);
+                                    processor.InsertBefore(lockObjectLibraryCall, loadAddressObjectInstruction);
+                                    processor.InsertBefore(loadAddressObjectInstruction, storeTempInstruction);
                                 }
                                 else if (monitorExitFullName.Equals(methodReference.FullName))
                                 {
@@ -287,7 +289,7 @@ namespace CodeInstrumentationTest
                                 }
                             }
                         }
-                        method.Body.OptimizeMacros();
+                        method.Body.OptimizeMacros(); // Convert the normal branches back to short branches if possible
                     }
                 }
             }
