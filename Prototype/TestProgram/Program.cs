@@ -107,9 +107,9 @@ namespace TestProgram
         public static void Test5()
         {
             Console.WriteLine("Test5()");
-            List<int> listArray = new List<int> {1,23,54,1231,213};
-            List<NewObject> objectArray = new List<NewObject> {new NewObject(332),new NewObject(13331), new NewObject(3323241)};
-            
+            List<int> listArray = new List<int> { 1, 23, 54, 1231, 213 };
+            List<NewObject> objectArray = new List<NewObject> { new NewObject(332), new NewObject(13331), new NewObject(3323241) };
+
             int a = listArray[3];
             NewObject obj = objectArray[2];
             a += 231;
@@ -124,8 +124,8 @@ namespace TestProgram
             TestStruct[] testStructArray = new TestStruct[2];
             TestStruct testStruct = new TestStruct();
             testStructArray[0] = testStruct;
-            int a = testStructArray[0].GetA();
-            int b = testStructArray[0].GetB();
+            //int a = testStructArray[0].GetA();
+            //int b = testStructArray[0].GetB();
 
         }
 
@@ -134,6 +134,8 @@ namespace TestProgram
             for (int i = 0; i < 2000; i++)
             {
                 Console.WriteLine("Before lock() :" + _c);
+                TestStruct test = new TestStruct(new object(), new object());
+                Console.WriteLine("Test: " + test.GetA());
                 lock (_c)
                 {
                     Console.WriteLine("in lock() :" + _c);
@@ -145,15 +147,21 @@ namespace TestProgram
 
     struct TestStruct
     {
-        private static int a = 3;
-        private static int b = 4;
+        private object a;
+        private object b;
 
-        public int GetA()
+        public TestStruct(object a, object b)
+        {
+            this.a = a;
+            this.b = b;
+        }
+
+        public object GetA()
         {
             return a;
         }
 
-        public int GetB()
+        public object GetB()
         {
             return b;
         }

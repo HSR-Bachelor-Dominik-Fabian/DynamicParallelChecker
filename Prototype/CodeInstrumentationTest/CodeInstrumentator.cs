@@ -74,11 +74,27 @@ namespace CodeInstrumentationTest
                             if (ins.OpCode.Equals(OpCodes.Ldsfld))
                             {
                                 FieldDefinition fieldDefinition = (FieldDefinition) ins.Operand;
+                                TypeReference fieldType = (TypeReference) fieldDefinition.FieldType;
+                                string typeFullname = fieldType.GetElementType().FullName;
                                 var processor = method.Body.GetILProcessor();
-                                var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
-                                var readAccessLibraryCall = processor.Create(OpCodes.Call, referencedReadAccessMethod);
-                                processor.InsertAfter(ins, loadAddressInstruction);
-                                processor.InsertAfter(loadAddressInstruction, readAccessLibraryCall);
+                                if (!typeFullname.Equals("System.Int32") && !typeFullname.Equals("System.Int64")
+                                    && !typeFullname.Equals("System.Int16") && !typeFullname.Equals("System.Double")
+                                    && !typeFullname.Equals("System.Boolean") && !typeFullname.Equals("System.Char")
+                                    && !typeFullname.Equals("System.Byte") && !typeFullname.Equals("System.SByte")
+                                    && !typeFullname.Equals("System.Single"))
+                                {
+                                    var dupInstruction = processor.Create(OpCodes.Dup);
+                                    var readAccessLibraryCall = processor.Create(OpCodes.Call, referencedReadAccessMethod);
+                                    processor.InsertAfter(ins, dupInstruction);
+                                    processor.InsertAfter(dupInstruction, readAccessLibraryCall);
+                                }
+                                else
+                                {
+                                    var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
+                                    var readAccessLibraryCall = processor.Create(OpCodes.Call, referencedReadAccessMethod);
+                                    processor.InsertAfter(ins, loadAddressInstruction);
+                                    processor.InsertAfter(loadAddressInstruction, readAccessLibraryCall);
+                                }
                             }
                             else if (ins.OpCode.Equals(OpCodes.Ldsflda) || ins.OpCode.Equals(OpCodes.Ldflda) ||
                                      ins.OpCode.Equals(OpCodes.Ldelema))
@@ -103,14 +119,32 @@ namespace CodeInstrumentationTest
                             else if (ins.OpCode.Equals(OpCodes.Ldfld))
                             {
                                 FieldDefinition fieldDefinition = (FieldDefinition) ins.Operand;
+                                TypeReference fieldType = (TypeReference)fieldDefinition.FieldType;
+                                string typeFullname = fieldType.GetElementType().FullName;
                                 var processor = method.Body.GetILProcessor();
-                                var dupInstruction = processor.Create(OpCodes.Dup);
-                                var loadAddressInstruction = processor.Create(OpCodes.Ldflda, fieldDefinition);
-                                var readAccessLibraryCall = processor.Create(OpCodes.Call,
-                                    referencedReadAccessMethod);
-                                processor.InsertBefore(ins, readAccessLibraryCall);
-                                processor.InsertBefore(readAccessLibraryCall, loadAddressInstruction);
-                                processor.InsertBefore(loadAddressInstruction, dupInstruction);
+                                if (!typeFullname.Equals("System.Int32") && !typeFullname.Equals("System.Int64")
+                                    && !typeFullname.Equals("System.Int16") && !typeFullname.Equals("System.Double")
+                                    && !typeFullname.Equals("System.Boolean") && !typeFullname.Equals("System.Char")
+                                    && !typeFullname.Equals("System.Byte") && !typeFullname.Equals("System.SByte")
+                                    && !typeFullname.Equals("System.Single"))
+                                {
+                                    // TODO:Fabian Logic
+                                    var dupInstruction = processor.Create(OpCodes.Dup);
+                                    var readAccessLibraryCall = processor.Create(OpCodes.Call,
+                                        referencedReadAccessMethod);
+                                    processor.InsertBefore(ins, readAccessLibraryCall);
+                                    processor.InsertBefore(readAccessLibraryCall, dupInstruction);
+                                }
+                                else
+                                {
+                                    var dupInstruction = processor.Create(OpCodes.Dup);
+                                    var loadAddressInstruction = processor.Create(OpCodes.Ldflda, fieldDefinition);
+                                    var readAccessLibraryCall = processor.Create(OpCodes.Call,
+                                        referencedReadAccessMethod);
+                                    processor.InsertBefore(ins, readAccessLibraryCall);
+                                    processor.InsertBefore(readAccessLibraryCall, loadAddressInstruction);
+                                    processor.InsertBefore(loadAddressInstruction, dupInstruction);
+                                }
                             }
                             else if (ins.OpCode.Equals(OpCodes.Stfld))
                             {
@@ -269,15 +303,13 @@ namespace CodeInstrumentationTest
                                         firstInt32VariableDefinition);
                                     var loadTempInstruction = processor.Create(OpCodes.Ldloc,
                                         firstInt32VariableDefinition);
-                                    var loadAddressObjectInstruction = processor.Create(OpCodes.Ldloca,
-                                        firstInt32VariableDefinition);
                                     var lockObjectLibraryCall = processor.Create(OpCodes.Call,
                                         referencedLockObjectMethod);
 
                                     processor.InsertBefore(ins, loadTempInstruction);
                                     processor.InsertBefore(loadTempInstruction, lockObjectLibraryCall);
-                                    processor.InsertBefore(lockObjectLibraryCall, loadAddressObjectInstruction);
-                                    processor.InsertBefore(loadAddressObjectInstruction, storeTempInstruction);
+                                    processor.InsertBefore(lockObjectLibraryCall, dupInstruction);
+                                    processor.InsertBefore(dupInstruction, storeTempInstruction);
                                 }
                                 else if (monitorExitFullName.Equals(methodReference.FullName))
                                 {
