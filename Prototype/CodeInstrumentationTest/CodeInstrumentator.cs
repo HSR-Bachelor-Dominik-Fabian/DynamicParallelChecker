@@ -75,36 +75,38 @@ namespace CodeInstrumentationTest
                             {
                                 FieldDefinition fieldDefinition = (FieldDefinition) ins.Operand;
                                 TypeReference fieldType = (TypeReference) fieldDefinition.FieldType;
-                                string typeFullname = fieldType.GetElementType().FullName;
                                 var processor = method.Body.GetILProcessor();
-                                if (!typeFullname.Equals("System.Int32") && !typeFullname.Equals("System.Int64")
-                                    && !typeFullname.Equals("System.Int16") && !typeFullname.Equals("System.Double")
-                                    && !typeFullname.Equals("System.Boolean") && !typeFullname.Equals("System.Char")
-                                    && !typeFullname.Equals("System.Byte") && !typeFullname.Equals("System.SByte")
-                                    && !typeFullname.Equals("System.Single"))
-                                {
-                                    var dupInstruction = processor.Create(OpCodes.Dup);
-                                    var readAccessLibraryCall = processor.Create(OpCodes.Call, referencedReadAccessMethod);
-                                    processor.InsertAfter(ins, dupInstruction);
-                                    processor.InsertAfter(dupInstruction, readAccessLibraryCall);
-                                }
-                                else
+                                if (fieldType.IsPrimitive || (fieldType.IsDefinition && ((TypeDefinition)fieldType).IsValueType))
                                 {
                                     var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
                                     var readAccessLibraryCall = processor.Create(OpCodes.Call, referencedReadAccessMethod);
                                     processor.InsertAfter(ins, loadAddressInstruction);
                                     processor.InsertAfter(loadAddressInstruction, readAccessLibraryCall);
                                 }
+                                else if (!fieldType.IsPrimitive && !fieldType.IsValueType)
+                                {
+                                    var dupInstruction = processor.Create(OpCodes.Dup);
+                                    var readAccessLibraryCall = processor.Create(OpCodes.Call, referencedReadAccessMethod);
+                                    var readAccessLibraryCall2 = processor.Create(OpCodes.Call, referencedReadAccessMethod);
+                                    var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
+                                    processor.InsertAfter(ins, dupInstruction);
+                                    processor.InsertAfter(dupInstruction, readAccessLibraryCall);
+                                    processor.InsertAfter(readAccessLibraryCall, loadAddressInstruction);
+                                    processor.InsertAfter(loadAddressInstruction, readAccessLibraryCall2);
+                                }
                             }
-                            else if (ins.OpCode.Equals(OpCodes.Ldsflda) || ins.OpCode.Equals(OpCodes.Ldflda) ||
-                                     ins.OpCode.Equals(OpCodes.Ldelema))
+                            else if (ins.OpCode.Equals(OpCodes.Initobj))
                             {
-                                var processor = method.Body.GetILProcessor();
-                                var dupInstruction = processor.Create(OpCodes.Dup);
-                                var readAccessLibraryCall = processor.Create(OpCodes.Call,
-                                    referencedReadAccessMethod);
-                                processor.InsertAfter(ins, dupInstruction);
-                                processor.InsertAfter(dupInstruction, readAccessLibraryCall);
+                                TypeReference fieldType = (TypeReference) ins.Operand;
+                                if (fieldType.IsDefinition && ((TypeDefinition) fieldType).IsValueType)
+                                {
+                                    // TODO: Mehr Fälle bei denen initobj beachtet werden muss?
+                                    var processor = method.Body.GetILProcessor();
+                                    var dupInstruction = processor.Create(OpCodes.Dup);
+                                    var writeAccessLibraryCall = processor.Create(OpCodes.Call, referencedWriteAccessMethod);
+                                    processor.InsertBefore(ins, writeAccessLibraryCall);
+                                    processor.InsertBefore(writeAccessLibraryCall, dupInstruction);
+                                }
                             }
                             else if (ins.OpCode.Equals(OpCodes.Stsfld))
                             {
@@ -120,22 +122,8 @@ namespace CodeInstrumentationTest
                             {
                                 FieldDefinition fieldDefinition = (FieldDefinition) ins.Operand;
                                 TypeReference fieldType = (TypeReference)fieldDefinition.FieldType;
-                                string typeFullname = fieldType.GetElementType().FullName;
                                 var processor = method.Body.GetILProcessor();
-                                if (!typeFullname.Equals("System.Int32") && !typeFullname.Equals("System.Int64")
-                                    && !typeFullname.Equals("System.Int16") && !typeFullname.Equals("System.Double")
-                                    && !typeFullname.Equals("System.Boolean") && !typeFullname.Equals("System.Char")
-                                    && !typeFullname.Equals("System.Byte") && !typeFullname.Equals("System.SByte")
-                                    && !typeFullname.Equals("System.Single"))
-                                {
-                                    // TODO:Fabian Logic
-                                    var dupInstruction = processor.Create(OpCodes.Dup);
-                                    var readAccessLibraryCall = processor.Create(OpCodes.Call,
-                                        referencedReadAccessMethod);
-                                    processor.InsertBefore(ins, readAccessLibraryCall);
-                                    processor.InsertBefore(readAccessLibraryCall, dupInstruction);
-                                }
-                                else
+                                if (fieldType.IsPrimitive || (fieldType.IsDefinition && ((TypeDefinition)fieldType).IsValueType))
                                 {
                                     var dupInstruction = processor.Create(OpCodes.Dup);
                                     var loadAddressInstruction = processor.Create(OpCodes.Ldflda, fieldDefinition);
@@ -144,6 +132,14 @@ namespace CodeInstrumentationTest
                                     processor.InsertBefore(ins, readAccessLibraryCall);
                                     processor.InsertBefore(readAccessLibraryCall, loadAddressInstruction);
                                     processor.InsertBefore(loadAddressInstruction, dupInstruction);
+                                }
+                                else if (!fieldType.IsPrimitive && !fieldType.IsValueType)
+                                {
+                                    var dupInstruction = processor.Create(OpCodes.Dup);
+                                    var readAccessLibraryCall = processor.Create(OpCodes.Call,
+                                        referencedReadAccessMethod);
+                                    processor.InsertBefore(ins, readAccessLibraryCall);
+                                    processor.InsertBefore(readAccessLibraryCall, dupInstruction);
                                 }
                             }
                             else if (ins.OpCode.Equals(OpCodes.Stfld))
