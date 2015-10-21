@@ -5,22 +5,22 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("DPCLibrary")]
+[assembly: AssemblyTitle("DPCLibrary.Tests")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("DPCLibrary")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
+[assembly: AssemblyCompany("HP Inc.")]
+[assembly: AssemblyProduct("DPCLibrary.Tests")]
+[assembly: AssemblyCopyright("Copyright © HP Inc. 2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: InternalsVisibleTo("DPCLibrary.Tests")]
+
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 
 // COM, set the ComVisible attribute to true on that type.
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("bcffb2ef-58c1-40d3-9344-46e5b95e70f2")]
+[assembly: Guid("b279dfef-6ca1-4daf-87ae-49693ff7ddb8")]
 
 // Version information for an assembly consists of the following four values:
 //

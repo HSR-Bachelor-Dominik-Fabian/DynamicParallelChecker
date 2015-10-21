@@ -48,7 +48,7 @@ namespace DPCLibrary.Algorithm
             if (clock != null)
             {
                 ThreadVectorClock dict2 = clock;
-                equals = Keys.Count == dict2.Keys.Count && Keys.All(k => dict2.ContainsKey(k) && Equals(dict2[k], this[k]));
+                equals = OwnThreadId == clock.OwnThreadId && Keys.Count == dict2.Keys.Count && Keys.All(k => dict2.ContainsKey(k) && Equals(dict2[k], this[k]));
             }
             return equals;
         }
