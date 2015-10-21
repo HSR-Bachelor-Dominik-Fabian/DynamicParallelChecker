@@ -11,13 +11,13 @@ namespace DPCLibrary.Algorithm
 
         public ThreadVectorClock VectorClock { get; }
 
-        private List<VectorEvent> _threadVectorHistory; 
+        private ThreadVectorHistory _threadVectorHistory; 
 
         public ThreadVectorInstance(int threadId)
         {
             ThreadId = threadId;
             VectorClock = new ThreadVectorClock(threadId);
-            _threadVectorHistory = new List<VectorEvent>();
+            _threadVectorHistory = new ThreadVectorHistory();
             LockRessource = 0L;
         }
 
@@ -31,14 +31,14 @@ namespace DPCLibrary.Algorithm
             }
         }
 
-        public List<VectorEvent> GetHistoryOlderThan(ThreadVectorClock vectorClock)
+        public ThreadVectorHistory GetConcurrentHistory(ThreadVectorClock vectorClock)
         {
-            return (List<VectorEvent>) _threadVectorHistory.Where(vectorEvent => (vectorEvent.VectorClock.CompareTo(vectorClock) == 0));
+            return (ThreadVectorHistory) _threadVectorHistory.Where(vectorEvent => (vectorEvent.VectorClock.CompareTo(vectorClock) == 0));
         }
 
         public void WriteHistory(ThreadEvent threadEvent)
         {
-            
+            //_threadVectorHistory.Add(VectorClock, threadEvent);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DPCLibrary.Algorithm.Manager
 {
@@ -15,6 +17,7 @@ namespace DPCLibrary.Algorithm.Manager
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(threadId);
             ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, ressource, threadVectorInstance.LockRessource);
             threadVectorInstance.WriteHistory(threadEvent);
+            CheckForRaceCondition(threadEvent, threadVectorInstance);
         }
 
         public static void HandleWriteAccess(int threadId, long ressource)
@@ -22,6 +25,7 @@ namespace DPCLibrary.Algorithm.Manager
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(threadId);
             ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Write, ressource, threadVectorInstance.LockRessource);
             threadVectorInstance.WriteHistory(threadEvent);
+            CheckForRaceCondition(threadEvent, threadVectorInstance);
         }
 
         public static void HandleLock(int threadId, long lockRessource)
@@ -66,6 +70,19 @@ namespace DPCLibrary.Algorithm.Manager
             // TODO:Fabian sync
 
             _threadVectorPool.Add(ownThreadId, threadVectorInstance);
+        }
+
+        private static void CheckForRaceCondition(ThreadEvent threadEvent, ThreadVectorInstance threadVectorInstance)
+        {
+            Parallel.ForEach(_threadVectorPool.Values, instance =>
+            {
+                foreach (
+                    VectorEvent concurrentEvent in
+                        instance.GetConcurrentHistory(threadVectorInstance.VectorClock))
+                {
+
+                }
+            });
         }
     }
 }
