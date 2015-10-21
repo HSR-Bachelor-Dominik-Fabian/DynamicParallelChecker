@@ -1,28 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DPCLibrary.Algorithm
 {
-    class VectorEvent : IComparable<ThreadEvent>
+    class VectorEvent
     {
-        public ThreadVectorClock VectorClock { get; set; }
+        public ThreadVectorClock VectorClock { get;  }
 
         private List<ThreadEvent> _events; 
 
-        public VectorEvent()
+        public VectorEvent(ThreadVectorClock clock)
         {
-            VectorClock = new ThreadVectorClock();
+            VectorClock = clock;
             _events = new List<ThreadEvent>();
         }
 
         public void AddEvent(ThreadEvent threadEvent)
         {
             _events.Add(threadEvent); 
-        }
-
-        public int CompareTo(ThreadEvent other)
-        {
-            throw new NotImplementedException();
         }
     }
 }

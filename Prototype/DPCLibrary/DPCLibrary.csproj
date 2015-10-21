@@ -48,6 +48,7 @@
     <Compile Include="Algorithm\VectorEvent.cs" />
     <Compile Include="DPCLibrary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Algorithm\ThreadVectorHistory.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

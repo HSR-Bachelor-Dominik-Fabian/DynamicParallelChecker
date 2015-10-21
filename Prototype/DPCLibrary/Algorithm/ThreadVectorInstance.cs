@@ -16,7 +16,7 @@ namespace DPCLibrary.Algorithm
         public ThreadVectorInstance(int threadId)
         {
             ThreadId = threadId;
-            VectorClock = new ThreadVectorClock();
+            VectorClock = new ThreadVectorClock(threadId);
             _threadVectorHistory = new List<VectorEvent>();
             LockRessource = 0L;
         }
@@ -33,8 +33,7 @@ namespace DPCLibrary.Algorithm
 
         public List<VectorEvent> GetHistoryOlderThan(ThreadVectorClock vectorClock)
         {
-            //return _threadVectorHistory.Where(vectorEvent => (vectorEvent.VectorClock.CompareTo(vectorClock) == 0));
-            return null;
+            return (List<VectorEvent>) _threadVectorHistory.Where(vectorEvent => (vectorEvent.VectorClock.CompareTo(vectorClock) == 0));
         }
 
         public void WriteHistory(ThreadEvent threadEvent)
