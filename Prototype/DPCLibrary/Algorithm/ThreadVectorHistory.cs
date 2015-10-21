@@ -1,20 +1,34 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace DPCLibrary.Algorithm
 {
-    class ThreadVectorHistory : List<VectorEvent>
+    class ThreadVectorHistory : Dictionary<ThreadVectorClock,List<ThreadEvent>>
     {
         /// <summary>
-        /// Overriden from List. Adds new VectorEvent to History. If an Event is in the History with the same Clock it's merged
+        /// Adds new VectorEvent to History. If an Event is in the History with the same Clock it's merged
         /// </summary>
-        /// <param name="item"></param>
-        public new void Add(VectorEvent item)
+        /// <param name="clock">Clock of the Event</param>
+        /// <param name="threadEvent">Event that has to be saved</param>
+        public void AddEvent(ThreadVectorClock clock, ThreadEvent threadEvent )
         {
-            
-            base.Add(item);
+            List<ThreadEvent> events;
+            if (!TryGetValue(clock, out events))
+            {
+                Add(clock, new List<ThreadEvent> {threadEvent});
+            }
+            else
+            {
+                ThreadEvent foundEvent = events.Single(x => x.CompareRessourceAndLock(threadEvent));
+                if (foundEvent != null && foundEvent.ThreadEventType < threadEvent.ThreadEventType)
+                {
+                    foundEvent.ThreadEventType = threadEvent.ThreadEventType;
+                }
+                else if (foundEvent == null)
+                {
+                    events.Add(threadEvent);
+                }
+            }
         }
-
-        
     }
 }
