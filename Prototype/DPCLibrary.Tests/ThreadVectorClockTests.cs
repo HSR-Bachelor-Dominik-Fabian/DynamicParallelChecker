@@ -1,0 +1,59 @@
+﻿using DPCLibrary.Algorithm;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace DPCLibrary.Tests
+{
+    [TestClass]
+    public class ThreadVectorClockTests
+    {
+        [TestMethod]
+        public void TestConstructor()
+        {
+            int threadId = 1;
+            ThreadVectorClock clock = new ThreadVectorClock(threadId);
+            Assert.AreEqual(threadId, clock.OwnThreadId);
+            int value;
+            Assert.IsTrue(clock.TryGetValue(threadId,out value));
+            Assert.AreEqual(1,value);
+        }
+
+        [TestMethod]
+        public void TestPositivEquals()
+        {
+            int threadId = 1;
+            ThreadVectorClock clock1 = new ThreadVectorClock(threadId);
+            ThreadVectorClock clock2 = new ThreadVectorClock(threadId);
+            Assert.AreEqual(clock1,clock2);
+        }
+        [TestMethod]
+        public void TestNegativEquals()
+        {
+            int threadId = 1;
+            int threadId2 = 2;
+            ThreadVectorClock clock1 = new ThreadVectorClock(threadId);
+            ThreadVectorClock clock2 = new ThreadVectorClock(threadId2);
+            Assert.AreNotEqual(clock1, clock2);
+        }
+
+        [TestMethod]
+        public void TestNegativChangedEquals()
+        {
+            int threadId = 1;
+            ThreadVectorClock clock1 = new ThreadVectorClock(threadId);
+            ThreadVectorClock clock2 = new ThreadVectorClock(threadId);
+            clock2[threadId] = 2;
+            Assert.AreNotEqual(clock1, clock2);
+        }
+        [TestMethod]
+        public void TestNegativEqualsWithEqualVectors()
+        {
+            int threadId = 1;
+            int threadId2 = 2;
+            ThreadVectorClock clock1 = new ThreadVectorClock(threadId) {{threadId2, 1}};
+            ThreadVectorClock clock2 = new ThreadVectorClock(threadId2) {{threadId, 1}};
+            Assert.AreNotEqual(clock1, clock2);
+        }
+
+
+    }
+}
