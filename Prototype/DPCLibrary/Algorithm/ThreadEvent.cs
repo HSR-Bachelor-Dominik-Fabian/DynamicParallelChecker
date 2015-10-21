@@ -5,10 +5,10 @@
 
         public enum EventType
         {
-            Read, Write, Lock, Unlock
+            Read = 1, Write = 2
         }
 
-        public EventType ThreadEventType { get; }
+        public EventType ThreadEventType { get; set; }
 
         public long Ressource { get; }
 
@@ -19,6 +19,11 @@
             ThreadEventType = type;
             Ressource = ressource;
             LockRessource = lockRessource;
+        }
+
+        public bool CompareRessourceAndLock(ThreadEvent other)
+        {
+            return other.LockRessource.Equals(LockRessource) && other.Ressource.Equals(Ressource);
         }
     }
 }
