@@ -1,9 +1,14 @@
-# PrototypeCecilPipeCommunication
-Small Prototype where the main tool adds PipeCommLib Library to other tool via Cecil, enabling Interprocess Communication over a Pipe.
+# Cecil Prototype
+Prototype where a given assembly is instrumentated with the mono.cecil framework.
 
-V1:
-To Start Prototype, Build the Project and Copy PipeCommLibrary.dll to bin Directory of PipeTestServer
-And Copy PipeTestClient.exe to the same directory
+Following IL-OpCodes are instrumentated:
 
-Now the PipeTestServer will add the PipeCommLibrary via Cecil to the PipeTestClient and also will add some code to every Method in the Client.
-The Client will then start to send messages over the NamedPipe to the Server
+-	ldsfld		(load static field)
+-	initobj		(write of a value type)
+-	stsfld		(store static field)
+-	ldfld		(load field)
+-	stfld 		(store field)
+-	ldelem		(load element of array)
+-	stelem		(store element of array)
+-	call		(call a method, for Monitor.Enter() and Monitor.Exit())
+-	callvirt 	(load element of a arraylist)
