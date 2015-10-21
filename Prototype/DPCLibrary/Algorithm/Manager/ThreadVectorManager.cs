@@ -68,10 +68,25 @@ namespace DPCLibrary.Algorithm.Manager
         private static void SynchronizeVectorClock(int ownThreadId, KeyValuePair<int, ThreadVectorClock> lockThreadIdClockPair)
         {
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(ownThreadId);
+            ThreadVectorClock vectorClock = threadVectorInstance.VectorClock;
+            foreach (int threadId in vectorClock.Keys)
+            {
+                if (threadId == ownThreadId)
+                {
+                    vectorClock[threadId] += 1;
+                }
+                else if (threadId == lockThreadIdClockPair.Key)
+                {
+                    vectorClock[threadId] = lockThreadIdClockPair.Value[threadId];
+                }
+                else
+                {
+                    vectorClock[threadId] = Math.Max(vectorClock[threadId], lockThreadIdClockPair.Value[threadId]);
+                }
+            }
+            lockThreadIdClockPair.Value.ToList().ForEach(x => { if(!vectorClock.ContainsKey(x.Key)) vectorClock.Add(x.Key, x.Value);});
 
-            // TODO:Fabian sync
-
-            _threadVectorPool.Add(ownThreadId, threadVectorInstance);
+            _threadVectorPool[ownThreadId] = threadVectorInstance;
         }
 
         private static void CheckForRaceCondition(ThreadEvent ownThreadEvent, ThreadVectorInstance threadVectorInstance)
