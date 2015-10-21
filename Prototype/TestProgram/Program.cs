@@ -146,17 +146,17 @@ namespace TestProgram
 
         //}
 
-        //public static void Test7()
-        //{
-        //    Console.WriteLine("Before lock() :" + _c);
-        //    TestStruct test = new TestStruct(new object(), new object());
-        //    Console.WriteLine("Test: " + test.GetA());
-        //    lock (_c)
-        //    {
-        //        Console.WriteLine("in lock() :" + _c);
-        //    }
-        //    Console.WriteLine("after lock() :" + _c);
-        //}
+        public static void Test7()
+        {
+            Console.WriteLine("Before lock() :" + _c);
+            //TestStruct test = new TestStruct(new object(), new object());
+            //Console.WriteLine("Test: " + test.GetA());
+            lock (_c)
+            {
+                Console.WriteLine("in lock() :" + _c);
+            }
+            Console.WriteLine("after lock() :" + _c);
+        }
 
         //public static void Test8()
         //{

@@ -1,20 +1,45 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace DPCLibrary.Algorithm
 {
     class ThreadVectorInstance
     {
-        private readonly int _threadId;
+        public int ThreadId { get; }
 
-        private ThreadVectorClock _vectorClock;
+        public long LockRessource { get; set; }
+
+        public ThreadVectorClock VectorClock { get; }
 
         private List<VectorEvent> _threadVectorHistory; 
 
         public ThreadVectorInstance(int threadId)
         {
-            _threadId = threadId;
-            _vectorClock = new ThreadVectorClock();
+            ThreadId = threadId;
+            VectorClock = new ThreadVectorClock();
             _threadVectorHistory = new List<VectorEvent>();
+            LockRessource = 0L;
+        }
+
+        public void IncrementClock()
+        {
+            int ownClock;
+            if (VectorClock.TryGetValue(ThreadId, out ownClock))
+            {
+                ownClock += 1;
+                VectorClock.Add(ThreadId, ownClock);
+            }
+        }
+
+        public List<VectorEvent> GetHistoryOlderThan(ThreadVectorClock vectorClock)
+        {
+            //return _threadVectorHistory.Where(vectorEvent => (vectorEvent.VectorClock.CompareTo(vectorClock) == 0));
+            return null;
+        }
+
+        public void WriteHistory(ThreadEvent threadEvent)
+        {
+            
         }
     }
 }
