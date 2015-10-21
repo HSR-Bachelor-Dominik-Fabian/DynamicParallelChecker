@@ -8,13 +8,14 @@ namespace DPCLibrary.Algorithm
 
         private ThreadVectorClock _vectorClock;
 
-        private List<VectorEvent> _threadVectorHistory; 
+        private ThreadVectorHistory _threadVectorHistory; 
 
         public ThreadVectorInstance(int threadId)
         {
             _threadId = threadId;
-            _vectorClock = new ThreadVectorClock();
-            _threadVectorHistory = new List<VectorEvent>();
+            _vectorClock = new ThreadVectorClock(threadId);
+            _threadVectorHistory = new ThreadVectorHistory();
+            
         }
     }
 }
