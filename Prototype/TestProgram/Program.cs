@@ -197,6 +197,15 @@ namespace TestProgram
             //object a = temp16.GetA();
             //object b = temp16.GetB();
         }
+
+        public static void Test10()
+        {
+            int[] temp = new[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
+            Parallel.ForEach(temp, i =>
+            {
+                i += 2;
+            });
+        }
     }
 
     struct TestStruct
