@@ -11,7 +11,7 @@ namespace DPCLibrary.Algorithm
 
         public ThreadVectorClock VectorClock { get; }
 
-        private ThreadVectorHistory _threadVectorHistory; 
+        private readonly ThreadVectorHistory _threadVectorHistory; 
 
         public ThreadVectorInstance(int threadId)
         {
@@ -23,22 +23,17 @@ namespace DPCLibrary.Algorithm
 
         public void IncrementClock()
         {
-            int ownClock;
-            if (VectorClock.TryGetValue(ThreadId, out ownClock))
-            {
-                ownClock += 1;
-                VectorClock.Add(ThreadId, ownClock);
-            }
+            VectorClock[ThreadId] += 1;
         }
 
         public ThreadVectorHistory GetConcurrentHistory(ThreadVectorClock vectorClock)
         {
-            return (ThreadVectorHistory) _threadVectorHistory.Where(vectorEvent => (vectorEvent.VectorClock.CompareTo(vectorClock) == 0));
+            return (ThreadVectorHistory) _threadVectorHistory.Where(historyEntry => (historyEntry.Key.CompareTo(vectorClock) == 0));
         }
 
         public void WriteHistory(ThreadEvent threadEvent)
         {
-            //_threadVectorHistory.Add(VectorClock, threadEvent);
+            _threadVectorHistory.AddEvent(VectorClock, threadEvent);
         }
     }
 }
