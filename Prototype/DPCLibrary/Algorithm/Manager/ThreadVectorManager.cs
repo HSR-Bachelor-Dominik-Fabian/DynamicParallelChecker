@@ -9,10 +9,10 @@ namespace DPCLibrary.Algorithm.Manager
     class ThreadVectorManager
     {
 
-        private static readonly Dictionary<int, ThreadVectorInstance> _threadVectorPool
+        private static Dictionary<int, ThreadVectorInstance> _threadVectorPool
             = new Dictionary<int, ThreadVectorInstance>();
 
-        private static readonly LockHistory _lockHistory = new LockHistory();
+        private static LockHistory _lockHistory = new LockHistory();
 
         public static void HandleReadAccess(int threadId, long ressource)
         {
@@ -91,11 +91,9 @@ namespace DPCLibrary.Algorithm.Manager
 
         private static void CheckForRaceCondition(ThreadEvent ownThreadEvent, ThreadVectorInstance threadVectorInstance)
         {
-            List<ThreadVectorInstance> instances = (List<ThreadVectorInstance>) from instance in _threadVectorPool.Values
-                where instance.ThreadId != threadVectorInstance.ThreadId
-                select instance;
-            Parallel.ForEach(instances, instance =>
-            {
+            List<ThreadVectorInstance> instances = 
+                (_threadVectorPool.Values.Where(instance => instance.ThreadId != threadVectorInstance.ThreadId)).ToList();
+            foreach (ThreadVectorInstance instance in instances) {
                 foreach (
                     List<ThreadEvent> concurrentEvents in
                         instance.GetConcurrentHistory(threadVectorInstance.VectorClock).Values)
@@ -104,12 +102,12 @@ namespace DPCLibrary.Algorithm.Manager
                     {
                         if (IsRaceCondition(ownThreadEvent, threadEvent))
                         {
-                            Console.WriteLine("RaceCondition detected... Ressource:" + ownThreadEvent.Ressource + ", in Thread: " + threadVectorInstance.ThreadId);
+                            Console.WriteLine("RaceCondition detected... Ressource: " + ownThreadEvent.Ressource + ", in Thread: " + threadVectorInstance.ThreadId);
                             // TODO:Fabian show message
                         }
                     }
                 }
-            });
+            }
         }
 
         private static bool IsRaceCondition(ThreadEvent me, ThreadEvent other)
