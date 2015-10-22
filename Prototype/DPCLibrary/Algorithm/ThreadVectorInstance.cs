@@ -26,9 +26,9 @@ namespace DPCLibrary.Algorithm
             VectorClock[ThreadId] += 1;
         }
 
-        public Dictionary<ThreadVectorClock, List<ThreadEvent>> GetConcurrentHistory(ThreadVectorClock vectorClock)
+        public ThreadVectorHistory GetConcurrentHistory(ThreadVectorClock vectorClock)
         {
-            return _threadVectorHistory.Where(historyEntry => (historyEntry.Key.CompareTo(vectorClock) == 0)).ToDictionary(x => x.Key, x => x.Value);
+            return new ThreadVectorHistory(_threadVectorHistory.Where(historyEntry => (historyEntry.Key.CompareTo(vectorClock) == 0)).ToDictionary(x => x.Key, x => x.Value));
         }
 
         public void WriteHistory(ThreadEvent threadEvent)
