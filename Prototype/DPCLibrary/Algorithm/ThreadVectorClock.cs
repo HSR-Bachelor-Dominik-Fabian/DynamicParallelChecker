@@ -26,8 +26,16 @@ namespace DPCLibrary.Algorithm
             int compared = 0;
             int myValueInOther, otherValueInMe, myValueInMe, otherValueInOther;
 
-            if (other.TryGetValue(OwnThreadId, out myValueInOther) && TryGetValue(other.OwnThreadId,out otherValueInMe) 
-                && TryGetValue(OwnThreadId, out myValueInMe) && other.TryGetValue(other.OwnThreadId, out otherValueInOther))
+            if(!other.TryGetValue(OwnThreadId, out myValueInOther) )
+            {
+                myValueInOther = 0;
+            }
+            if (!TryGetValue(other.OwnThreadId, out otherValueInMe))
+            {
+                otherValueInMe = 0;
+            }
+
+            if (TryGetValue(OwnThreadId, out myValueInMe) && other.TryGetValue(other.OwnThreadId, out otherValueInOther))
             {
                 if (myValueInMe >= myValueInOther && otherValueInMe >= otherValueInOther)
                 {
@@ -51,11 +59,6 @@ namespace DPCLibrary.Algorithm
                 equals = OwnThreadId == clock.OwnThreadId && Keys.Count == dict2.Keys.Count && Keys.All(k => dict2.ContainsKey(k) && Equals(dict2[k], this[k]));
             }
             return equals;
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
         }
     }
 }
