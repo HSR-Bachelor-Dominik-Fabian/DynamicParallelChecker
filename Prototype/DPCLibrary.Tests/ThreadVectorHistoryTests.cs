@@ -115,11 +115,8 @@ namespace DPCLibrary.Tests
             history.AddEvent(clock, threadEvent);
             history.AddEvent(clock2, threadEvent2);
 
-            var enumerator = history.Keys.GetEnumerator();
-            enumerator.MoveNext();
-            Assert.IsTrue(enumerator.Current != null && enumerator.Current.Equals(clock));
-            enumerator.MoveNext();
-            Assert.IsTrue(enumerator.Current != null && enumerator.Current.Equals(clock2));
+            CollectionAssert.Contains(history.Keys, clock);
+            CollectionAssert.Contains(history.Keys, clock2);
         }
     }
 }
