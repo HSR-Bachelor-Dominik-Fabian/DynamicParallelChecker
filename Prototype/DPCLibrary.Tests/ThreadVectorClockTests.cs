@@ -45,6 +45,13 @@ namespace DPCLibrary.Tests
             Assert.AreNotEqual(clock1, clock2);
         }
         [TestMethod]
+        public void TestNullEquals()
+        {
+            int threadId = 1;
+            ThreadVectorClock clock1 = new ThreadVectorClock(threadId);
+            Assert.AreNotEqual(null, clock1);
+        }
+        [TestMethod]
         public void TestNegativEqualsWithEqualVectors()
         {
             int threadId = 1;
