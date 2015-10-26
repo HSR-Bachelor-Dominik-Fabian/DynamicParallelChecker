@@ -10,11 +10,11 @@
 
         public EventType ThreadEventType { get; set; }
 
-        public long Ressource { get; }
+        public int Ressource { get; }
 
-        public long LockRessource { get; }
+        public int LockRessource { get; }
 
-        public ThreadEvent(EventType type, long ressource, long lockRessource)
+        public ThreadEvent(EventType type, int ressource, int lockRessource)
         {
             ThreadEventType = type;
             Ressource = ressource;

@@ -12,7 +12,7 @@ namespace DPCLibrary.Algorithm.Manager
 
         private static readonly LockHistory _lockHistory = new LockHistory();
 
-        public static void HandleReadAccess(int threadId, long ressource)
+        public static void HandleReadAccess(int threadId, int ressource)
         {
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(threadId);
             ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, ressource, threadVectorInstance.LockRessource);
@@ -20,7 +20,7 @@ namespace DPCLibrary.Algorithm.Manager
             CheckForRaceCondition(threadEvent, threadVectorInstance);
         }
 
-        public static void HandleWriteAccess(int threadId, long ressource)
+        public static void HandleWriteAccess(int threadId, int ressource)
         {
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(threadId);
             ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Write, ressource, threadVectorInstance.LockRessource);
@@ -28,7 +28,7 @@ namespace DPCLibrary.Algorithm.Manager
             CheckForRaceCondition(threadEvent, threadVectorInstance);
         }
 
-        public static void HandleLock(int threadId, long lockRessource)
+        public static void HandleLock(int threadId, int lockRessource)
         {
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(threadId);
             KeyValuePair<int, ThreadVectorClock> lockThreadIdClockPair;
@@ -39,12 +39,12 @@ namespace DPCLibrary.Algorithm.Manager
             threadVectorInstance.LockRessource = lockRessource;
         }
 
-        public static void HandleUnLock(int threadId, long lockRessource)
+        public static void HandleUnLock(int threadId, int lockRessource)
         {
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(threadId);
             _lockHistory.AddLockEntry(lockRessource, new KeyValuePair<int, ThreadVectorClock>(threadId, threadVectorInstance.VectorClock));
             threadVectorInstance.IncrementClock();
-            threadVectorInstance.LockRessource = 0L;
+            threadVectorInstance.LockRessource = 0;
         }
 
         private static ThreadVectorInstance GetThreadVectorInstance(int threadId)
@@ -58,7 +58,7 @@ namespace DPCLibrary.Algorithm.Manager
             return threadVectorInstance;
         }
 
-        private static bool CheckLockHistory(long lockRessource, out KeyValuePair<int, ThreadVectorClock> lockThreadIdClockPair)
+        private static bool CheckLockHistory(int lockRessource, out KeyValuePair<int, ThreadVectorClock> lockThreadIdClockPair)
         {
             return _lockHistory.IsRessourceInLockHistory(lockRessource, out lockThreadIdClockPair);
         }

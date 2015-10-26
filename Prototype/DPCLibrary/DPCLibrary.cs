@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using DPCLibrary.Algorithm.Manager;
 
 namespace DPCLibrary
 {
@@ -12,6 +13,7 @@ namespace DPCLibrary
         {
             int currentThreadId = Thread.CurrentThread.ManagedThreadId;
             Console.WriteLine("Thread: " + currentThreadId + ": Reading object " + obj);
+            ThreadVectorManager.HandleReadAccess(currentThreadId, obj);
             Console.ReadLine();
         }
 

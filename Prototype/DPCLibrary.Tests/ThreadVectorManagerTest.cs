@@ -15,9 +15,9 @@ namespace DPCLibrary.Tests
             {
                 Console.SetOut(sw);
 
-                long ressource = 1L;
-                long ownLockRessource = 2L;
-                long otherLockRessource = 3L;
+                int ressource = 1;
+                int ownLockRessource = 2;
+                int otherLockRessource = 3;
 
                 ThreadVectorManager.HandleLock(1, ownLockRessource);
                 ThreadVectorManager.HandleReadAccess(1, ressource);
@@ -39,9 +39,9 @@ namespace DPCLibrary.Tests
             {
                 Console.SetOut(sw);
 
-                long ressource = 1L;
-                long ownLockRessource = 2L;
-                long otherLockRessource = 3L;
+                int ressource = 1;
+                int ownLockRessource = 2;
+                int otherLockRessource = 3;
 
                 ThreadVectorManager.HandleLock(1, ownLockRessource);
                 ThreadVectorManager.HandleWriteAccess(1, ressource);
@@ -63,9 +63,9 @@ namespace DPCLibrary.Tests
             {
                 Console.SetOut(sw);
 
-                long ressource = 1L;
-                long ownLockRessource = 2L;
-                long otherLockRessource = 3L;
+                int ressource = 1;
+                int ownLockRessource = 2;
+                int otherLockRessource = 3;
 
                 ThreadVectorManager.HandleLock(1, ownLockRessource);
                 ThreadVectorManager.HandleReadAccess(1, ressource);
@@ -87,9 +87,9 @@ namespace DPCLibrary.Tests
             {
                 Console.SetOut(sw);
 
-                long ressource = 1L;
-                long ownLockRessource = 2L;
-                long otherLockRessource = 3L;
+                int ressource = 1;
+                int ownLockRessource = 2;
+                int otherLockRessource = 3;
 
                 ThreadVectorManager.HandleLock(1, ownLockRessource);
                 ThreadVectorManager.HandleWriteAccess(1, ressource);
@@ -112,8 +112,8 @@ namespace DPCLibrary.Tests
             {
                 Console.SetOut(sw);
 
-                long ressource = 1L;
-                long ownLockRessource = 2L;
+                int ressource = 1;
+                int ownLockRessource = 2;
 
                 ThreadVectorManager.HandleLock(1, ownLockRessource);
                 ThreadVectorManager.HandleWriteAccess(1, ressource);
@@ -133,10 +133,10 @@ namespace DPCLibrary.Tests
             {
                 Console.SetOut(sw);
 
-                long ownRessource = 1L;
-                long otherRessource = 2L;
-                long ownLockRessource = 2L;
-                long otherLockRessource = 3L;
+                int ownRessource = 1;
+                int otherRessource = 2;
+                int ownLockRessource = 2;
+                int otherLockRessource = 3;
 
                 ThreadVectorManager.HandleLock(1, ownLockRessource);
                 ThreadVectorManager.HandleWriteAccess(1, ownRessource);
@@ -158,8 +158,8 @@ namespace DPCLibrary.Tests
             {
                 Console.SetOut(sw);
 
-                long ownRessource = 1L;
-                long ownLockRessource = 2L;
+                int ownRessource = 1;
+                int ownLockRessource = 2;
 
                 ThreadVectorManager.HandleLock(1, ownLockRessource);
                 ThreadVectorManager.HandleWriteAccess(1, ownRessource);
@@ -181,8 +181,8 @@ namespace DPCLibrary.Tests
             {
                 Console.SetOut(sw);
 
-                long ownRessource = 1L;
-                long ownLockRessource = 2L;
+                int ownRessource = 1;
+                int ownLockRessource = 2;
 
                 ThreadVectorManager.HandleLock(1, ownLockRessource);    // clock: 1=>1
                 ThreadVectorManager.HandleWriteAccess(1, ownRessource);
@@ -206,11 +206,11 @@ namespace DPCLibrary.Tests
             {
                 Console.SetOut(sw);
 
-                long ownRessource = 1L;
-                long otherRessource = 2L;
-                long ownLockRessource = 3L;
-                long otherLockRessource = 4L;
-                long otherotherLockRessource = 5L;
+                int ownRessource = 1;
+                int otherRessource = 2;
+                int ownLockRessource = 3;
+                int otherLockRessource = 4;
+                int otherotherLockRessource = 5;
 
                 ThreadVectorManager.HandleLock(1, ownLockRessource);
                 ThreadVectorManager.HandleWriteAccess(1, ownRessource);
@@ -237,11 +237,11 @@ namespace DPCLibrary.Tests
             {
                 Console.SetOut(sw);
 
-                long ownRessource = 1L;
-                long otherRessource = 2L;
-                long ownLockRessource = 3L;
-                long otherLockRessource = 4L;
-                long otherotherLockRessource = 5L;
+                int ownRessource = 1;
+                int otherRessource = 2;
+                int ownLockRessource = 3;
+                int otherLockRessource = 4;
+                int otherotherLockRessource = 5;
 
                 ThreadVectorManager.HandleLock(1, ownLockRessource);
                 ThreadVectorManager.HandleWriteAccess(1, ownRessource);
@@ -268,10 +268,10 @@ namespace DPCLibrary.Tests
             {
                 Console.SetOut(sw);
 
-                long ownRessource = 1L;
-                long otherRessource = 2L;
-                long ownLockRessource = 3L;
-                long otherLockRessource = 4L;
+                int ownRessource = 1;
+                int otherRessource = 2;
+                int ownLockRessource = 3;
+                int otherLockRessource = 4;
 
                 ThreadVectorManager.HandleLock(1, ownLockRessource);
                 ThreadVectorManager.HandleWriteAccess(1, ownRessource);
@@ -298,8 +298,8 @@ namespace DPCLibrary.Tests
             {
                 Console.SetOut(sw);
 
-                long ownRessource = 1L;
-                long ownLockRessource = 2L;
+                int ownRessource = 1;
+                int ownLockRessource = 2;
 
                 ThreadVectorManager.HandleLock(1, ownLockRessource);
                 ThreadVectorManager.HandleWriteAccess(1, ownRessource);

@@ -6,7 +6,7 @@ namespace DPCLibrary.Algorithm
     {
         public int ThreadId { get; }
 
-        public long LockRessource { get; set; }
+        public int LockRessource { get; set; }
 
         public ThreadVectorClock VectorClock { get; }
 
@@ -17,7 +17,7 @@ namespace DPCLibrary.Algorithm
             ThreadId = threadId;
             VectorClock = new ThreadVectorClock(threadId);
             _threadVectorHistory = new ThreadVectorHistory();
-            LockRessource = 0L;
+            LockRessource = 0;
         }
 
         public void IncrementClock()

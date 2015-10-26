@@ -4,19 +4,19 @@ namespace DPCLibrary.Algorithm
 {
     class LockHistory
     {
-        private readonly Dictionary<long, KeyValuePair<int, ThreadVectorClock>> _history;
+        private readonly Dictionary<int, KeyValuePair<int, ThreadVectorClock>> _history;
         
         public LockHistory()
         {
-            _history = new Dictionary<long, KeyValuePair<int, ThreadVectorClock>>();
+            _history = new Dictionary<int, KeyValuePair<int, ThreadVectorClock>>();
         }
 
-        public bool IsRessourceInLockHistory(long lockRessource, out KeyValuePair<int, ThreadVectorClock> lockThreadIdClockPair)
+        public bool IsRessourceInLockHistory(int lockRessource, out KeyValuePair<int, ThreadVectorClock> lockThreadIdClockPair)
         {
             return _history.TryGetValue(lockRessource, out lockThreadIdClockPair);
         }
 
-        public void AddLockEntry(long lockRessource, KeyValuePair<int, ThreadVectorClock> lockThreadIdClockPair)
+        public void AddLockEntry(int lockRessource, KeyValuePair<int, ThreadVectorClock> lockThreadIdClockPair)
         {
             if (_history.ContainsKey(lockRessource))
             {
