@@ -77,14 +77,7 @@ namespace DPCLibrary.Algorithm.Manager
                 }
                 else if (threadId == lockThreadIdClockPair.Key)
                 {
-                    if (vectorClock.ContainsKey(threadId))
-                    {
-                        vectorClock[threadId] = lockThreadIdClockPair.Value[threadId];
-                    }
-                    else
-                    {
-                        vectorClock.Add(threadId, lockThreadIdClockPair.Value[threadId]);
-                    }
+                    vectorClock[threadId] = lockThreadIdClockPair.Value[threadId];
                 }
                 else
                 {

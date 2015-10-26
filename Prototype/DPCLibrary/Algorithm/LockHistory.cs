@@ -20,7 +20,7 @@ namespace DPCLibrary.Algorithm
         {
             if (_history.ContainsKey(lockRessource))
             {
-                _history[lockRessource] = lockThreadIdClockPair;
+                _history[lockRessource] = new KeyValuePair<int, ThreadVectorClock>(lockThreadIdClockPair.Key, lockThreadIdClockPair.Value.GetCopy());
             }
             else
             {
