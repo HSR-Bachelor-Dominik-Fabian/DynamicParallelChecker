@@ -230,6 +230,106 @@ namespace DPCLibrary.Tests
             }
         }
 
+        [TestMethod]
+        public void TestRaceConditionThreeThreads()
+        {
+            using (StringWriter sw = new StringWriter())
+            {
+                Console.SetOut(sw);
+
+                long ownRessource = 1L;
+                long otherRessource = 2L;
+                long ownLockRessource = 3L;
+                long otherLockRessource = 4L;
+                long otherotherLockRessource = 5L;
+
+                ThreadVectorManager.HandleLock(1, ownLockRessource);
+                ThreadVectorManager.HandleWriteAccess(1, ownRessource);
+
+                ThreadVectorManager.HandleLock(2, otherLockRessource);
+                ThreadVectorManager.HandleWriteAccess(2, otherRessource);
+
+                ThreadVectorManager.HandleLock(3, otherotherLockRessource);
+                ThreadVectorManager.HandleReadAccess(3, otherRessource);
+
+                ThreadVectorManager.HandleUnLock(1, ownLockRessource);
+                ThreadVectorManager.HandleUnLock(3, otherotherLockRessource);
+                ThreadVectorManager.HandleUnLock(2, otherLockRessource);
+
+                string expected = "RaceCondition detected... Ressource: " + otherRessource + ", in Thread: " + 3 + "\r\n";
+                Assert.AreEqual<string>(expected, sw.ToString());
+            }
+        }
+
+        [TestMethod]
+        public void TestNoRaceConditionAfterSyncThreeThreads()
+        {
+            using (StringWriter sw = new StringWriter())
+            {
+                Console.SetOut(sw);
+
+                long ownRessource = 1L;
+                long otherRessource = 2L;
+                long ownLockRessource = 3L;
+                long otherLockRessource = 4L;
+
+                ThreadVectorManager.HandleLock(1, ownLockRessource);
+                ThreadVectorManager.HandleWriteAccess(1, ownRessource);
+
+                ThreadVectorManager.HandleLock(2, otherLockRessource);
+                ThreadVectorManager.HandleWriteAccess(2, otherRessource);
+                ThreadVectorManager.HandleUnLock(2, otherLockRessource);
+
+                ThreadVectorManager.HandleLock(3, otherLockRessource);
+                ThreadVectorManager.HandleReadAccess(3, otherRessource);
+
+                ThreadVectorManager.HandleUnLock(1, ownLockRessource);
+                ThreadVectorManager.HandleUnLock(3, otherLockRessource);
+
+                string expected = "";
+                Assert.AreEqual<string>(expected, sw.ToString());
+            }
+        }
+
+        [TestMethod]
+        public void TestNoRaceConditionSyncAfterSync()
+        {
+            using (StringWriter sw = new StringWriter())
+            {
+                Console.SetOut(sw);
+
+                long ownRessource = 1L;
+                long ownLockRessource = 2L;
+
+                ThreadVectorManager.HandleLock(1, ownLockRessource);
+                ThreadVectorManager.HandleWriteAccess(1, ownRessource);
+                ThreadVectorManager.HandleUnLock(1, ownLockRessource);
+
+                ThreadVectorManager.HandleLock(2, ownLockRessource);
+                ThreadVectorManager.HandleWriteAccess(2, ownRessource);
+                ThreadVectorManager.HandleUnLock(2, ownLockRessource);
+
+                ThreadVectorManager.HandleLock(3, ownLockRessource);
+                ThreadVectorManager.HandleWriteAccess(3, ownRessource);
+                ThreadVectorManager.HandleUnLock(3, ownLockRessource);
+
+                ThreadVectorManager.HandleLock(1, ownLockRessource);
+                ThreadVectorManager.HandleWriteAccess(1, ownRessource);
+                ThreadVectorManager.HandleUnLock(1, ownLockRessource);
+
+                ThreadVectorManager.HandleLock(2, ownLockRessource);
+                ThreadVectorManager.HandleWriteAccess(2, ownRessource);
+                ThreadVectorManager.HandleUnLock(2, ownLockRessource);
+
+                ThreadVectorManager.HandleLock(3, ownLockRessource);
+                ThreadVectorManager.HandleWriteAccess(3, ownRessource);
+                ThreadVectorManager.HandleUnLock(3, ownLockRessource);
+
+                string expected = "";
+                Assert.AreEqual<string>(expected, sw.ToString());
+            }
+        }
+
         [TestCleanup]
         public void CleanUp()
         {
