@@ -12,35 +12,29 @@ namespace DPCLibrary
         public static void ReadAccess(int obj)
         {
             int currentThreadId = Thread.CurrentThread.ManagedThreadId;
-            Console.WriteLine("Thread: " + currentThreadId + ": Reading object " + obj);
             ThreadVectorManager.HandleReadAccess(currentThreadId, obj);
-            Console.ReadLine();
         }
 
         public static void WriteAccess(int obj)
         {
             int currentThreadId = Thread.CurrentThread.ManagedThreadId;
-            Console.WriteLine("Thread: " + currentThreadId + ": Writing object " + obj);
-            Console.ReadLine();
+            ThreadVectorManager.HandleWriteAccess(currentThreadId, obj);
         }
 
         public static void LockObject(int obj)
         {
             int currentThreadId = Thread.CurrentThread.ManagedThreadId;
-            Console.WriteLine("Thread: " + currentThreadId + ": Locking object " + obj);
-            Console.ReadLine();
+            ThreadVectorManager.HandleLock(currentThreadId, obj);
         }
 
         public static void UnLockObject(int obj)
         {
             int currentThreadId = Thread.CurrentThread.ManagedThreadId;
-            Console.WriteLine("Thread: " + currentThreadId + ": Unlocking object " + obj);
-            Console.ReadLine();
+            ThreadVectorManager.HandleUnLock(currentThreadId, obj);
         }
 
         public static T[] GenericList<T>(List<T> genericList)
         {
-            Console.WriteLine("GenericListCall");
             return (T[])genericList.GetType().GetRuntimeFields().First(x => x.Name == "_items").GetValue(genericList);
         }
     }
