@@ -60,5 +60,22 @@ namespace DPCLibrary.Algorithm
             }
             return equals;
         }
+
+        public ThreadVectorClock GetCopy()
+        {
+            ThreadVectorClock newClock = new ThreadVectorClock(OwnThreadId);
+            foreach (var key in Keys)
+            {
+                if (!key.Equals(OwnThreadId))
+                {
+                    newClock.Add(key, this[key]);
+                }
+                else
+                {
+                    newClock[key] = this[key];
+                }
+            }
+            return newClock;
+        }
     }
 }

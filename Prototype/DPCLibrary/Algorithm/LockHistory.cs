@@ -18,7 +18,14 @@ namespace DPCLibrary.Algorithm
 
         public void AddLockEntry(long lockRessource, KeyValuePair<int, ThreadVectorClock> lockThreadIdClockPair)
         {
-            _history.Add(lockRessource, lockThreadIdClockPair);
+            if (_history.ContainsKey(lockRessource))
+            {
+                _history[lockRessource] = lockThreadIdClockPair;
+            }
+            else
+            {
+                _history.Add(lockRessource, new KeyValuePair<int, ThreadVectorClock>(lockThreadIdClockPair.Key, lockThreadIdClockPair.Value.GetCopy()));
+            }
         }
     }
 }

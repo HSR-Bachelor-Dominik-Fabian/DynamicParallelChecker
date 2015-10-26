@@ -15,7 +15,7 @@ namespace DPCLibrary.Algorithm
             List<ThreadEvent> events;
             if (!TryGetValue(clock, out events))
             {
-                Add(clock, new List<ThreadEvent> {threadEvent});
+                Add(clock.GetCopy(), new List<ThreadEvent> {threadEvent});
             }
             else
             {

@@ -69,7 +69,7 @@ namespace DPCLibrary.Algorithm.Manager
         {
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(ownThreadId);
             ThreadVectorClock vectorClock = threadVectorInstance.VectorClock;
-            foreach (int threadId in vectorClock.Keys)
+            vectorClock.Keys.ToList().ForEach(threadId =>
             {
                 if (threadId == ownThreadId)
                 {
@@ -77,13 +77,20 @@ namespace DPCLibrary.Algorithm.Manager
                 }
                 else if (threadId == lockThreadIdClockPair.Key)
                 {
-                    vectorClock[threadId] = lockThreadIdClockPair.Value[threadId];
+                    if (vectorClock.ContainsKey(threadId))
+                    {
+                        vectorClock[threadId] = lockThreadIdClockPair.Value[threadId];
+                    }
+                    else
+                    {
+                        vectorClock.Add(threadId, lockThreadIdClockPair.Value[threadId]);
+                    }
                 }
                 else
                 {
                     vectorClock[threadId] = Math.Max(vectorClock[threadId], lockThreadIdClockPair.Value[threadId]);
                 }
-            }
+            });
             lockThreadIdClockPair.Value.ToList().ForEach(x => { if(!vectorClock.ContainsKey(x.Key)) vectorClock.Add(x.Key, x.Value);});
 
             _threadVectorPool[ownThreadId] = threadVectorInstance;
