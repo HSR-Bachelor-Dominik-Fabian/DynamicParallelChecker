@@ -17,10 +17,12 @@ namespace CodeInstrumentationTest
             string fileName = @"TestProgram.exe";
             InjectCodeInstrumentation(fileName);
             Process process = new Process {StartInfo = {FileName = fileName}};
-            do
+            var readLine = Console.ReadLine();
+            while (readLine != null && !readLine.Equals("x"))
             {
                 process.Start();
-            } while (!Console.ReadLine().Equals("x"));
+                readLine = Console.ReadLine();
+            }
         }
 
         private static void InjectCodeInstrumentation(string fileName)

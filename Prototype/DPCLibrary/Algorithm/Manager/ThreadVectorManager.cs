@@ -7,13 +7,13 @@ namespace DPCLibrary.Algorithm.Manager
     sealed class ThreadVectorManager
     {
         private static volatile ThreadVectorManager _instance;
-        private static object syncRoot = new object();
+        private static readonly object _syncRoot = new object();
 
         public static ThreadVectorManager GetInstance()
         {
             if (_instance == null)
             {
-                lock (syncRoot)
+                lock (_syncRoot)
                 {
                     if (_instance == null)
                     {
