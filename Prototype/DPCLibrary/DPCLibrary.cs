@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -11,25 +12,25 @@ namespace DPCLibrary
         public static void ReadAccess(int obj)
         {
             int currentThreadId = Thread.CurrentThread.ManagedThreadId;
-            ThreadVectorManager.HandleReadAccess(currentThreadId, obj);
+            ThreadVectorManager.GetInstance().HandleReadAccess(currentThreadId, obj);
         }
 
         public static void WriteAccess(int obj)
         {
             int currentThreadId = Thread.CurrentThread.ManagedThreadId;
-            ThreadVectorManager.HandleWriteAccess(currentThreadId, obj);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(currentThreadId, obj);
         }
 
         public static void LockObject(int obj)
         {
             int currentThreadId = Thread.CurrentThread.ManagedThreadId;
-            ThreadVectorManager.HandleLock(currentThreadId, obj);
+            ThreadVectorManager.GetInstance().HandleLock(currentThreadId, obj);
         }
 
         public static void UnLockObject(int obj)
         {
             int currentThreadId = Thread.CurrentThread.ManagedThreadId;
-            ThreadVectorManager.HandleUnLock(currentThreadId, obj);
+            ThreadVectorManager.GetInstance().HandleUnLock(currentThreadId, obj);
         }
 
         public static T[] GenericList<T>(List<T> genericList)

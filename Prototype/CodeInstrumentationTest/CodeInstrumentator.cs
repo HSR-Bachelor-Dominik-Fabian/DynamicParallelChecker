@@ -17,9 +17,10 @@ namespace CodeInstrumentationTest
             string fileName = @"TestProgram.exe";
             InjectCodeInstrumentation(fileName);
             Process process = new Process {StartInfo = {FileName = fileName}};
-            process.Start();
-            Console.WriteLine("Enter to stop");
-            Console.ReadLine();
+            do
+            {
+                process.Start();
+            } while (!Console.ReadLine().Equals("x"));
         }
 
         private static void InjectCodeInstrumentation(string fileName)
@@ -475,5 +476,6 @@ namespace CodeInstrumentationTest
             processor.InsertBefore(loadIndexInstrucion, dupInstruction);
             processor.InsertBefore(dupInstruction, storeIndexInstrution);
         }
+
     }
 }

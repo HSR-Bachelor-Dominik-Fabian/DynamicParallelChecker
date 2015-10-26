@@ -4,15 +4,39 @@ using System.Linq;
 
 namespace DPCLibrary.Algorithm.Manager
 {
-    class ThreadVectorManager
+    sealed class ThreadVectorManager
     {
+        private static volatile ThreadVectorManager _instance;
+        private static object syncRoot = new object();
 
-        private static readonly Dictionary<int, ThreadVectorInstance> _threadVectorPool
+        public static ThreadVectorManager GetInstance()
+        {
+            if (_instance == null)
+            {
+                lock (syncRoot)
+                {
+                    if (_instance == null)
+                    {
+                        _instance = new ThreadVectorManager();
+                    }
+                }
+            }
+            return _instance;
+        }
+
+        private ThreadVectorManager() { }
+
+        internal static void Reset()
+        {
+            _instance = null;
+        }
+
+        private readonly Dictionary<int, ThreadVectorInstance> _threadVectorPool
             = new Dictionary<int, ThreadVectorInstance>();
 
-        private static readonly LockHistory _lockHistory = new LockHistory();
+        private readonly LockHistory _lockHistory = new LockHistory();
 
-        public static void HandleReadAccess(int threadId, int ressource)
+        public void HandleReadAccess(int threadId, int ressource)
         {
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(threadId);
             ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, ressource, threadVectorInstance.LockRessource);
@@ -20,7 +44,7 @@ namespace DPCLibrary.Algorithm.Manager
             CheckForRaceCondition(threadEvent, threadVectorInstance);
         }
 
-        public static void HandleWriteAccess(int threadId, int ressource)
+        public void HandleWriteAccess(int threadId, int ressource)
         {
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(threadId);
             ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Write, ressource, threadVectorInstance.LockRessource);
@@ -28,7 +52,7 @@ namespace DPCLibrary.Algorithm.Manager
             CheckForRaceCondition(threadEvent, threadVectorInstance);
         }
 
-        public static void HandleLock(int threadId, int lockRessource)
+        public void HandleLock(int threadId, int lockRessource)
         {
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(threadId);
             KeyValuePair<int, ThreadVectorClock> lockThreadIdClockPair;
@@ -39,7 +63,7 @@ namespace DPCLibrary.Algorithm.Manager
             threadVectorInstance.LockRessource = lockRessource;
         }
 
-        public static void HandleUnLock(int threadId, int lockRessource)
+        public void HandleUnLock(int threadId, int lockRessource)
         {
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(threadId);
             _lockHistory.AddLockEntry(lockRessource, new KeyValuePair<int, ThreadVectorClock>(threadId, threadVectorInstance.VectorClock));
@@ -47,7 +71,7 @@ namespace DPCLibrary.Algorithm.Manager
             threadVectorInstance.LockRessource = 0;
         }
 
-        private static ThreadVectorInstance GetThreadVectorInstance(int threadId)
+        private ThreadVectorInstance GetThreadVectorInstance(int threadId)
         {
             ThreadVectorInstance threadVectorInstance;
             if (!_threadVectorPool.TryGetValue(threadId, out threadVectorInstance))
@@ -58,12 +82,12 @@ namespace DPCLibrary.Algorithm.Manager
             return threadVectorInstance;
         }
 
-        private static bool CheckLockHistory(int lockRessource, out KeyValuePair<int, ThreadVectorClock> lockThreadIdClockPair)
+        private bool CheckLockHistory(int lockRessource, out KeyValuePair<int, ThreadVectorClock> lockThreadIdClockPair)
         {
             return _lockHistory.IsRessourceInLockHistory(lockRessource, out lockThreadIdClockPair);
         }
 
-        private static void SynchronizeVectorClock(int ownThreadId, KeyValuePair<int, ThreadVectorClock> lockThreadIdClockPair)
+        private void SynchronizeVectorClock(int ownThreadId, KeyValuePair<int, ThreadVectorClock> lockThreadIdClockPair)
         {
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(ownThreadId);
             ThreadVectorClock vectorClock = threadVectorInstance.VectorClock;
@@ -87,7 +111,7 @@ namespace DPCLibrary.Algorithm.Manager
             _threadVectorPool[ownThreadId] = threadVectorInstance;
         }
 
-        private static void CheckForRaceCondition(ThreadEvent ownThreadEvent, ThreadVectorInstance threadVectorInstance)
+        private void CheckForRaceCondition(ThreadEvent ownThreadEvent, ThreadVectorInstance threadVectorInstance)
         {
             List<ThreadVectorInstance> instances = 
                 (_threadVectorPool.Values.Where(instance => instance.ThreadId != threadVectorInstance.ThreadId)).ToList();
@@ -108,7 +132,7 @@ namespace DPCLibrary.Algorithm.Manager
             }
         }
 
-        private static bool IsRaceCondition(ThreadEvent me, ThreadEvent other)
+        private bool IsRaceCondition(ThreadEvent me, ThreadEvent other)
         {
             if (other.Ressource == me.Ressource)
             {
