@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using DPCLibrary.Algorithm;
 using DPCLibrary.Algorithm.Manager;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -30,7 +28,7 @@ namespace DPCLibrary.Tests
                 ThreadVectorManager.HandleUnLock(2, otherLockRessource);
 
                 string expected = "RaceCondition detected... Ressource: " + ressource + ", in Thread: " + 2 + "\r\n";
-                Assert.AreEqual<string>(expected, sw.ToString());
+                Assert.AreEqual(expected, sw.ToString());
             }
         }
 
@@ -54,7 +52,7 @@ namespace DPCLibrary.Tests
                 ThreadVectorManager.HandleUnLock(2, otherLockRessource);
 
                 string expected = "RaceCondition detected... Ressource: " + ressource + ", in Thread: " + 2 + "\r\n";
-                Assert.AreEqual<string>(expected, sw.ToString());
+                Assert.AreEqual(expected, sw.ToString());
             }
         }
 
@@ -78,7 +76,7 @@ namespace DPCLibrary.Tests
                 ThreadVectorManager.HandleUnLock(2, otherLockRessource);
 
                 string expected = "";
-                Assert.AreEqual<string>(expected, sw.ToString());
+                Assert.AreEqual(expected, sw.ToString());
             }
         }
 
@@ -102,7 +100,7 @@ namespace DPCLibrary.Tests
                 ThreadVectorManager.HandleUnLock(2, otherLockRessource);
 
                 string expected = "RaceCondition detected... Ressource: " + ressource + ", in Thread: " + 2 + "\r\n";
-                Assert.AreEqual<string>(expected, sw.ToString());
+                Assert.AreEqual(expected, sw.ToString());
             }
         }
 
@@ -124,7 +122,7 @@ namespace DPCLibrary.Tests
                 ThreadVectorManager.HandleReadAccess(2, ressource);
 
                 string expected = "RaceCondition detected... Ressource: " + ressource + ", in Thread: " + 2 + "\r\n";
-                Assert.AreEqual<string>(expected, sw.ToString());
+                Assert.AreEqual(expected, sw.ToString());
             }
         }
 
@@ -149,7 +147,7 @@ namespace DPCLibrary.Tests
                 ThreadVectorManager.HandleUnLock(2, otherLockRessource);
 
                 string expected = "";
-                Assert.AreEqual<string>(expected, sw.ToString());
+                Assert.AreEqual(expected, sw.ToString());
             }
         }
 
@@ -172,7 +170,7 @@ namespace DPCLibrary.Tests
                 ThreadVectorManager.HandleUnLock(2, ownLockRessource);
 
                 string expected = "";
-                Assert.AreEqual<string>(expected, sw.ToString());
+                Assert.AreEqual(expected, sw.ToString());
             }
         }
 
@@ -197,7 +195,7 @@ namespace DPCLibrary.Tests
                 ThreadVectorManager.HandleWriteAccess(1, ownRessource);
 
                 string expected = "RaceCondition detected... Ressource: " + ownRessource + ", in Thread: " + 1 + "\r\n";
-                Assert.AreEqual<string>(expected, sw.ToString());
+                Assert.AreEqual(expected, sw.ToString());
             }
         }
 
@@ -228,7 +226,7 @@ namespace DPCLibrary.Tests
                 ThreadVectorManager.HandleUnLock(2, otherLockRessource);
                 
                 string expected = "";
-                Assert.AreEqual<string>(expected, sw.ToString());
+                Assert.AreEqual(expected, sw.ToString());
             }
         }
 

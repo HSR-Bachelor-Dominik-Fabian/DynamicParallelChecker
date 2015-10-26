@@ -10,6 +10,7 @@ namespace DPCLibrary.Tests
         public void TestConstructor()
         {
             int threadId = 1;
+            // ReSharper disable once CollectionNeverUpdated.Local
             ThreadVectorClock clock = new ThreadVectorClock(threadId);
             Assert.AreEqual(threadId, clock.OwnThreadId);
             int value;
@@ -40,9 +41,15 @@ namespace DPCLibrary.Tests
         {
             int threadId = 1;
             ThreadVectorClock clock1 = new ThreadVectorClock(threadId);
-            ThreadVectorClock clock2 = new ThreadVectorClock(threadId);
-            clock2[threadId] = 2;
+            ThreadVectorClock clock2 = new ThreadVectorClock(threadId) {[threadId] = 2};
             Assert.AreNotEqual(clock1, clock2);
+        }
+        [TestMethod]
+        public void TestNullEquals()
+        {
+            int threadId = 1;
+            ThreadVectorClock clock1 = new ThreadVectorClock(threadId);
+            Assert.AreNotEqual(null, clock1);
         }
         [TestMethod]
         public void TestNegativEqualsWithEqualVectors()

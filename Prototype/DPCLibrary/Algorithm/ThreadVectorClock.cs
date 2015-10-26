@@ -63,7 +63,7 @@ namespace DPCLibrary.Algorithm
 
         public override int GetHashCode()
         {
-            return OwnThreadId.GetHashCode()*17 + Keys.Count.GetHashCode();
+            return (OwnThreadId.GetHashCode()*17 + Keys.Count.GetHashCode())*17 + Keys.Sum(x => x.GetHashCode());
         }
 
         public ThreadVectorClock GetCopy()

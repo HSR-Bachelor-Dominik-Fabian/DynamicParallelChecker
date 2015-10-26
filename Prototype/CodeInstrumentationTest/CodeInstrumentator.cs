@@ -74,7 +74,7 @@ namespace CodeInstrumentationTest
                             if (ins.OpCode.Equals(OpCodes.Ldsfld))
                             {
                                 FieldDefinition fieldDefinition = (FieldDefinition) ins.Operand;
-                                TypeReference fieldType = (TypeReference) fieldDefinition.FieldType;
+                                TypeReference fieldType = fieldDefinition.FieldType;
                                 var processor = method.Body.GetILProcessor();
                                 if (fieldType.IsPrimitive || (fieldType.IsDefinition && ((TypeDefinition)fieldType).IsValueType))
                                 {
@@ -121,7 +121,7 @@ namespace CodeInstrumentationTest
                             else if (ins.OpCode.Equals(OpCodes.Ldfld))
                             {
                                 FieldDefinition fieldDefinition = (FieldDefinition) ins.Operand;
-                                TypeReference fieldType = (TypeReference)fieldDefinition.FieldType;
+                                TypeReference fieldType = fieldDefinition.FieldType;
                                 var processor = method.Body.GetILProcessor();
                                 if (fieldType.IsPrimitive || (fieldType.IsDefinition && ((TypeDefinition)fieldType).IsValueType))
                                 {
