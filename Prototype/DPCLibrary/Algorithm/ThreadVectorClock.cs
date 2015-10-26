@@ -61,6 +61,11 @@ namespace DPCLibrary.Algorithm
             return equals;
         }
 
+        public override int GetHashCode()
+        {
+            return OwnThreadId.GetHashCode()*17 + Keys.Count.GetHashCode();
+        }
+
         public ThreadVectorClock GetCopy()
         {
             ThreadVectorClock newClock = new ThreadVectorClock(OwnThreadId);
