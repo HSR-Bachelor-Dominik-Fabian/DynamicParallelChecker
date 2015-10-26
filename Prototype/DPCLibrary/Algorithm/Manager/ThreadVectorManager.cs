@@ -1,18 +1,16 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace DPCLibrary.Algorithm.Manager
 {
     class ThreadVectorManager
     {
 
-        private static Dictionary<int, ThreadVectorInstance> _threadVectorPool
+        private static readonly Dictionary<int, ThreadVectorInstance> _threadVectorPool
             = new Dictionary<int, ThreadVectorInstance>();
 
-        private static LockHistory _lockHistory = new LockHistory();
+        private static readonly LockHistory _lockHistory = new LockHistory();
 
         public static void HandleReadAccess(int threadId, long ressource)
         {

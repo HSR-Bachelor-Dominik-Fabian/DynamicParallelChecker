@@ -209,19 +209,19 @@ namespace TestProgram
 
     struct TestStruct
     {
-        private object a;
-        private object b;
+        private object _a;
+        private object _b;
 
         public object GetA()
         {
-            a = 2;
-            return a;
+            _a = 2;
+            return _a;
         }
 
         public object GetB()
         {
-            b = 3;
-            return b;
+            _b = 3;
+            return _b;
         }
     }
 }
