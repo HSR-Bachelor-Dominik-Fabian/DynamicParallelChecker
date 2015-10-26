@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+// ReSharper disable All
 
 namespace TestProgram
 {
@@ -199,11 +200,44 @@ namespace TestProgram
 
         public static void Test10()
         {
-            int[] temp = new[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
-            Parallel.ForEach(temp, i =>
+            object a = 1;
+            var lockA = new object();
+            object b = 1;
+            var lockB = new object();
+            b = 2;
+            Task.Factory.StartNew(() =>
             {
-                i += 2;
+                lock (lockB)
+                {
+                    b = 3;
+                }
+                b = 4;
+                lock (lockA)
+                {
+                    Console.WriteLine(a);
+                }
             });
+            Task.Factory.StartNew(() =>
+            {
+                lock (lockA)
+                {
+                    a = 2;
+                }
+                b = 5;
+                lock (lockB)
+                {
+                    Console.WriteLine(b);
+                }
+            });
+            lock (lockA)
+            {
+                a = 3;
+            }
+            lock (lockB)
+            {
+                b = 6;
+            }
+            Console.WriteLine(a);
         }
 
         public static void Test11()
