@@ -94,14 +94,19 @@ namespace DPCLibrary.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void HistoryEventSetNegativ()
         {
             ThreadVectorClock clock = new ThreadVectorClock(1);
             ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, 1232132, 2223);
-
-            // ReSharper disable once UnusedVariable
-            var history = new ThreadVectorHistory {[clock] = new List<ThreadEvent> {threadEvent}};
+            try
+            {
+                // ReSharper disable once UnusedVariable
+                var history = new ThreadVectorHistory {[clock] = new List<ThreadEvent> { threadEvent } };
+            }
+            catch (Exception exc)
+            {
+                Assert.IsInstanceOfType(exc, typeof(InvalidOperationException));
+            }
         }
 
         [TestMethod]
