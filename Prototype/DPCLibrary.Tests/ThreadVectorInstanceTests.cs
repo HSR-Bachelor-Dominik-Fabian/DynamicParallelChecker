@@ -1,4 +1,5 @@
-﻿using DPCLibrary.Algorithm;
+﻿using System.Threading;
+using DPCLibrary.Algorithm;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DPCLibrary.Tests
@@ -9,35 +10,41 @@ namespace DPCLibrary.Tests
         [TestMethod]
         public void TestConstructor()
         {
-            ThreadVectorInstance instance = new ThreadVectorInstance(1);
-            Assert.AreEqual(1,instance.ThreadId);
+            Thread thread = Thread.CurrentThread;
+            ThreadVectorInstance instance = new ThreadVectorInstance(thread);
+            Assert.AreEqual(thread,instance.Thread);
             Assert.AreEqual(0, instance.LockRessource);
         }
         [TestMethod]
         public void TestIncrementClock()
         {
-            ThreadVectorInstance instance = new ThreadVectorInstance(1);
+            Thread thread = Thread.CurrentThread;
+            ThreadVectorInstance instance = new ThreadVectorInstance(thread);
             instance.IncrementClock();
-            Assert.AreEqual(2, instance.VectorClock[1]);
+            Assert.AreEqual(2, instance.VectorClock[thread]);
         }
 
         [TestMethod]
         public void TestIncrementMultipleClock()
         {
-            ThreadVectorInstance instance = new ThreadVectorInstance(1);
-            instance.VectorClock.Add(2,1);
+            Thread thread = Thread.CurrentThread;
+            Thread thread2 = new Thread(() => { });
+            ThreadVectorInstance instance = new ThreadVectorInstance(thread);
+            instance.VectorClock.Add(thread2, 1);
             instance.IncrementClock();
-            Assert.AreEqual(2, instance.VectorClock[1]);
-            Assert.AreEqual(1, instance.VectorClock[2]);
+            Assert.AreEqual(2, instance.VectorClock[thread]);
+            Assert.AreEqual(1, instance.VectorClock[thread2]);
         }
 
         [TestMethod]
         public void TestWriteHistory()
         {
-            ThreadVectorInstance instance = new ThreadVectorInstance(1);
+            Thread thread = Thread.CurrentThread;
+            Thread thread2 = new Thread(() => { });
+            ThreadVectorInstance instance = new ThreadVectorInstance(thread);
             instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Read,123));
-            ThreadVectorHistory dict = instance.GetConcurrentHistory(new ThreadVectorClock(2));
-            Assert.AreEqual(1,dict[new ThreadVectorClock(1)].Count);
+            ThreadVectorHistory dict = instance.GetConcurrentHistory(new ThreadVectorClock(thread2));
+            Assert.AreEqual(1,dict[new ThreadVectorClock(thread)].Count);
         }
 
         //TODO:Dominik: More Tests

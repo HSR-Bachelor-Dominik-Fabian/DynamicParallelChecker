@@ -1,10 +1,11 @@
 ﻿using System.Linq;
+using System.Threading;
 
 namespace DPCLibrary.Algorithm
 {
     class ThreadVectorInstance
     {
-        public int ThreadId { get; }
+        public Thread Thread { get; }
 
         public int LockRessource { get; set; }
 
@@ -12,17 +13,17 @@ namespace DPCLibrary.Algorithm
 
         private readonly ThreadVectorHistory _threadVectorHistory; 
 
-        public ThreadVectorInstance(int threadId)
+        public ThreadVectorInstance(Thread thread)
         {
-            ThreadId = threadId;
-            VectorClock = new ThreadVectorClock(threadId);
+            Thread = thread;
+            VectorClock = new ThreadVectorClock(thread);
             _threadVectorHistory = new ThreadVectorHistory();
             LockRessource = 0;
         }
 
         public void IncrementClock()
         {
-            VectorClock[ThreadId] += 1;
+            VectorClock[Thread] += 1;
         }
 
         public ThreadVectorHistory GetConcurrentHistory(ThreadVectorClock vectorClock)

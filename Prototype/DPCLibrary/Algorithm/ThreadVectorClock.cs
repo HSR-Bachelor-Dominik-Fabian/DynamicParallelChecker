@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 
 namespace DPCLibrary.Algorithm
 {
-    class ThreadVectorClock : Dictionary<int, int>
+    class ThreadVectorClock : Dictionary<Thread, int>
     {
-        public int OwnThreadId { get; }
+        public Thread OwnThread { get; }
 
-        public ThreadVectorClock(int threadId)
+        public ThreadVectorClock(Thread thread)
         {
-            OwnThreadId = threadId;    
-            Add(threadId,1);
+            OwnThread = thread;    
+            Add(thread,1);
         }
 
         /// <summary>
@@ -26,16 +27,16 @@ namespace DPCLibrary.Algorithm
             int compared = 0;
             int myValueInOther, otherValueInMe, myValueInMe, otherValueInOther;
 
-            if(!other.TryGetValue(OwnThreadId, out myValueInOther) )
+            if(!other.TryGetValue(OwnThread, out myValueInOther) )
             {
                 myValueInOther = 0;
             }
-            if (!TryGetValue(other.OwnThreadId, out otherValueInMe))
+            if (!TryGetValue(other.OwnThread, out otherValueInMe))
             {
                 otherValueInMe = 0;
             }
 
-            if (TryGetValue(OwnThreadId, out myValueInMe) && other.TryGetValue(other.OwnThreadId, out otherValueInOther))
+            if (TryGetValue(OwnThread, out myValueInMe) && other.TryGetValue(other.OwnThread, out otherValueInOther))
             {
                 if (myValueInMe >= myValueInOther && otherValueInMe >= otherValueInOther)
                 {
@@ -56,22 +57,22 @@ namespace DPCLibrary.Algorithm
             if (clock != null)
             {
                 ThreadVectorClock dict2 = clock;
-                equals = OwnThreadId == clock.OwnThreadId && Keys.Count == dict2.Keys.Count && Keys.All(k => dict2.ContainsKey(k) && Equals(dict2[k], this[k]));
+                equals = OwnThread == clock.OwnThread && Keys.Count == dict2.Keys.Count && Keys.All(k => dict2.ContainsKey(k) && Equals(dict2[k], this[k]));
             }
             return equals;
         }
 
         public override int GetHashCode()
         {
-            return (OwnThreadId.GetHashCode()*17 + Keys.Count.GetHashCode())*17 + Keys.Sum(x => x.GetHashCode());
+            return (OwnThread.GetHashCode()*17 + Keys.Count.GetHashCode())*17 + Keys.Sum(x => x.GetHashCode());
         }
 
         public ThreadVectorClock GetCopy()
         {
-            ThreadVectorClock newClock = new ThreadVectorClock(OwnThreadId);
+            ThreadVectorClock newClock = new ThreadVectorClock(OwnThread);
             foreach (var key in Keys)
             {
-                if (!key.Equals(OwnThreadId))
+                if (!key.Equals(OwnThread))
                 {
                     newClock.Add(key, this[key]);
                 }

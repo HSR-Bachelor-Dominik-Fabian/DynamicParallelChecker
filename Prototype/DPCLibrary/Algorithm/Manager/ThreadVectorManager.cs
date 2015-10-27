@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace DPCLibrary.Algorithm.Manager
 {
@@ -32,93 +33,93 @@ namespace DPCLibrary.Algorithm.Manager
             _instance = null;
         }
 
-        private readonly Dictionary<int, ThreadVectorInstance> _threadVectorPool
-            = new Dictionary<int, ThreadVectorInstance>();
+        private readonly Dictionary<Thread, ThreadVectorInstance> _threadVectorPool
+            = new Dictionary<Thread, ThreadVectorInstance>();
 
         private readonly LockHistory _lockHistory = new LockHistory();
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void HandleReadAccess(int threadId, int ressource)
+        public void HandleReadAccess(Thread thread, int ressource)
         {
-            ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(threadId);
+            ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(thread);
             ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, ressource);
             threadVectorInstance.WriteHistory(threadEvent);
             CheckForRaceCondition(threadEvent, threadVectorInstance);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void HandleWriteAccess(int threadId, int ressource)
+        public void HandleWriteAccess(Thread thread, int ressource)
         {
-            ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(threadId);
+            ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(thread);
             ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Write, ressource);
             threadVectorInstance.WriteHistory(threadEvent);
             CheckForRaceCondition(threadEvent, threadVectorInstance);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void HandleLock(int threadId, int lockRessource)
+        public void HandleLock(Thread thread, int lockRessource)
         {
-            ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(threadId);
-            KeyValuePair<int, ThreadVectorClock> lockThreadIdClockPair;
+            ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(thread);
+            KeyValuePair<Thread, ThreadVectorClock> lockThreadIdClockPair;
             if (CheckLockHistory(lockRessource, out lockThreadIdClockPair))
             {
-                SynchronizeVectorClock(threadId, lockThreadIdClockPair);
+                SynchronizeVectorClock(thread, lockThreadIdClockPair);
             }
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void HandleUnLock(int threadId, int lockRessource)
+        public void HandleUnLock(Thread thread, int lockRessource)
         {
-            ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(threadId);
-            _lockHistory.AddLockEntry(lockRessource, new KeyValuePair<int, ThreadVectorClock>(threadId, threadVectorInstance.VectorClock));
+            ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(thread);
+            _lockHistory.AddLockEntry(lockRessource, new KeyValuePair<Thread, ThreadVectorClock>(thread, threadVectorInstance.VectorClock));
             threadVectorInstance.IncrementClock();
         }
 
-        private ThreadVectorInstance GetThreadVectorInstance(int threadId)
+        private ThreadVectorInstance GetThreadVectorInstance(Thread thread)
         {
             ThreadVectorInstance threadVectorInstance;
-            if (!_threadVectorPool.TryGetValue(threadId, out threadVectorInstance))
+            if (!_threadVectorPool.TryGetValue(thread, out threadVectorInstance))
             {
-                threadVectorInstance = new ThreadVectorInstance(threadId);
-                _threadVectorPool.Add(threadId, threadVectorInstance);
+                threadVectorInstance = new ThreadVectorInstance(thread);
+                _threadVectorPool.Add(thread, threadVectorInstance);
             }
             return threadVectorInstance;
         }
 
-        private bool CheckLockHistory(int lockRessource, out KeyValuePair<int, ThreadVectorClock> lockThreadIdClockPair)
+        private bool CheckLockHistory(int lockRessource, out KeyValuePair<Thread, ThreadVectorClock> lockThreadIdClockPair)
         {
             return _lockHistory.IsRessourceInLockHistory(lockRessource, out lockThreadIdClockPair);
         }
 
-        private void SynchronizeVectorClock(int ownThreadId, KeyValuePair<int, ThreadVectorClock> lockThreadIdClockPair)
+        private void SynchronizeVectorClock(Thread ownThread, KeyValuePair<Thread, ThreadVectorClock> lockThreadIdClockPair)
         {
-            ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(ownThreadId);
+            ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(ownThread);
             ThreadVectorClock vectorClock = threadVectorInstance.VectorClock;
-            vectorClock.Keys.ToList().ForEach(threadId =>
+            vectorClock.Keys.ToList().ForEach(thread =>
             {
-                if (threadId == ownThreadId)
+                if (thread.Equals(ownThread))
                 {
-                    vectorClock[threadId] += 1;
+                    vectorClock[thread] += 1;
                 }
-                else if (threadId == lockThreadIdClockPair.Key)
+                else if (thread == lockThreadIdClockPair.Key)
                 {
-                    vectorClock[threadId] = lockThreadIdClockPair.Value[threadId];
+                    vectorClock[thread] = lockThreadIdClockPair.Value[thread];
                 }
-                else if (lockThreadIdClockPair.Value.ContainsKey(threadId))
+                else if (lockThreadIdClockPair.Value.ContainsKey(thread))
                 {
-                    vectorClock[threadId] = Math.Max(vectorClock[threadId], lockThreadIdClockPair.Value[threadId]);
+                    vectorClock[thread] = Math.Max(vectorClock[thread], lockThreadIdClockPair.Value[thread]);
                 }
             });
             lockThreadIdClockPair.Value.ToList().ForEach(x => { if(!vectorClock.ContainsKey(x.Key)) vectorClock.Add(x.Key, x.Value);});
 
-            _threadVectorPool[ownThreadId] = threadVectorInstance;
+            _threadVectorPool[ownThread] = threadVectorInstance;
         }
 
 
         private void CheckForRaceCondition(ThreadEvent ownThreadEvent, ThreadVectorInstance threadVectorInstance)
         {
             List<ThreadVectorInstance> instances = 
-                (_threadVectorPool.Values.Where(instance => instance.ThreadId != threadVectorInstance.ThreadId)).ToList();
+                (_threadVectorPool.Values.Where(instance => instance.Thread != threadVectorInstance.Thread)).ToList();
             foreach (ThreadVectorInstance instance in instances) {
                 foreach (
                     List<ThreadEvent> concurrentEvents in
@@ -128,7 +129,7 @@ namespace DPCLibrary.Algorithm.Manager
                     {
                         if (IsRaceCondition(ownThreadEvent, threadEvent))
                         {
-                            Console.WriteLine("RaceCondition detected... Ressource: " + ownThreadEvent.Ressource + ", in Thread: " + threadVectorInstance.ThreadId);
+                            Console.WriteLine("RaceCondition detected... Ressource: " + ownThreadEvent.Ressource + ", in Thread: " + threadVectorInstance.Thread.ManagedThreadId);
                             // TODO:Fabian show message
                         }
                     }
