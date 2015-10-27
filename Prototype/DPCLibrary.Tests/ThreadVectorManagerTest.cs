@@ -31,7 +31,7 @@ namespace DPCLibrary.Tests
                 ThreadVectorManager.GetInstance().HandleWriteAccess(thread2, ressource);
                 ThreadVectorManager.GetInstance().HandleUnLock(thread2, otherLockRessource);
 
-                string expected = "RaceCondition detected... Ressource: " + ressource + ", in Thread: " + thread2 + "\r\n";
+                string expected = "RaceCondition detected... Ressource: " + ressource + ", in Thread: " + thread2.ManagedThreadId + "\r\n";
                 Assert.AreEqual(expected, sw.ToString());
             }
         }
@@ -58,7 +58,7 @@ namespace DPCLibrary.Tests
                 ThreadVectorManager.GetInstance().HandleWriteAccess(thread2, ressource);
                 ThreadVectorManager.GetInstance().HandleUnLock(thread2, otherLockRessource);
 
-                string expected = "RaceCondition detected... Ressource: " + ressource + ", in Thread: " + thread2 + "\r\n";
+                string expected = "RaceCondition detected... Ressource: " + ressource + ", in Thread: " + thread2.ManagedThreadId + "\r\n";
                 Assert.AreEqual(expected, sw.ToString());
             }
         }
@@ -112,7 +112,7 @@ namespace DPCLibrary.Tests
                 ThreadVectorManager.GetInstance().HandleReadAccess(thread2, ressource);
                 ThreadVectorManager.GetInstance().HandleUnLock(thread2, otherLockRessource);
 
-                string expected = "RaceCondition detected... Ressource: " + ressource + ", in Thread: " + thread2 + "\r\n";
+                string expected = "RaceCondition detected... Ressource: " + ressource + ", in Thread: " + thread2.ManagedThreadId + "\r\n";
                 Assert.AreEqual(expected, sw.ToString());
             }
         }
@@ -137,7 +137,7 @@ namespace DPCLibrary.Tests
 
                 ThreadVectorManager.GetInstance().HandleReadAccess(thread2, ressource);
 
-                string expected = "RaceCondition detected... Ressource: " + ressource + ", in Thread: " + thread2 + "\r\n";
+                string expected = "RaceCondition detected... Ressource: " + ressource + ", in Thread: " + thread2.ManagedThreadId + "\r\n";
                 Assert.AreEqual(expected, sw.ToString());
             }
         }
@@ -219,7 +219,7 @@ namespace DPCLibrary.Tests
 
                 ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ownRessource);
 
-                string expected = "RaceCondition detected... Ressource: " + ownRessource + ", in Thread: " + thread + "\r\n";
+                string expected = "RaceCondition detected... Ressource: " + ownRessource + ", in Thread: " + thread.ManagedThreadId + "\r\n";
                 Assert.AreEqual(expected, sw.ToString());
             }
         }
@@ -289,7 +289,7 @@ namespace DPCLibrary.Tests
                 ThreadVectorManager.GetInstance().HandleUnLock(thread3, otherotherLockRessource);
                 ThreadVectorManager.GetInstance().HandleUnLock(thread2, otherLockRessource);
 
-                string expected = "RaceCondition detected... Ressource: " + otherRessource + ", in Thread: " + thread3 + "\r\n";
+                string expected = "RaceCondition detected... Ressource: " + otherRessource + ", in Thread: " + thread3.ManagedThreadId + "\r\n";
                 Assert.AreEqual(expected, sw.ToString());
             }
         }
