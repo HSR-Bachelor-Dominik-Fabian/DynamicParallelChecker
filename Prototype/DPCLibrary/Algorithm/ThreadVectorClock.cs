@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace DPCLibrary.Algorithm
 {
-    class ThreadVectorClock : Dictionary<int, int>, IComparable<ThreadVectorClock>
+    class ThreadVectorClock : Dictionary<int, int>
     {
         public int OwnThreadId { get; }
 
@@ -20,7 +20,7 @@ namespace DPCLibrary.Algorithm
         /// </summary>
         /// <param name="other"></param>
         /// <returns>0 for Concurrent, 1 for 'this happend after other' and -1 for 'this happend before other'</returns>
-        public int CompareTo(ThreadVectorClock other)
+        public int HappenedBefore(ThreadVectorClock other)
         {
             Debug.Assert(!Equals(other),"Logical Error: There shouldn't be two Equal Vectors to compare. For Equals comparison use Equals");
             int compared = 0;
