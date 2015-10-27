@@ -218,7 +218,6 @@ namespace CodeInstrumentationTest
                             TypeReference arrayTypeReference = (TypeReference) ins.Operand;
                             InjectArrayLdElement(firstInt32VariableDefinition, arrayTypeReference, method,
                                 referencedReadAccessMethod, ins);
-                            //TODO:Dominik:Testfall nicht vorhanden
                         }
                         else if (ins.OpCode.Equals(OpCodes.Ldelem_I) || ins.OpCode.Equals(OpCodes.Ldelem_I1)
                                  || ins.OpCode.Equals(OpCodes.Ldelem_I2) || ins.OpCode.Equals(OpCodes.Ldelem_I4) ||
@@ -280,7 +279,6 @@ namespace CodeInstrumentationTest
                             }
                             InjectStrElement(varDefinition, secondInt32VariableDefinition, valueTypeReference,
                                 method, referencedWriteAccessMethod, ins);
-                            //TODO:Dominik:Testfall nicht vorhanden
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stelem_I) || ins.OpCode.Equals(OpCodes.Stelem_I1)
                                  || ins.OpCode.Equals(OpCodes.Stelem_I2) || ins.OpCode.Equals(OpCodes.Stelem_I4)

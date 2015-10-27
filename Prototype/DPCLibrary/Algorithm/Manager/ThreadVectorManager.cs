@@ -37,6 +37,7 @@ namespace DPCLibrary.Algorithm.Manager
 
         private readonly LockHistory _lockHistory = new LockHistory();
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void HandleReadAccess(int threadId, int ressource)
         {
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(threadId);
@@ -45,6 +46,7 @@ namespace DPCLibrary.Algorithm.Manager
             CheckForRaceCondition(threadEvent, threadVectorInstance);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void HandleWriteAccess(int threadId, int ressource)
         {
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(threadId);
@@ -53,6 +55,7 @@ namespace DPCLibrary.Algorithm.Manager
             CheckForRaceCondition(threadEvent, threadVectorInstance);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void HandleLock(int threadId, int lockRessource)
         {
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(threadId);
@@ -64,6 +67,7 @@ namespace DPCLibrary.Algorithm.Manager
             threadVectorInstance.LockRessource = lockRessource;
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void HandleUnLock(int threadId, int lockRessource)
         {
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(threadId);
@@ -102,7 +106,7 @@ namespace DPCLibrary.Algorithm.Manager
                 {
                     vectorClock[threadId] = lockThreadIdClockPair.Value[threadId];
                 }
-                else
+                else if (lockThreadIdClockPair.Value.ContainsKey(threadId))
                 {
                     vectorClock[threadId] = Math.Max(vectorClock[threadId], lockThreadIdClockPair.Value[threadId]);
                 }
@@ -112,7 +116,7 @@ namespace DPCLibrary.Algorithm.Manager
             _threadVectorPool[ownThreadId] = threadVectorInstance;
         }
 
-        [MethodImpl(MethodImplOptions.Synchronized)] //TODO:Dominik: Methoden wie diese auf Thread-Safe checken
+
         private void CheckForRaceCondition(ThreadEvent ownThreadEvent, ThreadVectorInstance threadVectorInstance)
         {
             List<ThreadVectorInstance> instances = 
