@@ -186,40 +186,38 @@ namespace TestProgram
             List<Task> taskPool = new List<Task>();
             taskPool.Add(Task.Factory.StartNew(() =>
             {
-                //lock (lockB)
-                //{
+                lock (lockB)
+                {
                     _brace = 3;
-                //}
+                }
                 _brace = 4;
-                //lock (lockA)
-                //{
+                lock (lockA)
+                {
                     Console.WriteLine(_arace);
-                //}
+                }
             }));
             taskPool.Add(Task.Factory.StartNew(() =>
             {
-                //lock (lockA)
-                //{
+                lock (lockA)
+                {
                     _arace = 2;
-                //}
+                }
                 _brace = 5;
-                //lock (lockB)
-                //{
-                    Console.WriteLine(_brace);
-                //}
+                lock (lockB)
+                {
+                Console.WriteLine(_brace);
+                }
             }));
-            
-            //lock (lockA)
-            //{
+
+            lock (lockA)
+            {
                 _arace = 3;
-            //}
-            //lock (lockB)
-            //{
+            }
+            lock (lockB)
+            {
                 _brace = 6;
-            //}
+            }
             Console.WriteLine(_arace);
-            
-            //Task.WaitAll(taskPool.ToArray());
         }
 
         //public static void Test11()

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace DPCLibrary.Algorithm.Manager
 {
@@ -111,6 +112,7 @@ namespace DPCLibrary.Algorithm.Manager
             _threadVectorPool[ownThreadId] = threadVectorInstance;
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)] //TODO:Dominik: Methoden wie diese auf Thread-Safe checken
         private void CheckForRaceCondition(ThreadEvent ownThreadEvent, ThreadVectorInstance threadVectorInstance)
         {
             List<ThreadVectorInstance> instances = 
