@@ -9,46 +9,47 @@ namespace DPCLibrary.Tests
         [TestMethod]
         public void TestConstructor()
         {
-            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, 122323, 1233233);
+            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, 122323);
             Assert.AreEqual(ThreadEvent.EventType.Read, threadEvent.ThreadEventType);
             Assert.AreEqual(122323, threadEvent.Ressource);
-            Assert.AreEqual(1233233, threadEvent.LockRessource);
         }
 
         [TestMethod]
-        public void TestPositivCompareRessourceAndLock()
+        public void TestPositivCompareRessource()
         {
-            ThreadEvent event1 = new ThreadEvent(ThreadEvent.EventType.Read, 122323, 1233233);
-            ThreadEvent event2 = new ThreadEvent(ThreadEvent.EventType.Read, 122323, 1233233);
-            Assert.IsTrue(event1.CompareRessourceAndLock(event2));
+            ThreadEvent event1 = new ThreadEvent(ThreadEvent.EventType.Read, 122323);
+            ThreadEvent event2 = new ThreadEvent(ThreadEvent.EventType.Read, 122323);
+            Assert.IsTrue(event1.CompareRessource(event2));
+        }
+
+        [TestMethod]
+        public void TestPositivCompareRessource2()
+        {
+            ThreadEvent event1 = new ThreadEvent(ThreadEvent.EventType.Read, 122323);
+            ThreadEvent event2 = new ThreadEvent(ThreadEvent.EventType.Write, 122323);
+            Assert.IsTrue(event1.CompareRessource(event2));
+        }
+
+        [TestMethod]
+        public void TestNegativRessource()
+        {
+            ThreadEvent event1 = new ThreadEvent(ThreadEvent.EventType.Read, 3123);
+            ThreadEvent event2 = new ThreadEvent(ThreadEvent.EventType.Write, 1323);
+            Assert.IsFalse(event1.CompareRessource(event2));
         }
         [TestMethod]
-        public void TestPositivCompareRessourceAndLock2()
+        public void TestNegativRessource2()
         {
-            ThreadEvent event1 = new ThreadEvent(ThreadEvent.EventType.Read, 122323, 1233233);
-            ThreadEvent event2 = new ThreadEvent(ThreadEvent.EventType.Write, 122323, 1233233);
-            Assert.IsTrue(event1.CompareRessourceAndLock(event2));
+            ThreadEvent event1 = new ThreadEvent(ThreadEvent.EventType.Read, 3123);
+            ThreadEvent event2 = new ThreadEvent(ThreadEvent.EventType.Write, 3123);
+            Assert.IsTrue(event1.CompareRessource(event2));
         }
         [TestMethod]
-        public void TestNegativRessourceAndLock()
+        public void TestNegativRessource3()
         {
-            ThreadEvent event1 = new ThreadEvent(ThreadEvent.EventType.Read, 3123, 1233233);
-            ThreadEvent event2 = new ThreadEvent(ThreadEvent.EventType.Write, 1323, 1233233);
-            Assert.IsFalse(event1.CompareRessourceAndLock(event2));
-        }
-        [TestMethod]
-        public void TestNegativRessourceAndLock2()
-        {
-            ThreadEvent event1 = new ThreadEvent(ThreadEvent.EventType.Read, 3123, 1233233);
-            ThreadEvent event2 = new ThreadEvent(ThreadEvent.EventType.Write, 3123, 123);
-            Assert.IsFalse(event1.CompareRessourceAndLock(event2));
-        }
-        [TestMethod]
-        public void TestNegativRessourceAndLock3()
-        {
-            ThreadEvent event1 = new ThreadEvent(ThreadEvent.EventType.Read, 3123, 1233233);
-            ThreadEvent event2 = new ThreadEvent(ThreadEvent.EventType.Write, 312323, 123);
-            Assert.IsFalse(event1.CompareRessourceAndLock(event2));
+            ThreadEvent event1 = new ThreadEvent(ThreadEvent.EventType.Read, 3123);
+            ThreadEvent event2 = new ThreadEvent(ThreadEvent.EventType.Write, 312323);
+            Assert.IsFalse(event1.CompareRessource(event2));
         }
     }
 }

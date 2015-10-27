@@ -47,7 +47,7 @@ namespace DPCLibrary.Algorithm
             }
             else
             {
-                ThreadEvent foundEvent = events.SingleOrDefault(x => x.CompareRessourceAndLock(threadEvent));
+                ThreadEvent foundEvent = events.SingleOrDefault(x => x.CompareRessource(threadEvent));
                 if (foundEvent != null && foundEvent.ThreadEventType < threadEvent.ThreadEventType)
                 {
                     foundEvent.ThreadEventType = threadEvent.ThreadEventType;

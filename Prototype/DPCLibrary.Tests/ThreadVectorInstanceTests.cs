@@ -35,7 +35,7 @@ namespace DPCLibrary.Tests
         public void TestWriteHistory()
         {
             ThreadVectorInstance instance = new ThreadVectorInstance(1);
-            instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Read,123,332));
+            instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Read,123));
             ThreadVectorHistory dict = instance.GetConcurrentHistory(new ThreadVectorClock(2));
             Assert.AreEqual(1,dict[new ThreadVectorClock(1)].Count);
         }

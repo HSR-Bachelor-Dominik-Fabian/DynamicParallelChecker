@@ -68,7 +68,7 @@ namespace DPCLibrary.Tests
             ThreadVectorClock clock1 = new ThreadVectorClock(threadId);
             clock1[threadId] += 1;
             ThreadVectorClock clock2 = new ThreadVectorClock(threadId);
-            Assert.AreEqual(1,clock1.CompareTo(clock2));
+            Assert.AreEqual(1,clock1.HappenedBefore(clock2));
         }
         [TestMethod]
         public void TestConcurrentCompareTo()
@@ -77,7 +77,7 @@ namespace DPCLibrary.Tests
             int threadId2 = 2;
             ThreadVectorClock clock1 = new ThreadVectorClock(threadId) { { threadId2,0}};
             ThreadVectorClock clock2 = new ThreadVectorClock(threadId2) { { threadId, 0 } };
-            Assert.AreEqual(0, clock1.CompareTo(clock2));
+            Assert.AreEqual(0, clock1.HappenedBefore(clock2));
         }
         [TestMethod]
         public void TestHappendBeforeCompareTo()
@@ -86,7 +86,7 @@ namespace DPCLibrary.Tests
             int threadId2 = 2;
             ThreadVectorClock clock1 = new ThreadVectorClock(threadId) { { threadId2, 0 } };
             ThreadVectorClock clock2 = new ThreadVectorClock(threadId2) { { threadId, 1 } };
-            Assert.AreEqual(-1, clock1.CompareTo(clock2));
+            Assert.AreEqual(-1, clock1.HappenedBefore(clock2));
         }
         [TestMethod]
         public void TestConcurrent2CompareTo()
@@ -96,7 +96,7 @@ namespace DPCLibrary.Tests
             int threadId3 = 3;
             ThreadVectorClock clock1 = new ThreadVectorClock(threadId) { { threadId2, 0 } };
             ThreadVectorClock clock2 = new ThreadVectorClock(threadId2) { { threadId3, 1 } };
-            Assert.AreEqual(0, clock1.CompareTo(clock2));
+            Assert.AreEqual(0, clock1.HappenedBefore(clock2));
         }
         [TestMethod]
         public void TestHappendAfter2CompareTo()
@@ -107,7 +107,7 @@ namespace DPCLibrary.Tests
             ThreadVectorClock clock1 = new ThreadVectorClock(threadId) { { threadId2, 1 } };
             clock1[threadId] += 1;
             ThreadVectorClock clock2 = new ThreadVectorClock(threadId2) { { threadId3, 1 } };
-            Assert.AreEqual(1, clock1.CompareTo(clock2));
+            Assert.AreEqual(1, clock1.HappenedBefore(clock2));
         }
 
         [TestMethod]
@@ -119,7 +119,7 @@ namespace DPCLibrary.Tests
             ThreadVectorClock clock1 = new ThreadVectorClock(threadId) { { threadId3, 1 } };
             ThreadVectorClock clock2 = new ThreadVectorClock(threadId2) { { threadId, 1 } };
             clock2[threadId] += 1;
-            Assert.AreEqual(-1, clock1.CompareTo(clock2));
+            Assert.AreEqual(-1, clock1.HappenedBefore(clock2));
         }
     }
 }

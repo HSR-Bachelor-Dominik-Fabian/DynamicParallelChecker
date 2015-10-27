@@ -12,18 +12,15 @@
 
         public int Ressource { get; }
 
-        public int LockRessource { get; }
-
-        public ThreadEvent(EventType type, int ressource, int lockRessource)
+        public ThreadEvent(EventType type, int ressource)
         {
             ThreadEventType = type;
             Ressource = ressource;
-            LockRessource = lockRessource;
         }
 
-        public bool CompareRessourceAndLock(ThreadEvent other)
+        public bool CompareRessource(ThreadEvent other)
         {
-            return other.LockRessource.Equals(LockRessource) && other.Ressource.Equals(Ressource);
+            return other.Ressource.Equals(Ressource);
         }
     }
 }

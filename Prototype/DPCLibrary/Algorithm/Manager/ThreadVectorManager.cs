@@ -41,7 +41,7 @@ namespace DPCLibrary.Algorithm.Manager
         public void HandleReadAccess(int threadId, int ressource)
         {
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(threadId);
-            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, ressource, threadVectorInstance.LockRessource);
+            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, ressource);
             threadVectorInstance.WriteHistory(threadEvent);
             CheckForRaceCondition(threadEvent, threadVectorInstance);
         }
@@ -50,7 +50,7 @@ namespace DPCLibrary.Algorithm.Manager
         public void HandleWriteAccess(int threadId, int ressource)
         {
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(threadId);
-            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Write, ressource, threadVectorInstance.LockRessource);
+            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Write, ressource);
             threadVectorInstance.WriteHistory(threadEvent);
             CheckForRaceCondition(threadEvent, threadVectorInstance);
         }
@@ -64,7 +64,6 @@ namespace DPCLibrary.Algorithm.Manager
             {
                 SynchronizeVectorClock(threadId, lockThreadIdClockPair);
             }
-            threadVectorInstance.LockRessource = lockRessource;
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
@@ -73,7 +72,6 @@ namespace DPCLibrary.Algorithm.Manager
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(threadId);
             _lockHistory.AddLockEntry(lockRessource, new KeyValuePair<int, ThreadVectorClock>(threadId, threadVectorInstance.VectorClock));
             threadVectorInstance.IncrementClock();
-            threadVectorInstance.LockRessource = 0;
         }
 
         private ThreadVectorInstance GetThreadVectorInstance(int threadId)
