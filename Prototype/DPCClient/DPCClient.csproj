@@ -51,19 +51,24 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
+    <ApplicationDefinition Include="View\App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="DpcClient.xaml">
+    <Page Include="View\DpcClient.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="App.xaml.cs">
+    <Compile Include="Model\FilePathModel.cs" />
+    <Compile Include="Model\LogEntryModel.cs" />
+    <Compile Include="ViewModel\DPCViewModel.cs" />
+    <Compile Include="ViewModel\OpenButtonCommand.cs" />
+    <Compile Include="ViewModel\StartParallelCheckerButtonCommand.cs" />
+    <Compile Include="View\App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DpcClient.xaml.cs">
+    <Compile Include="View\DpcClient.xaml.cs">
       <DependentUpon>DpcClient.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
@@ -95,6 +100,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
