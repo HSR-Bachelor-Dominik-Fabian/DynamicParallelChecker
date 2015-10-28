@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using DPCLibrary.Algorithm.Manager;
 
 namespace DPCLibrary
 {
@@ -10,35 +10,30 @@ namespace DPCLibrary
     {
         public static void ReadAccess(int obj)
         {
-            int currentThreadId = Thread.CurrentThread.ManagedThreadId;
-            Console.WriteLine("Thread: " + currentThreadId + ": Reading object " + obj);
-            Console.ReadLine();
+            Thread thread = Thread.CurrentThread;
+            ThreadVectorManager.GetInstance().HandleReadAccess(thread, obj);
         }
 
         public static void WriteAccess(int obj)
         {
-            int currentThreadId = Thread.CurrentThread.ManagedThreadId;
-            Console.WriteLine("Thread: " + currentThreadId + ": Writing object " + obj);
-            Console.ReadLine();
+            Thread thread = Thread.CurrentThread;
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, obj);
         }
 
         public static void LockObject(int obj)
         {
-            int currentThreadId = Thread.CurrentThread.ManagedThreadId;
-            Console.WriteLine("Thread: " + currentThreadId + ": Locking object " + obj);
-            Console.ReadLine();
+            Thread thread = Thread.CurrentThread;
+            ThreadVectorManager.GetInstance().HandleLock(thread, obj);
         }
 
         public static void UnLockObject(int obj)
         {
-            int currentThreadId = Thread.CurrentThread.ManagedThreadId;
-            Console.WriteLine("Thread: " + currentThreadId + ": Unlocking object " + obj);
-            Console.ReadLine();
+            Thread thread = Thread.CurrentThread;
+            ThreadVectorManager.GetInstance().HandleUnLock(thread, obj);
         }
 
         public static T[] GenericList<T>(List<T> genericList)
         {
-            Console.WriteLine("GenericListCall");
             return (T[])genericList.GetType().GetRuntimeFields().First(x => x.Name == "_items").GetValue(genericList);
         }
     }
