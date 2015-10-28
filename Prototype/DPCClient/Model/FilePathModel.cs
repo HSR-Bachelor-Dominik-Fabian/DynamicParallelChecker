@@ -1,12 +1,11 @@
-﻿using System.ComponentModel;
-
+﻿
 namespace DPCClient.Model
 {
-    class LogEntryModel
+    class FilePathModel
     {
         public string FilePath { get; set; }
 
-        public LogEntryModel(string filePath)
+        public FilePathModel(string filePath)
         {
             FilePath = filePath;
         }
