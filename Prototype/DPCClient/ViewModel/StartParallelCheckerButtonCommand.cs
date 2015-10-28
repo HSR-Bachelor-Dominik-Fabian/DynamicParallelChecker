@@ -20,6 +20,7 @@ namespace DPCClient.ViewModel
 
         public void Execute(object parameter)
         {
+
             _obj.AddLogEntry(new LogEntryModel(_obj.FilePath));
         }
 

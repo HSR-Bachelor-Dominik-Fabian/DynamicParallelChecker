@@ -61,6 +61,10 @@
     </Page>
     <Compile Include="Model\FilePathModel.cs" />
     <Compile Include="Model\LogEntryModel.cs" />
+    <Compile Include="Process\CheckingProcessManager.cs" />
+    <Compile Include="Process\CopyProcessor.cs" />
+    <Compile Include="Process\InstrumentationProcessor.cs" />
+    <Compile Include="Process\NLogSocketProcessor.cs" />
     <Compile Include="ViewModel\DPCViewModel.cs" />
     <Compile Include="ViewModel\OpenButtonCommand.cs" />
     <Compile Include="ViewModel\StartParallelCheckerButtonCommand.cs" />
