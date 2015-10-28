@@ -12,6 +12,7 @@ namespace DPCLibrary.Tests
     public class ThreadVectorManagerTest
     {
         [TestMethod]
+        [DeploymentItem(@".\Nlog.config")]
         public void TestRaceConditionReadWrite()
         {
             Thread thread = Thread.CurrentThread;
@@ -319,8 +320,7 @@ namespace DPCLibrary.Tests
             List<string> logs = GetMemoryLog();
             Assert.AreEqual(0, logs.Count);
         }
-
-        [DeploymentItem("./Nlog.config")]
+        
         [TestCleanup]
         public void CleanUp()
         {
