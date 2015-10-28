@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using NLog;
 
 namespace DPCLibrary.Algorithm.Manager
 {
@@ -10,7 +11,7 @@ namespace DPCLibrary.Algorithm.Manager
     {
         private static volatile ThreadVectorManager _instance;
         private static readonly object _syncRoot = new object();
-
+        
         public static ThreadVectorManager GetInstance()
         {
             if (_instance == null)
@@ -26,7 +27,7 @@ namespace DPCLibrary.Algorithm.Manager
             return _instance;
         }
 
-        private ThreadVectorManager() { }
+        private ThreadVectorManager(){}
 
         internal static void Reset()
         {
@@ -37,6 +38,8 @@ namespace DPCLibrary.Algorithm.Manager
             = new Dictionary<Thread, ThreadVectorInstance>();
 
         private readonly LockHistory _lockHistory = new LockHistory();
+
+        private readonly Logger _logger = LogManager.GetLogger("ThreadVectorManager");
 
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void HandleReadAccess(Thread thread, int ressource)
@@ -128,7 +131,9 @@ namespace DPCLibrary.Algorithm.Manager
                     {
                         if (IsRaceCondition(ownThreadEvent, threadEvent))
                         {
-                            Console.WriteLine("RaceCondition detected... Ressource: " + ownThreadEvent.Ressource + ", in Thread: " + threadVectorInstance.Thread.ManagedThreadId);
+                            //Console.WriteLine("RaceCondition detected... Ressource: " + ownThreadEvent.Ressource + ", in Thread: " + threadVectorInstance.Thread.ManagedThreadId);
+                            
+                            _logger.Error("RaceCondition detected... Ressource: " + ownThreadEvent.Ressource + ", in Thread: " + threadVectorInstance.Thread.ManagedThreadId);
                             // TODO:Fabian show message
                         }
                     }

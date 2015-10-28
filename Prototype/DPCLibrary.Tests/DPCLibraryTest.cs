@@ -1,8 +1,9 @@
-﻿using System;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Threading;
 using DPCLibrary.Algorithm.Manager;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NLog;
+using NLog.Targets;
 
 namespace DPCLibrary.Tests
 {
@@ -13,117 +14,107 @@ namespace DPCLibrary.Tests
         [TestMethod]
         public void TestNoRaceConditionRead()
         {
-            using (StringWriter sw = new StringWriter())
+            int a = 1;
+            Thread thread2 = new Thread(() =>
             {
-                Console.SetOut(sw);
-
-                int a = 1;
-                Thread thread2 = new Thread(() =>
-                {
-                    DpcLibrary.LockObject(a);
-                    DpcLibrary.ReadAccess(a);
-                    DpcLibrary.UnLockObject(a);
-                });
-                thread2.Start();
                 DpcLibrary.LockObject(a);
                 DpcLibrary.ReadAccess(a);
                 DpcLibrary.UnLockObject(a);
-                thread2.Join();
+            });
+            thread2.Start();
+            DpcLibrary.LockObject(a);
+            DpcLibrary.ReadAccess(a);
+            DpcLibrary.UnLockObject(a);
+            thread2.Join();
 
-                string expected = "";
-                Assert.AreEqual(expected, sw.ToString());
-            }
+            List<string> logs = GetMemoryLog();
+            Assert.AreEqual(0, logs.Count);
         }
 
         [TestMethod]
         public void TestNoRaceConditionReadWrite()
         {
-            using (StringWriter sw = new StringWriter())
+            int a = 1;
+            Thread thread2 = new Thread(() =>
             {
-                Console.SetOut(sw);
-
-                int a = 1;
-                Thread thread2 = new Thread(() =>
-                {
-                    DpcLibrary.LockObject(a);
-                    DpcLibrary.WriteAccess(a);
-                    DpcLibrary.UnLockObject(a);
-                });
-                thread2.Start();
                 DpcLibrary.LockObject(a);
-                DpcLibrary.ReadAccess(a);
+                DpcLibrary.WriteAccess(a);
                 DpcLibrary.UnLockObject(a);
-                thread2.Join();
+            });
+            thread2.Start();
+            DpcLibrary.LockObject(a);
+            DpcLibrary.ReadAccess(a);
+            DpcLibrary.UnLockObject(a);
+            thread2.Join();
 
-                string expected = "";
-                Assert.AreEqual(expected, sw.ToString());
-            }
+            List<string> logs = GetMemoryLog();
+            Assert.AreEqual(0, logs.Count);
         }
 
         [TestMethod]
         public void TestRaceConditionReadWrite()
         {
-            using (StringWriter sw = new StringWriter())
+            int a = 1;
+            int b = 2;
+            Thread thread2 = new Thread(() =>
             {
-                Console.SetOut(sw);
+                DpcLibrary.LockObject(b);
+                DpcLibrary.WriteAccess(a);
+                DpcLibrary.UnLockObject(b);
+            });
+            thread2.Start();
+            DpcLibrary.LockObject(a);
+            DpcLibrary.ReadAccess(a);
+            DpcLibrary.UnLockObject(a);
+            thread2.Join();
 
-                int a = 1;
-                int b = 2;
-                Thread thread2 = new Thread(() =>
-                {
-                    DpcLibrary.LockObject(b);
-                    DpcLibrary.WriteAccess(a);
-                    DpcLibrary.UnLockObject(b);
-                });
-                thread2.Start();
-                DpcLibrary.LockObject(a);
-                DpcLibrary.ReadAccess(a);
-                DpcLibrary.UnLockObject(a);
-                thread2.Join();
-
-                string expected = "RaceCondition detected... Ressource: " + a + ", in Thread:";
-                Assert.AreEqual(expected, sw.ToString().Substring(0,50));
-            }
+            string expected = "RaceCondition detected... Ressource: " + a + ", in Thread:";
+            List<string> logs = GetMemoryLog();
+            Assert.AreEqual(1, logs.Count);
+            Assert.AreEqual(expected, logs[0].Substring(0, 50));
+            
         }
 
         [TestMethod]
         public void TestNoRaceConditionThreeThreads()
         {
-            using (StringWriter sw = new StringWriter())
+            int a = 1;
+            int b = 2;
+            Thread thread2 = new Thread(() =>
             {
-                Console.SetOut(sw);
+                DpcLibrary.LockObject(b);
+                DpcLibrary.WriteAccess(a);
+                DpcLibrary.UnLockObject(b);
+            });
+            thread2.Start();
+            Thread thread3 = new Thread(() =>
+            {
+                DpcLibrary.LockObject(b);
+                DpcLibrary.WriteAccess(a);
+                DpcLibrary.UnLockObject(b);
+            });
+            thread3.Start();
+            DpcLibrary.LockObject(a);
+            DpcLibrary.ReadAccess(a);
+            DpcLibrary.UnLockObject(a);
+            thread2.Join();
+            thread3.Join();
 
-                int a = 1;
-                int b = 2;
-                Thread thread2 = new Thread(() =>
-                {
-                    DpcLibrary.LockObject(b);
-                    DpcLibrary.WriteAccess(a);
-                    DpcLibrary.UnLockObject(b);
-                });
-                thread2.Start();
-                Thread thread3 = new Thread(() =>
-                {
-                    DpcLibrary.LockObject(b);
-                    DpcLibrary.WriteAccess(a);
-                    DpcLibrary.UnLockObject(b);
-                });
-                thread3.Start();
-                DpcLibrary.LockObject(a);
-                DpcLibrary.ReadAccess(a);
-                DpcLibrary.UnLockObject(a);
-                thread2.Join();
-                thread3.Join();
-
-                string expected = "RaceCondition detected... Ressource: " + a + ", in Thread:";
-                Assert.AreEqual(expected, sw.ToString().Substring(0, 50));
-            }
+            string expected = "RaceCondition detected... Ressource: " + a + ", in Thread:";
+            List<string> logs = GetMemoryLog();
+            Assert.AreNotEqual(0,logs.Count);
+            Assert.AreEqual(expected, logs[0].Substring(0, 50));
         }
 
         [TestCleanup]
         public void CleanUp()
         {
             ThreadVectorManager.Reset();
+            GetMemoryLog().Clear();
+        }
+        private List<string> GetMemoryLog()
+        {
+            return (List<string>)((MemoryTarget)LogManager.Configuration.FindTargetByName("memory")).Logs;
         }
     }
 }
