@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using DPCClient.ViewModel;
 
 namespace DPCClient.View
 {

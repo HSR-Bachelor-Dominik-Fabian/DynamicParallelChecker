@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace DPCClient.Model
+﻿namespace DPCClient.Model
 {
     class LogEntryModel
     {
