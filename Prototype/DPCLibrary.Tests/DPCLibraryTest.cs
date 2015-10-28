@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using DPCLibrary.Algorithm.Manager;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DPCLibrary.Tests
@@ -117,6 +118,12 @@ namespace DPCLibrary.Tests
                 string expected = "RaceCondition detected... Ressource: " + a + ", in Thread:";
                 Assert.AreEqual(expected, sw.ToString().Substring(0, 50));
             }
+        }
+
+        [TestCleanup]
+        public void CleanUp()
+        {
+            ThreadVectorManager.Reset();
         }
     }
 }
