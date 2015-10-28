@@ -44,6 +44,7 @@ namespace DPCLibrary.Algorithm.Manager
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void HandleReadAccess(Thread thread, int ressource)
         {
+            _logger.ConditionalDebug("ReadAccess: " + thread.ManagedThreadId + " on Ressource: " + ressource);
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(thread);
             ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, ressource);
             threadVectorInstance.WriteHistory(threadEvent);
@@ -53,6 +54,7 @@ namespace DPCLibrary.Algorithm.Manager
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void HandleWriteAccess(Thread thread, int ressource)
         {
+            _logger.ConditionalDebug("WriteAccess: " + thread.ManagedThreadId + " on Ressource: " + ressource);
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(thread);
             ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Write, ressource);
             threadVectorInstance.WriteHistory(threadEvent);
@@ -62,6 +64,7 @@ namespace DPCLibrary.Algorithm.Manager
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void HandleLock(Thread thread, int lockRessource)
         {
+            _logger.ConditionalDebug("Lock: " + thread.ManagedThreadId + " on Ressource: " + lockRessource);
             KeyValuePair<Thread, ThreadVectorClock> lockThreadIdClockPair;
             if (CheckLockHistory(lockRessource, out lockThreadIdClockPair))
             {
@@ -72,6 +75,7 @@ namespace DPCLibrary.Algorithm.Manager
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void HandleUnLock(Thread thread, int lockRessource)
         {
+            _logger.ConditionalDebug("Unlock: " + thread.ManagedThreadId + " on Ressource: " + lockRessource);
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(thread);
             _lockHistory.AddLockEntry(lockRessource, new KeyValuePair<Thread, ThreadVectorClock>(thread, threadVectorInstance.VectorClock));
             threadVectorInstance.IncrementClock();

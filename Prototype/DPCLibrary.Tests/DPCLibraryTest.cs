@@ -8,6 +8,7 @@ using NLog.Targets;
 namespace DPCLibrary.Tests
 {
     [TestClass]
+    [DeploymentItem(@".\Nlog.config")]
     public class DpcLibraryTest
     {
         
@@ -105,7 +106,7 @@ namespace DPCLibrary.Tests
             Assert.AreNotEqual(0,logs.Count);
             Assert.AreEqual(expected, logs[0].Substring(0, 50));
         }
-
+        
         [TestCleanup]
         public void CleanUp()
         {

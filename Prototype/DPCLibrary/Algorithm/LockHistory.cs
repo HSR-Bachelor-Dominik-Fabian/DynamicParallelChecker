@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
+using NLog;
 
 namespace DPCLibrary.Algorithm
 {
     class LockHistory
     {
         private readonly Dictionary<int, KeyValuePair<Thread, ThreadVectorClock>> _history;
-        
+        private readonly Logger _logger = LogManager.GetLogger("LockHistory");
         public LockHistory()
         {
             _history = new Dictionary<int, KeyValuePair<Thread, ThreadVectorClock>>();
@@ -21,10 +22,12 @@ namespace DPCLibrary.Algorithm
         {
             if (_history.ContainsKey(lockRessource))
             {
+                _logger.ConditionalTrace("Update Lock Entry on Ressource " + lockRessource + ", with Values: {" + lockThreadIdClockPair.Key.ManagedThreadId +" : " + lockThreadIdClockPair.Value + "}");
                 _history[lockRessource] = new KeyValuePair<Thread, ThreadVectorClock>(lockThreadIdClockPair.Key, lockThreadIdClockPair.Value.GetCopy());
             }
             else
             {
+                _logger.ConditionalTrace("Added Lock Entry on Ressource " + lockRessource + ", with Values: {" + lockThreadIdClockPair.Key.ManagedThreadId + " : " + lockThreadIdClockPair.Value + "}");
                 _history.Add(lockRessource, new KeyValuePair<Thread, ThreadVectorClock>(lockThreadIdClockPair.Key, lockThreadIdClockPair.Value.GetCopy()));
             }
         }

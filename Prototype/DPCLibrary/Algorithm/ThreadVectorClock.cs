@@ -2,11 +2,13 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using NLog;
 
 namespace DPCLibrary.Algorithm
 {
     class ThreadVectorClock : Dictionary<Thread, int>
     {
+        private readonly Logger _logger = LogManager.GetLogger("ThreadVectorClock");
         public Thread OwnThread { get; }
 
         public ThreadVectorClock(Thread thread)
@@ -46,6 +48,7 @@ namespace DPCLibrary.Algorithm
                     compared = -1;
                 }
             }
+            _logger.ConditionalTrace("(this) " + ToString() + " comparison to (other) " + other + "Result = " + compared);
             return compared;
         }
 
@@ -81,6 +84,15 @@ namespace DPCLibrary.Algorithm
                 }
             }
             return newClock;
+        }
+
+        public override string ToString()
+        {
+            string output = string.Empty;
+            output += "{";
+            output = this.Aggregate(output, (current, entry) => current + ("{" + entry.Key.ManagedThreadId + " : " + entry.Value + "}"));
+            output += "}";
+            return output;
         }
     }
 }
