@@ -1,10 +1,12 @@
 ﻿using System.Linq;
 using System.Threading;
+using NLog;
 
 namespace DPCLibrary.Algorithm
 {
     class ThreadVectorInstance
     {
+        private readonly Logger _logger = LogManager.GetLogger("ThreadVectorInstance");
         public Thread Thread { get; }
 
         public int LockRessource { get; set; }
@@ -15,6 +17,7 @@ namespace DPCLibrary.Algorithm
 
         public ThreadVectorInstance(Thread thread)
         {
+            _logger.ConditionalTrace("New VectorInstance with ThreadId: " + thread.ManagedThreadId);
             Thread = thread;
             VectorClock = new ThreadVectorClock(thread);
             _threadVectorHistory = new ThreadVectorHistory();
@@ -33,6 +36,7 @@ namespace DPCLibrary.Algorithm
 
         public void WriteHistory(ThreadEvent threadEvent)
         {
+            _logger.ConditionalTrace("Write History: " + threadEvent.Ressource + " with Level " + threadEvent.ThreadEventType);
             _threadVectorHistory.AddEvent(VectorClock, threadEvent);
         }
     }
