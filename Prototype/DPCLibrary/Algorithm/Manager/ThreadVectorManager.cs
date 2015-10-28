@@ -59,7 +59,6 @@ namespace DPCLibrary.Algorithm.Manager
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void HandleLock(Thread thread, int lockRessource)
         {
-            ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(thread);
             KeyValuePair<Thread, ThreadVectorClock> lockThreadIdClockPair;
             if (CheckLockHistory(lockRessource, out lockThreadIdClockPair))
             {

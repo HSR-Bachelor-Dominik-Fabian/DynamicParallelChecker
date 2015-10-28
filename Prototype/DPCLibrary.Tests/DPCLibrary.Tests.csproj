@@ -58,6 +58,7 @@
     <Compile Include="ThreadVectorHistoryTests.cs" />
     <Compile Include="ThreadVectorInstanceTests.cs" />
     <Compile Include="ThreadVectorManagerTest.cs" />
+    <Compile Include="DpcLibraryTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DPCLibrary\DPCLibrary.csproj">
