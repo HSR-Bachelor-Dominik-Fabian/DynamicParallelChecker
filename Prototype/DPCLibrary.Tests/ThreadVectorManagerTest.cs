@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using DPCLibrary.Algorithm.Manager;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -319,6 +320,7 @@ namespace DPCLibrary.Tests
             Assert.AreEqual(0, logs.Count);
         }
 
+        [DeploymentItem("./Nlog.config")]
         [TestCleanup]
         public void CleanUp()
         {

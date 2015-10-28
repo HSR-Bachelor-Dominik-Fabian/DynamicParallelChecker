@@ -106,6 +106,7 @@ namespace DPCLibrary.Tests
             Assert.AreEqual(expected, logs[0].Substring(0, 50));
         }
 
+        [DeploymentItem("./Nlog.config")]
         [TestCleanup]
         public void CleanUp()
         {
