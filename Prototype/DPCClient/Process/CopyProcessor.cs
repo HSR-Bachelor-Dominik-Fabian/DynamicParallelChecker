@@ -17,12 +17,26 @@ namespace DPCClient.Process
 
             Copy(directory, fileName, _targetDirectory);
 
+            CopyLibrary();
+
             return _targetDirectory + @"\" + fileName;
         }
 
         public void CleanUp()
         {
             Delete(_targetDirectory);
+        }
+
+        private void CopyLibrary()
+        {
+            string libraryFileName = "DPCLibrary.dll";
+            File.Copy(libraryFileName, _targetDirectory + @"\" + libraryFileName);
+
+            string nLogFileName = "NLog.dll";
+            File.Copy(nLogFileName, _targetDirectory + @"\" + nLogFileName);
+
+            string nLogConfigFileName = "NLog.config";
+            File.Copy(nLogConfigFileName, _targetDirectory + @"\" + nLogConfigFileName);
         }
 
         private void Copy(string directory, string fileName, string copyDirectory)
