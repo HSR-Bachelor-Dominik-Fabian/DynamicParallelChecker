@@ -29,6 +29,9 @@ namespace DPCClient.ViewModel
                 _checkingProcessManager.Start(_obj);
             });
             checkingThread.Start();
+            NLogSocketProcessor processor = new NLogSocketProcessor();
+            processor.Run(_obj);
+            _obj.AddLogEntry(new LogEntryModel(_obj.FilePath));
         }
 
         public event EventHandler CanExecuteChanged;
