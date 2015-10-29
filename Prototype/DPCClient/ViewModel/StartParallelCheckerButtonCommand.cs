@@ -3,6 +3,7 @@ using System.Windows.Input;
 using DPCClient.Model;
 using DPCClient.Process;
 using System.Threading;
+using System.Windows.Threading;
 
 namespace DPCClient.ViewModel
 {
@@ -23,12 +24,11 @@ namespace DPCClient.ViewModel
 
         public void Execute(object parameter)
         {
-            NLogSocketProcessor processor = new NLogSocketProcessor();
-            processor.Run(_obj);
             _checkingProcessManager = new CheckingProcessManager();
+            Dispatcher dispatcher = Dispatcher.CurrentDispatcher;
             Thread checkingThread = new Thread(() =>
             {
-                _checkingProcessManager.Start(_obj);
+                _checkingProcessManager.Start(_obj, dispatcher);
             });
             checkingThread.Start();
         }

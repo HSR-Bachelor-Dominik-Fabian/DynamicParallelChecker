@@ -19,9 +19,8 @@ namespace DPCClient.Process
             _listener.Start();
         }
 
-        public void Run(DPCViewModel viewModel)
+        public void Run(DPCViewModel viewModel, Dispatcher dispacherObject)
         {
-            Dispatcher dispacherObject = Dispatcher.CurrentDispatcher;
             ThreadPool.QueueUserWorkItem(o =>
             {
                 Console.WriteLine("Webserver running...");

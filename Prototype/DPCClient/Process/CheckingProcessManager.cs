@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 using DPCClient.ViewModel;
 
 namespace DPCClient.Process
@@ -21,14 +22,18 @@ namespace DPCClient.Process
             _nLogSocketProcessor = new NLogSocketProcessor();
         }
 
-        public void Start(DPCViewModel viewModel)
+        public void Start(DPCViewModel viewModel, Dispatcher dispatcher)
         {
+            _nLogSocketProcessor.Run(viewModel, dispatcher);
+
             // Copy all the files
             string copyPath = Directory.GetCurrentDirectory() + @"\" + _copyProcessor.Start(viewModel.FilePathModel);
             
             _instrumentationProcessor.Start(copyPath);
 
             _copyProcessor.CleanUp();
+
+            _nLogSocketProcessor.Stop();
         }
     }
 }
