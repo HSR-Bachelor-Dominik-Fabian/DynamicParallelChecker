@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 using DPCClient.Model;
+using DPCClient.Process;
 
 namespace DPCClient.ViewModel
 {
@@ -20,7 +21,8 @@ namespace DPCClient.ViewModel
 
         public void Execute(object parameter)
         {
-
+            NLogSocketProcessor processor = new NLogSocketProcessor();
+            processor.Run(_obj);
             _obj.AddLogEntry(new LogEntryModel(_obj.FilePath));
         }
 
