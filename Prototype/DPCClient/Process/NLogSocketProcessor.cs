@@ -6,6 +6,7 @@ using System.Threading;
 using System.Windows.Threading;
 using DPCClient.Model;
 using DPCClient.ViewModel;
+using Newtonsoft.Json;
 
 namespace DPCClient.Process
 {
@@ -36,9 +37,10 @@ namespace DPCClient.Process
                             {
                                 StreamReader stream = new StreamReader(ctx.Request.InputStream);
                                 string x = stream.ReadToEnd();
+                                NLogMessage message = JsonConvert.DeserializeObject<NLogMessage>(x);
                                 dispacherObject.Invoke(() =>
                                 {
-                                    viewModel.AddLogEntry(new LogEntryModel(x));
+                                    viewModel.AddLogEntry(new LogEntryModel(message.Message));
                                 });
                                 
                             }
