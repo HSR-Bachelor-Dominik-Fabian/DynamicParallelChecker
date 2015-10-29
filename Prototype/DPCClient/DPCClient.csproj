@@ -104,7 +104,12 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\CodeInstrumentationTest\CodeInstrumentationTest.csproj">
+      <Project>{3d9399b5-91c2-410c-8a9a-3bc469eee0cb}</Project>
+      <Name>CodeInstrumentationTest</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

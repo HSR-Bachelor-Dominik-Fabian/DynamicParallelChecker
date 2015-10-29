@@ -9,8 +9,9 @@ using Mono.Cecil.Rocks;
 
 namespace CodeInstrumentationTest
 {
-    internal class CodeInstrumentator
+    public class CodeInstrumentator
     {
+        /*
         // ReSharper disable once UnusedParameter.Local
         private static void Main(string[] args)
         {
@@ -24,8 +25,8 @@ namespace CodeInstrumentationTest
                 readLine = Console.ReadLine();
             }
         }
-
-        private static void InjectCodeInstrumentation(string fileName)
+        */
+        public static void InjectCodeInstrumentation(string fileName)
         {
             ModuleDefinition refModul = ModuleDefinition.ReadModule("DPCLibrary.dll");
             TypeDefinition typeDefinition = refModul.Types.First(x => x.Name == "DpcLibrary");

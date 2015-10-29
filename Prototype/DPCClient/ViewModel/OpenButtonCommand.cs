@@ -21,7 +21,7 @@ namespace DPCClient.ViewModel
             Microsoft.Win32.OpenFileDialog fileDialog = new Microsoft.Win32.OpenFileDialog
             {
                 DefaultExt = ".exe",
-                Filter = "DLL Assembly (*.dll)|*.dll|Executable (*.exe)|*.exe"
+                Filter = "Executable (*.exe)|*.exe"
             };
             
             bool? result = fileDialog.ShowDialog();

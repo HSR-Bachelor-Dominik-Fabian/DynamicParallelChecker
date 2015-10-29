@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Windows.Input;
 using DPCClient.Model;
+using DPCClient.Process;
+using System.Threading;
 
 namespace DPCClient.ViewModel
 {
     class StartParallelCheckerButtonCommand : ICommand
     {
         private DPCViewModel _obj;
+        private CheckingProcessManager _checkingProcessManager;
 
         public StartParallelCheckerButtonCommand(DPCViewModel obj)
         {
@@ -20,8 +23,12 @@ namespace DPCClient.ViewModel
 
         public void Execute(object parameter)
         {
-
-            _obj.AddLogEntry(new LogEntryModel(_obj.FilePath));
+            _checkingProcessManager = new CheckingProcessManager();
+            Thread checkingThread = new Thread(() =>
+            {
+                _checkingProcessManager.Start(_obj);
+            });
+            checkingThread.Start();
         }
 
         public event EventHandler CanExecuteChanged;

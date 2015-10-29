@@ -34,6 +34,8 @@ namespace DPCClient.ViewModel
             }
         }
 
+        public FilePathModel FilePathModel => _filePathModel;
+
         public ObservableCollection<LogEntryModel> LogEntry
         {
             get { return _logEntryModels; }
