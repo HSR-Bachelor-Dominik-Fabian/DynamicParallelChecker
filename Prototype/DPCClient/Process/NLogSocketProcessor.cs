@@ -39,7 +39,7 @@ namespace DPCClient.Process
                                 NLogMessage message = JsonConvert.DeserializeObject<NLogMessage>(x);
                                 dispacherObject.Invoke(() =>
                                 {
-                                    viewModel.AddLogEntry(new LogEntryModel(message.Message));
+                                    viewModel.AddLogEntry(message);
                                 });
                                 
                             }

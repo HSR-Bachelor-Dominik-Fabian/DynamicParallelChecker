@@ -16,11 +16,30 @@
         </Grid.ColumnDefinitions>
         <TextBox x:Name="FilePath" HorizontalAlignment="Left" Height="20" Margin="103,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="760" Text="{Binding FilePath, Source={StaticResource dpcviewobj}}"/>
         <Button x:Name="OpenButton" Content="Open" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Command="{Binding OpenBtnClick, Mode=OneWay, Source={StaticResource dpcviewobj}}"/>
-        <Button x:Name="StartCheckerButton" Content="Start Parallel Checker" HorizontalAlignment="Left" Margin="701,42,0,0" VerticalAlignment="Top" Width="137" Command="{Binding StartParallelCheckerBtnClick, Mode=OneWay, Source={StaticResource dpcviewobj}}"/>
+        <Button x:Name="StartCheckerButton" Content="Start Parallel Checker" HorizontalAlignment="Left" Margin="726,42,0,0" VerticalAlignment="Top" Width="137" Command="{Binding StartParallelCheckerBtnClick, Mode=OneWay, Source={StaticResource dpcviewobj}}"/>
         <ListView x:Name="listView" Margin="0,72,0,0" ItemsSource="{Binding LogEntry, Source={StaticResource dpcviewobj}}">
+            <ListView.Resources>
+                <Style TargetType="{x:Type ListViewItem}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Level}" Value="ERROR">
+                            <Setter Property="Background" Value="Coral" />
+                            <Setter Property="Foreground" Value="White" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Level}" Value="WARNING">
+                            <Setter Property="Background" Value="Orange" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Level}" Value="FATAL">
+                            <Setter Property="Background" Value="Crimson" />
+                            <Setter Property="Foreground" Value="White" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.Resources>
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="FilePath" DisplayMemberBinding="{Binding FilePath}"/>
+                    <GridViewColumn Header="Timestamp" DisplayMemberBinding="{Binding Time}"/>
+                    <GridViewColumn Header="Level" DisplayMemberBinding="{Binding Level}"/>
+                    <GridViewColumn Header="Message" DisplayMemberBinding="{Binding Message}"/>
                 </GridView>
             </ListView.View>
         </ListView>

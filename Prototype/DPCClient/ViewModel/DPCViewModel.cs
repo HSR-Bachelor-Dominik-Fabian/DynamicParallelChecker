@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using DPCClient.Model;
 
@@ -10,7 +11,7 @@ namespace DPCClient.ViewModel
     {
         private readonly OpenButtonCommand _openButtonCommand;
         private readonly FilePathModel _filePathModel;
-        private ObservableCollection<LogEntryModel> _logEntryModels;
+        private ObservableCollection<NLogMessage> _logEntryModels;
         private readonly StartParallelCheckerButtonCommand _startParallelCheckerButtonCommand;
 
 
@@ -18,7 +19,7 @@ namespace DPCClient.ViewModel
         {
             _openButtonCommand = new OpenButtonCommand(this);
             _filePathModel = new FilePathModel("");
-            _logEntryModels = new ObservableCollection<LogEntryModel>();
+            _logEntryModels = new ObservableCollection<NLogMessage>();
             _startParallelCheckerButtonCommand = new StartParallelCheckerButtonCommand(this);
         }
 
@@ -36,7 +37,7 @@ namespace DPCClient.ViewModel
 
         public FilePathModel FilePathModel => _filePathModel;
 
-        public ObservableCollection<LogEntryModel> LogEntry
+        public ObservableCollection<NLogMessage> LogEntry
         {
             get { return _logEntryModels; }
             set
@@ -46,7 +47,8 @@ namespace DPCClient.ViewModel
             }
         }
 
-        public void AddLogEntry(LogEntryModel entry)
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void AddLogEntry(NLogMessage entry)
         {
             _logEntryModels.Add(entry);
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add));
