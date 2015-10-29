@@ -23,15 +23,14 @@ namespace DPCClient.ViewModel
 
         public void Execute(object parameter)
         {
+            NLogSocketProcessor processor = new NLogSocketProcessor();
+            processor.Run(_obj);
             _checkingProcessManager = new CheckingProcessManager();
             Thread checkingThread = new Thread(() =>
             {
                 _checkingProcessManager.Start(_obj);
             });
             checkingThread.Start();
-            NLogSocketProcessor processor = new NLogSocketProcessor();
-            processor.Run(_obj);
-            _obj.AddLogEntry(new LogEntryModel(_obj.FilePath));
         }
 
         public event EventHandler CanExecuteChanged;
