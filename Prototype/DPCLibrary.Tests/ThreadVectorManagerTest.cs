@@ -3,6 +3,7 @@ using System.Threading;
 using DPCLibrary.Algorithm.Manager;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NLog;
+using NLog.Common;
 using NLog.Targets;
 
 namespace DPCLibrary.Tests
@@ -20,13 +21,14 @@ namespace DPCLibrary.Tests
             int ressource = 1;
             int ownLockRessource = 2;
             int otherLockRessource = 3;
+            int lineofCode = 12;
 
             ThreadVectorManager.GetInstance().HandleLock(thread, ownLockRessource);
-            ThreadVectorManager.GetInstance().HandleReadAccess(thread, ressource);
+            ThreadVectorManager.GetInstance().HandleReadAccess(thread, ressource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread, ownLockRessource);
 
             ThreadVectorManager.GetInstance().HandleLock(thread2, otherLockRessource);
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread2, ressource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread2, ressource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread2, otherLockRessource);
             List<string> logs = GetMemoryLog();
             CollectionAssert.Contains(logs,
@@ -43,13 +45,14 @@ namespace DPCLibrary.Tests
             int ressource = 1;
             int ownLockRessource = 2;
             int otherLockRessource = 3;
+            int lineofCode = 12;
 
             ThreadVectorManager.GetInstance().HandleLock(thread, ownLockRessource);
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ressource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ressource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread, ownLockRessource);
 
             ThreadVectorManager.GetInstance().HandleLock(thread2, otherLockRessource);
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread2, ressource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread2, ressource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread2, otherLockRessource);
 
             List<string> logs = GetMemoryLog();
@@ -67,13 +70,14 @@ namespace DPCLibrary.Tests
             int ressource = 1;
             int ownLockRessource = 2;
             int otherLockRessource = 3;
+            int lineofCode = 12;
 
             ThreadVectorManager.GetInstance().HandleLock(thread, ownLockRessource);
-            ThreadVectorManager.GetInstance().HandleReadAccess(thread, ressource);
+            ThreadVectorManager.GetInstance().HandleReadAccess(thread, ressource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread, ownLockRessource);
 
             ThreadVectorManager.GetInstance().HandleLock(thread2, otherLockRessource);
-            ThreadVectorManager.GetInstance().HandleReadAccess(thread2, ressource);
+            ThreadVectorManager.GetInstance().HandleReadAccess(thread2, ressource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread2, otherLockRessource);
             List<string> logs = GetMemoryLog();
             Assert.AreEqual(0, logs.Count);
@@ -88,13 +92,14 @@ namespace DPCLibrary.Tests
             int ressource = 1;
             int ownLockRessource = 2;
             int otherLockRessource = 3;
+            int lineofCode = 12;
 
             ThreadVectorManager.GetInstance().HandleLock(thread, ownLockRessource);
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ressource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ressource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread, ownLockRessource);
 
             ThreadVectorManager.GetInstance().HandleLock(thread2, otherLockRessource);
-            ThreadVectorManager.GetInstance().HandleReadAccess(thread2, ressource);
+            ThreadVectorManager.GetInstance().HandleReadAccess(thread2, ressource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread2, otherLockRessource);
             List<string> logs = GetMemoryLog();
             CollectionAssert.Contains(logs,
@@ -111,12 +116,13 @@ namespace DPCLibrary.Tests
 
             int ressource = 1;
             int ownLockRessource = 2;
+            int lineofCode = 12;
 
             ThreadVectorManager.GetInstance().HandleLock(thread, ownLockRessource);
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ressource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ressource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread, ownLockRessource);
 
-            ThreadVectorManager.GetInstance().HandleReadAccess(thread2, ressource);
+            ThreadVectorManager.GetInstance().HandleReadAccess(thread2, ressource, lineofCode);
             List<string> logs = GetMemoryLog();
             CollectionAssert.Contains(logs,
                 "RaceCondition detected... Ressource: " + ressource + ", in Thread: " + thread2.ManagedThreadId);
@@ -133,13 +139,14 @@ namespace DPCLibrary.Tests
             int otherRessource = 2;
             int ownLockRessource = 2;
             int otherLockRessource = 3;
+            int lineofCode = 12;
 
             ThreadVectorManager.GetInstance().HandleLock(thread, ownLockRessource);
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ownRessource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ownRessource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread, ownLockRessource);
 
             ThreadVectorManager.GetInstance().HandleLock(thread2, otherLockRessource);
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread2, otherRessource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread2, otherRessource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread2, otherLockRessource);
 
             List<string> logs = GetMemoryLog();
@@ -154,13 +161,14 @@ namespace DPCLibrary.Tests
 
             int ownRessource = 1;
             int ownLockRessource = 2;
+            int lineofCode = 12;
 
             ThreadVectorManager.GetInstance().HandleLock(thread, ownLockRessource);
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ownRessource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ownRessource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread, ownLockRessource);
 
             ThreadVectorManager.GetInstance().HandleLock(thread2, ownLockRessource);
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread2, ownRessource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread2, ownRessource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread2, ownLockRessource);
                 
             List<string> logs = GetMemoryLog();
@@ -175,16 +183,17 @@ namespace DPCLibrary.Tests
 
             int ownRessource = 1;
             int ownLockRessource = 2;
+            int lineofCode = 12;
 
             ThreadVectorManager.GetInstance().HandleLock(thread, ownLockRessource);    // clock: 1=>1
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ownRessource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ownRessource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread, ownLockRessource); // clock: 1=>2
 
             ThreadVectorManager.GetInstance().HandleLock(thread2, ownLockRessource); // clock: 1=>1, 2=>2
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread2, ownRessource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread2, ownRessource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread2, ownLockRessource); // clock: 1=>1, 2=>3
 
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ownRessource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ownRessource, lineofCode);
             List<string> logs = GetMemoryLog();
             CollectionAssert.Contains(logs,
                 "RaceCondition detected... Ressource: " + ownRessource + ", in Thread: " + thread.ManagedThreadId);
@@ -203,15 +212,16 @@ namespace DPCLibrary.Tests
             int ownLockRessource = 3;
             int otherLockRessource = 4;
             int otherotherLockRessource = 5;
+            int lineofCode = 12;
 
             ThreadVectorManager.GetInstance().HandleLock(thread, ownLockRessource);
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ownRessource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ownRessource, lineofCode);
 
             ThreadVectorManager.GetInstance().HandleLock(thread2, otherLockRessource);
-            ThreadVectorManager.GetInstance().HandleReadAccess(thread2, otherRessource);
+            ThreadVectorManager.GetInstance().HandleReadAccess(thread2, otherRessource, lineofCode);
                 
             ThreadVectorManager.GetInstance().HandleLock(thread3, otherotherLockRessource);
-            ThreadVectorManager.GetInstance().HandleReadAccess(thread3, otherRessource);
+            ThreadVectorManager.GetInstance().HandleReadAccess(thread3, otherRessource, lineofCode);
 
             ThreadVectorManager.GetInstance().HandleUnLock(thread, ownLockRessource);
             ThreadVectorManager.GetInstance().HandleUnLock(thread3, otherotherLockRessource);
@@ -233,15 +243,16 @@ namespace DPCLibrary.Tests
             int ownLockRessource = 3;
             int otherLockRessource = 4;
             int otherotherLockRessource = 5;
+            int lineofCode = 12;
 
             ThreadVectorManager.GetInstance().HandleLock(thread, ownLockRessource);
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ownRessource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ownRessource, lineofCode);
 
             ThreadVectorManager.GetInstance().HandleLock(thread2, otherLockRessource);
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread2, otherRessource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread2, otherRessource, lineofCode);
 
             ThreadVectorManager.GetInstance().HandleLock(thread3, otherotherLockRessource);
-            ThreadVectorManager.GetInstance().HandleReadAccess(thread3, otherRessource);
+            ThreadVectorManager.GetInstance().HandleReadAccess(thread3, otherRessource, lineofCode);
 
             ThreadVectorManager.GetInstance().HandleUnLock(thread, ownLockRessource);
             ThreadVectorManager.GetInstance().HandleUnLock(thread3, otherotherLockRessource);
@@ -264,16 +275,17 @@ namespace DPCLibrary.Tests
             int otherRessource = 2;
             int ownLockRessource = 3;
             int otherLockRessource = 4;
+            int lineofCode = 12;
 
             ThreadVectorManager.GetInstance().HandleLock(thread, ownLockRessource);
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ownRessource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ownRessource, lineofCode);
 
             ThreadVectorManager.GetInstance().HandleLock(thread2, otherLockRessource);
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread2, otherRessource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread2, otherRessource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread2, otherLockRessource);
 
             ThreadVectorManager.GetInstance().HandleLock(thread3, otherLockRessource);
-            ThreadVectorManager.GetInstance().HandleReadAccess(thread3, otherRessource);
+            ThreadVectorManager.GetInstance().HandleReadAccess(thread3, otherRessource, lineofCode);
 
             ThreadVectorManager.GetInstance().HandleUnLock(thread, ownLockRessource);
             ThreadVectorManager.GetInstance().HandleUnLock(thread3, otherLockRessource);
@@ -291,29 +303,30 @@ namespace DPCLibrary.Tests
 
             int ownRessource = 1;
             int ownLockRessource = 2;
+            int lineofCode = 12;
 
             ThreadVectorManager.GetInstance().HandleLock(thread, ownLockRessource);
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ownRessource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ownRessource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread, ownLockRessource);
 
             ThreadVectorManager.GetInstance().HandleLock(thread2, ownLockRessource);
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread2, ownRessource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread2, ownRessource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread2, ownLockRessource);
 
             ThreadVectorManager.GetInstance().HandleLock(thread3, ownLockRessource);
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread3, ownRessource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread3, ownRessource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread3, ownLockRessource);
 
             ThreadVectorManager.GetInstance().HandleLock(thread, ownLockRessource);
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ownRessource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ownRessource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread, ownLockRessource);
 
             ThreadVectorManager.GetInstance().HandleLock(thread2, ownLockRessource);
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread2, ownRessource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread2, ownRessource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread2, ownLockRessource);
 
             ThreadVectorManager.GetInstance().HandleLock(thread3, ownLockRessource);
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread3, ownRessource);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread3, ownRessource, lineofCode);
             ThreadVectorManager.GetInstance().HandleUnLock(thread3, ownLockRessource);
 
             List<string> logs = GetMemoryLog();
