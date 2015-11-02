@@ -16,16 +16,24 @@ namespace DPCLibrary.Tests
         public void TestNoRaceConditionRead()
         {
             int a = 1;
+            object obj = new object();
             Thread thread2 = new Thread(() =>
+            {
+                lock (obj)
+                {
+                    DpcLibrary.LockObject(a);
+                    DpcLibrary.ReadAccess(a);
+                    DpcLibrary.UnLockObject(a);
+                }
+            });
+            thread2.Start();
+
+            lock (obj)
             {
                 DpcLibrary.LockObject(a);
                 DpcLibrary.ReadAccess(a);
                 DpcLibrary.UnLockObject(a);
-            });
-            thread2.Start();
-            DpcLibrary.LockObject(a);
-            DpcLibrary.ReadAccess(a);
-            DpcLibrary.UnLockObject(a);
+            }
             thread2.Join();
 
             List<string> logs = GetMemoryLog();
@@ -36,16 +44,25 @@ namespace DPCLibrary.Tests
         public void TestNoRaceConditionReadWrite()
         {
             int a = 1;
+            object obj = new object();
             Thread thread2 = new Thread(() =>
             {
-                DpcLibrary.LockObject(a);
-                DpcLibrary.WriteAccess(a);
-                DpcLibrary.UnLockObject(a);
+                lock (obj)
+                {
+                    DpcLibrary.LockObject(a);
+                    DpcLibrary.WriteAccess(a);
+                    DpcLibrary.UnLockObject(a);
+                }
             });
             thread2.Start();
-            DpcLibrary.LockObject(a);
-            DpcLibrary.ReadAccess(a);
-            DpcLibrary.UnLockObject(a);
+            
+            lock (obj)
+            {
+                DpcLibrary.LockObject(a);
+                DpcLibrary.ReadAccess(a);
+                DpcLibrary.UnLockObject(a);
+            }
+            
             thread2.Join();
 
             List<string> logs = GetMemoryLog();
@@ -57,16 +74,24 @@ namespace DPCLibrary.Tests
         {
             int a = 1;
             int b = 2;
+            object obj = new object();
+            object objB = new object();
             Thread thread2 = new Thread(() =>
             {
-                DpcLibrary.LockObject(b);
-                DpcLibrary.WriteAccess(a);
-                DpcLibrary.UnLockObject(b);
+                lock (objB)
+                {
+                    DpcLibrary.LockObject(b);
+                    DpcLibrary.WriteAccess(a);
+                    DpcLibrary.UnLockObject(b);
+                }
             });
             thread2.Start();
-            DpcLibrary.LockObject(a);
-            DpcLibrary.ReadAccess(a);
-            DpcLibrary.UnLockObject(a);
+            lock (obj)
+            {
+                DpcLibrary.LockObject(a);
+                DpcLibrary.ReadAccess(a);
+                DpcLibrary.UnLockObject(a);
+            }
             thread2.Join();
 
             string expected = "RaceCondition detected... Ressource: " + a + ", in Thread:";
@@ -81,23 +106,34 @@ namespace DPCLibrary.Tests
         {
             int a = 1;
             int b = 2;
+            object obj = new object();
+            object objB = new object();
             Thread thread2 = new Thread(() =>
             {
-                DpcLibrary.LockObject(b);
-                DpcLibrary.WriteAccess(a);
-                DpcLibrary.UnLockObject(b);
+                lock (objB)
+                {
+                    DpcLibrary.LockObject(b);
+                    DpcLibrary.WriteAccess(a);
+                    DpcLibrary.UnLockObject(b);
+                }
             });
             thread2.Start();
             Thread thread3 = new Thread(() =>
             {
-                DpcLibrary.LockObject(b);
-                DpcLibrary.WriteAccess(a);
-                DpcLibrary.UnLockObject(b);
+                lock (objB)
+                {
+                    DpcLibrary.LockObject(b);
+                    DpcLibrary.WriteAccess(a);
+                    DpcLibrary.UnLockObject(b);
+                }
             });
             thread3.Start();
-            DpcLibrary.LockObject(a);
-            DpcLibrary.ReadAccess(a);
-            DpcLibrary.UnLockObject(a);
+            lock (obj)
+            {
+                DpcLibrary.LockObject(a);
+                DpcLibrary.ReadAccess(a);
+                DpcLibrary.UnLockObject(a);
+            }
             thread2.Join();
             thread3.Join();
 

@@ -1,7 +1,5 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Windows.Threading;
 using DPCClient.Model;
@@ -20,11 +18,10 @@ namespace DPCClient.Process
             _listener.Start();
         }
 
-        public void Run(DPCViewModel viewModel, Dispatcher dispacherObject)
+        public void Run(DpcViewModel viewModel, Dispatcher dispacherObject)
         {
             ThreadPool.QueueUserWorkItem(o =>
             {
-                Console.WriteLine("Webserver running...");
                 try
                 {
                     while (_listener.IsListening)
@@ -34,14 +31,16 @@ namespace DPCClient.Process
                             var ctx = c as HttpListenerContext;
                             try
                             {
-                                StreamReader stream = new StreamReader(ctx.Request.InputStream);
-                                string x = stream.ReadToEnd();
-                                NLogMessage message = JsonConvert.DeserializeObject<NLogMessage>(x);
-                                dispacherObject.Invoke(() =>
+                                if (ctx != null)
                                 {
-                                    viewModel.AddLogEntry(message);
-                                });
-                                
+                                    StreamReader stream = new StreamReader(ctx.Request.InputStream);
+                                    string x = stream.ReadToEnd();
+                                    NLogMessage message = JsonConvert.DeserializeObject<NLogMessage>(x);
+                                    dispacherObject.Invoke(() =>
+                                    {
+                                        viewModel.AddLogEntry(message);
+                                    });
+                                }
                             }
                             catch
                             {
@@ -50,7 +49,7 @@ namespace DPCClient.Process
                             finally
                             {
                                 // always close the stream
-                                ctx.Response.OutputStream.Close();
+                                ctx?.Response.OutputStream.Close();
                             }
                         }, _listener.GetContext());
                     }

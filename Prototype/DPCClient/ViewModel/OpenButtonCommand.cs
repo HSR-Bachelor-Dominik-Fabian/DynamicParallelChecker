@@ -5,8 +5,8 @@ namespace DPCClient.ViewModel
 {
     class OpenButtonCommand : ICommand
     {
-        private DPCViewModel _obj;
-        public OpenButtonCommand(DPCViewModel obj)
+        private readonly DpcViewModel _obj;
+        public OpenButtonCommand(DpcViewModel obj)
         {
             _obj = obj;
         }

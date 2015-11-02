@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 using System.Windows.Threading;
 using DPCClient.ViewModel;
 
@@ -11,9 +6,9 @@ namespace DPCClient.Process
 {
     class CheckingProcessManager
     {
-        private CopyProcessor _copyProcessor;
-        private InstrumentationProcessor _instrumentationProcessor;
-        private NLogSocketProcessor _nLogSocketProcessor;
+        private readonly CopyProcessor _copyProcessor;
+        private readonly InstrumentationProcessor _instrumentationProcessor;
+        private readonly NLogSocketProcessor _nLogSocketProcessor;
 
         public CheckingProcessManager()
         {
@@ -22,12 +17,12 @@ namespace DPCClient.Process
             _nLogSocketProcessor = new NLogSocketProcessor();
         }
 
-        public void Start(DPCViewModel viewModel, Dispatcher dispatcher)
+        public void Start(DpcViewModel viewModel, Dispatcher dispatcher)
         {
             _nLogSocketProcessor.Run(viewModel, dispatcher);
 
             // Copy all the files
-            string copyPath = Directory.GetCurrentDirectory() + @"\" + _copyProcessor.Start(viewModel.FilePathModel);
+            string copyPath = Directory.GetCurrentDirectory() + @"s\" + _copyProcessor.Start(viewModel.FilePathModel);
             
             _instrumentationProcessor.Start(copyPath);
 

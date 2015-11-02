@@ -13,14 +13,14 @@ namespace DPCClient.Process
             string directory = Path.GetDirectoryName(filePath.FilePath);
             string fileName = Path.GetFileName(filePath.FilePath);
 
-            Directory.CreateDirectory("work");
-
-            Copy(directory, fileName, _targetDirectory);
-
             if (Directory.Exists(_targetDirectory))
             {
                 Delete(_targetDirectory);
             }
+
+            Directory.CreateDirectory(_targetDirectory);
+
+            Copy(directory);
 
             CopyLibrary();
 
@@ -44,7 +44,7 @@ namespace DPCClient.Process
             File.Copy(nLogConfigFileName, _targetDirectory + @"\" + nLogConfigFileName);
         }
 
-        private void Copy(string directory, string fileName, string copyDirectory)
+        private void Copy(string directory)
         {
             if (directory != null)
             {
@@ -54,7 +54,7 @@ namespace DPCClient.Process
                 }
                 foreach (string directoryTemp in Directory.GetDirectories(directory))
                 {
-                    Copy(directoryTemp, fileName, copyDirectory);
+                    Copy(directoryTemp);
                 }
             }
         }

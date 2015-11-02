@@ -7,15 +7,15 @@ using DPCClient.Model;
 
 namespace DPCClient.ViewModel
 {
-    class DPCViewModel : INotifyPropertyChanged , INotifyCollectionChanged
+    class DpcViewModel : INotifyPropertyChanged , INotifyCollectionChanged
     {
         private readonly OpenButtonCommand _openButtonCommand;
         private readonly FilePathModel _filePathModel;
-        private ObservableCollection<NLogMessage> _logEntryModels;
+        private readonly ObservableCollection<NLogMessage> _logEntryModels;
         private readonly StartParallelCheckerButtonCommand _startParallelCheckerButtonCommand;
 
 
-        public DPCViewModel()
+        public DpcViewModel()
         {
             _openButtonCommand = new OpenButtonCommand(this);
             _filePathModel = new FilePathModel("");

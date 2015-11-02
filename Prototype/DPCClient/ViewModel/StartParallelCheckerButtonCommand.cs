@@ -10,10 +10,10 @@ namespace DPCClient.ViewModel
 {
     class StartParallelCheckerButtonCommand : ICommand
     {
-        private DPCViewModel _obj;
+        private readonly DpcViewModel _obj;
         private CheckingProcessManager _checkingProcessManager;
 
-        public StartParallelCheckerButtonCommand(DPCViewModel obj)
+        public StartParallelCheckerButtonCommand(DpcViewModel obj)
         {
             _obj = obj;
         }

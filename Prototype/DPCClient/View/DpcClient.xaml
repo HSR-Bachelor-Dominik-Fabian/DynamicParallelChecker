@@ -3,21 +3,17 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:DPCClient"
         xmlns:viewModel="clr-namespace:DPCClient.ViewModel"
         mc:Ignorable="d"
         Title="DPC Client" Height="680.441" Width="883.265">
     <Window.Resources>
-        <viewModel:DPCViewModel x:Key="dpcviewobj"/>
+        <viewModel:DpcViewModel x:Key="Dpcviewobj"/>
     </Window.Resources>
     <Grid Margin="0,0,2,0">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
-        <TextBox x:Name="FilePath" HorizontalAlignment="Left" Height="20" Margin="103,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="760" Text="{Binding FilePath, Source={StaticResource dpcviewobj}}"/>
-        <Button x:Name="OpenButton" Content="Open" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Command="{Binding OpenBtnClick, Mode=OneWay, Source={StaticResource dpcviewobj}}"/>
-        <Button x:Name="StartCheckerButton" Content="Start Parallel Checker" HorizontalAlignment="Left" Margin="726,42,0,0" VerticalAlignment="Top" Width="137" Command="{Binding StartParallelCheckerBtnClick, Mode=OneWay, Source={StaticResource dpcviewobj}}"/>
-        <ListView x:Name="listView" Margin="0,72,0,0" ItemsSource="{Binding LogEntries, Source={StaticResource dpcviewobj}}">
+        <TextBox x:Name="FilePath" HorizontalAlignment="Left" Height="20" Margin="103,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="760" Text="{Binding FilePath, Source={StaticResource Dpcviewobj}}"/>
+        <Button x:Name="OpenButton" Content="Open" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Command="{Binding OpenBtnClick, Mode=OneWay, Source={StaticResource Dpcviewobj}}"/>
+        <Button x:Name="StartCheckerButton" Content="Start Parallel Checker" HorizontalAlignment="Left" Margin="726,42,0,0" VerticalAlignment="Top" Width="137" Command="{Binding StartParallelCheckerBtnClick, Mode=OneWay, Source={StaticResource Dpcviewobj}}"/>
+        <ListView x:Name="ListView" Margin="0,72,0,0" ItemsSource="{Binding LogEntries, Source={StaticResource Dpcviewobj}}">
             <ListView.Resources>
                 <Style TargetType="{x:Type ListViewItem}">
                     <Style.Triggers>
