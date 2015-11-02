@@ -17,12 +17,13 @@ namespace DPCLibrary.Tests
         {
             int a = 1;
             object obj = new object();
+            int lineofCode = 12;
             Thread thread2 = new Thread(() =>
             {
                 lock (obj)
                 {
                     DpcLibrary.LockObject(a);
-                    DpcLibrary.ReadAccess(a);
+                    DpcLibrary.ReadAccess(a, lineofCode);
                     DpcLibrary.UnLockObject(a);
                 }
             });
@@ -31,7 +32,7 @@ namespace DPCLibrary.Tests
             lock (obj)
             {
                 DpcLibrary.LockObject(a);
-                DpcLibrary.ReadAccess(a);
+                DpcLibrary.ReadAccess(a, lineofCode);
                 DpcLibrary.UnLockObject(a);
             }
             thread2.Join();
@@ -45,12 +46,13 @@ namespace DPCLibrary.Tests
         {
             int a = 1;
             object obj = new object();
+            int lineofCode = 12;
             Thread thread2 = new Thread(() =>
             {
                 lock (obj)
                 {
                     DpcLibrary.LockObject(a);
-                    DpcLibrary.WriteAccess(a);
+                    DpcLibrary.WriteAccess(a, lineofCode);
                     DpcLibrary.UnLockObject(a);
                 }
             });
@@ -59,7 +61,7 @@ namespace DPCLibrary.Tests
             lock (obj)
             {
                 DpcLibrary.LockObject(a);
-                DpcLibrary.ReadAccess(a);
+                DpcLibrary.ReadAccess(a, lineofCode);
                 DpcLibrary.UnLockObject(a);
             }
             
@@ -76,12 +78,13 @@ namespace DPCLibrary.Tests
             int b = 2;
             object obj = new object();
             object objB = new object();
+            int lineofCode = 12;
             Thread thread2 = new Thread(() =>
             {
                 lock (objB)
                 {
                     DpcLibrary.LockObject(b);
-                    DpcLibrary.WriteAccess(a);
+                    DpcLibrary.WriteAccess(a, lineofCode);
                     DpcLibrary.UnLockObject(b);
                 }
             });
@@ -89,7 +92,7 @@ namespace DPCLibrary.Tests
             lock (obj)
             {
                 DpcLibrary.LockObject(a);
-                DpcLibrary.ReadAccess(a);
+                DpcLibrary.ReadAccess(a, lineofCode);
                 DpcLibrary.UnLockObject(a);
             }
             thread2.Join();
@@ -108,12 +111,13 @@ namespace DPCLibrary.Tests
             int b = 2;
             object obj = new object();
             object objB = new object();
+            int lineofCode = 12;
             Thread thread2 = new Thread(() =>
             {
                 lock (objB)
                 {
                     DpcLibrary.LockObject(b);
-                    DpcLibrary.WriteAccess(a);
+                    DpcLibrary.WriteAccess(a, lineofCode);
                     DpcLibrary.UnLockObject(b);
                 }
             });
@@ -123,7 +127,7 @@ namespace DPCLibrary.Tests
                 lock (objB)
                 {
                     DpcLibrary.LockObject(b);
-                    DpcLibrary.WriteAccess(a);
+                    DpcLibrary.WriteAccess(a, lineofCode);
                     DpcLibrary.UnLockObject(b);
                 }
             });
@@ -131,7 +135,7 @@ namespace DPCLibrary.Tests
             lock (obj)
             {
                 DpcLibrary.LockObject(a);
-                DpcLibrary.ReadAccess(a);
+                DpcLibrary.ReadAccess(a, lineofCode);
                 DpcLibrary.UnLockObject(a);
             }
             thread2.Join();

@@ -98,10 +98,12 @@ namespace CodeInstrumentationTest
                             if (fieldType.IsPrimitive ||
                                 (fieldType.IsDefinition && ((TypeDefinition) fieldType).IsValueType))
                             {
+                                var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
                                 var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
                                 var readAccessLibraryCall = processor.Create(OpCodes.Call, referencedReadAccessMethod);
                                 processor.InsertAfter(ins, loadAddressInstruction);
-                                processor.InsertAfter(loadAddressInstruction, readAccessLibraryCall);
+                                processor.InsertAfter(loadAddressInstruction, constLoad);
+                                processor.InsertAfter(constLoad, readAccessLibraryCall);
                             }
                             else if (!fieldType.IsPrimitive && !fieldType.IsValueType)
                             {
@@ -109,10 +111,14 @@ namespace CodeInstrumentationTest
                                 var readAccessLibraryCall = processor.Create(OpCodes.Call, referencedReadAccessMethod);
                                 var readAccessLibraryCall2 = processor.Create(OpCodes.Call, referencedReadAccessMethod);
                                 var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
+                                var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
+                                var constLoad2 = processor.Create(OpCodes.Ldc_I4, ins.Offset);
                                 processor.InsertAfter(ins, dupInstruction);
-                                processor.InsertAfter(dupInstruction, readAccessLibraryCall);
+                                processor.InsertAfter(dupInstruction,constLoad);
+                                processor.InsertAfter(constLoad, readAccessLibraryCall);
                                 processor.InsertAfter(readAccessLibraryCall, loadAddressInstruction);
-                                processor.InsertAfter(loadAddressInstruction, readAccessLibraryCall2);
+                                processor.InsertAfter(loadAddressInstruction, constLoad2);
+                                processor.InsertAfter(constLoad2, readAccessLibraryCall2);
                             }
                         }
                         else if (ins.OpCode.Equals(OpCodes.Initobj))
@@ -123,9 +129,11 @@ namespace CodeInstrumentationTest
                                 // TODO: Mehr Fälle bei denen initobj beachtet werden muss?
                                 var processor = method.Body.GetILProcessor();
                                 var dupInstruction = processor.Create(OpCodes.Dup);
+                                var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
                                 var writeAccessLibraryCall = processor.Create(OpCodes.Call, referencedWriteAccessMethod);
                                 processor.InsertBefore(ins, writeAccessLibraryCall);
-                                processor.InsertBefore(writeAccessLibraryCall, dupInstruction);
+                                processor.InsertBefore(writeAccessLibraryCall, constLoad);
+                                processor.InsertBefore(constLoad, dupInstruction);
                             }
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stsfld))
@@ -133,10 +141,12 @@ namespace CodeInstrumentationTest
                             FieldDefinition fieldDefinition = (FieldDefinition) ins.Operand;
                             var processor = method.Body.GetILProcessor();
                             var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
+                            var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
                             var writeAccessLibraryCall = processor.Create(OpCodes.Call,
                                 referencedWriteAccessMethod);
                             processor.InsertBefore(ins, writeAccessLibraryCall);
-                            processor.InsertBefore(writeAccessLibraryCall, loadAddressInstruction);
+                            processor.InsertBefore(writeAccessLibraryCall, constLoad);
+                            processor.InsertBefore(constLoad, loadAddressInstruction);
                         }
                         else if (ins.OpCode.Equals(OpCodes.Ldfld))
                         {
@@ -148,19 +158,23 @@ namespace CodeInstrumentationTest
                             {
                                 var dupInstruction = processor.Create(OpCodes.Dup);
                                 var loadAddressInstruction = processor.Create(OpCodes.Ldflda, fieldDefinition);
+                                var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
                                 var readAccessLibraryCall = processor.Create(OpCodes.Call,
                                     referencedReadAccessMethod);
                                 processor.InsertBefore(ins, readAccessLibraryCall);
-                                processor.InsertBefore(readAccessLibraryCall, loadAddressInstruction);
+                                processor.InsertBefore(readAccessLibraryCall, constLoad);
+                                processor.InsertBefore(constLoad, loadAddressInstruction);
                                 processor.InsertBefore(loadAddressInstruction, dupInstruction);
                             }
                             else if (!fieldType.IsPrimitive && !fieldType.IsValueType)
                             {
                                 var dupInstruction = processor.Create(OpCodes.Dup);
+                                var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
                                 var readAccessLibraryCall = processor.Create(OpCodes.Call,
                                     referencedReadAccessMethod);
                                 processor.InsertBefore(ins, readAccessLibraryCall);
-                                processor.InsertBefore(readAccessLibraryCall, dupInstruction);
+                                processor.InsertBefore(readAccessLibraryCall, constLoad);
+                                processor.InsertBefore(constLoad, dupInstruction);
                             }
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stfld))
@@ -203,12 +217,14 @@ namespace CodeInstrumentationTest
                             var loadAddressInstruction = processor.Create(OpCodes.Ldflda, fieldDefinition);
                             var writeAccessLibraryCall = processor.Create(OpCodes.Call,
                                 referencedWriteAccessMethod);
+                            var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
                             var loadLocaleInstrucion = processor.Create(OpCodes.Ldloc, varDefinition);
 
 
                             processor.InsertBefore(ins, loadLocaleInstrucion);
                             processor.InsertBefore(loadLocaleInstrucion, writeAccessLibraryCall);
-                            processor.InsertBefore(writeAccessLibraryCall, loadAddressInstruction);
+                            processor.InsertBefore(writeAccessLibraryCall, constLoad);
+                            processor.InsertBefore(constLoad, loadAddressInstruction);
                             processor.InsertBefore(loadAddressInstruction, dupInstruction);
                             processor.InsertBefore(dupInstruction, storeLocalInstrution);
                         }
@@ -356,12 +372,14 @@ namespace CodeInstrumentationTest
             var loadIndexInstruction2 = processor.Create(OpCodes.Ldloc, variableIndexDefinition);
             var loadValueInstruction = processor.Create(OpCodes.Ldloc, variableValueDefinition);
             var loadAddressInstruction = processor.Create(OpCodes.Ldelema, valueTypeReference);
+            var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
             var writeAccessLibraryCall = processor.Create(OpCodes.Call, referencedWriteAccessMethod);
 
             processor.InsertBefore(ins, loadValueInstruction);
             processor.InsertBefore(loadValueInstruction, loadIndexInstruction);
             processor.InsertBefore(loadIndexInstruction, writeAccessLibraryCall);
-            processor.InsertBefore(writeAccessLibraryCall, loadAddressInstruction);
+            processor.InsertBefore(writeAccessLibraryCall, constLoad);
+            processor.InsertBefore(constLoad, loadAddressInstruction);
             processor.InsertBefore(loadAddressInstruction, loadIndexInstruction2);
             processor.InsertBefore(loadIndexInstruction2, dupInstruction);
             processor.InsertBefore(dupInstruction, storeIndexInstruction);
@@ -378,11 +396,13 @@ namespace CodeInstrumentationTest
             var loadIndexInstrucion = processor.Create(OpCodes.Ldloc, int32Variable);
             var loadIndexInstrucion2 = processor.Create(OpCodes.Ldloc, int32Variable);
             var loadAddressInstruction = processor.Create(OpCodes.Ldelema, arrayTypeReference);
+            var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
             var readAccessLibraryCall = processor.Create(OpCodes.Call, referencedReadAccessMethod);
 
             processor.InsertBefore(ins, loadIndexInstrucion2);
             processor.InsertBefore(loadIndexInstrucion2, readAccessLibraryCall);
-            processor.InsertBefore(readAccessLibraryCall, loadAddressInstruction);
+            processor.InsertBefore(readAccessLibraryCall, constLoad);
+            processor.InsertBefore(constLoad, loadAddressInstruction);
             processor.InsertBefore(loadAddressInstruction, loadIndexInstrucion);
             processor.InsertBefore(loadIndexInstrucion, dupInstruction);
             processor.InsertBefore(dupInstruction, storeIndexInstrution);

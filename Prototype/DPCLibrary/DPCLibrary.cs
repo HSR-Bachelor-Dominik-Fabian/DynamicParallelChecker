@@ -5,16 +5,16 @@ namespace DPCLibrary
 {
     public static class DpcLibrary
     {
-        public static void ReadAccess(int obj)
+        public static void ReadAccess(int obj, int rowNumber)
         {
             Thread thread = Thread.CurrentThread;
-            ThreadVectorManager.GetInstance().HandleReadAccess(thread, obj);
+            ThreadVectorManager.GetInstance().HandleReadAccess(thread, obj, rowNumber);
         }
 
-        public static void WriteAccess(int obj)
+        public static void WriteAccess(int obj, int rowNumber)
         {
             Thread thread = Thread.CurrentThread;
-            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, obj);
+            ThreadVectorManager.GetInstance().HandleWriteAccess(thread, obj, rowNumber);
         }
 
         public static void LockObject(int obj)

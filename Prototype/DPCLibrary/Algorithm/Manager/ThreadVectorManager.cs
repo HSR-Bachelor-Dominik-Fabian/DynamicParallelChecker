@@ -42,23 +42,23 @@ namespace DPCLibrary.Algorithm.Manager
         private readonly Logger _logger = LogManager.GetLogger("ThreadVectorManager");
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void HandleReadAccess(Thread thread, int ressource)
+        public void HandleReadAccess(Thread thread, int ressource, int rowNumber)
         {
-            _logger.ConditionalDebug("ReadAccess: " + thread.ManagedThreadId + " on Ressource: " + ressource);
+            _logger.ConditionalDebug("ReadAccess: " + thread.ManagedThreadId + " on Ressource: " + ressource + "on Line:" + rowNumber);
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(thread);
             ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, ressource);
             threadVectorInstance.WriteHistory(threadEvent);
-            CheckForRaceCondition(threadEvent, threadVectorInstance);
+            CheckForRaceCondition(threadEvent, threadVectorInstance, rowNumber);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void HandleWriteAccess(Thread thread, int ressource)
+        public void HandleWriteAccess(Thread thread, int ressource, int rowNumber)
         {
-            _logger.ConditionalDebug("WriteAccess: " + thread.ManagedThreadId + " on Ressource: " + ressource);
+            _logger.ConditionalDebug("WriteAccess: " + thread.ManagedThreadId + " on Ressource: " + ressource + "on Line:" + rowNumber);
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(thread);
             ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Write, ressource);
             threadVectorInstance.WriteHistory(threadEvent);
-            CheckForRaceCondition(threadEvent, threadVectorInstance);
+            CheckForRaceCondition(threadEvent, threadVectorInstance, rowNumber);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
@@ -122,7 +122,7 @@ namespace DPCLibrary.Algorithm.Manager
         }
 
 
-        private void CheckForRaceCondition(ThreadEvent ownThreadEvent, ThreadVectorInstance threadVectorInstance)
+        private void CheckForRaceCondition(ThreadEvent ownThreadEvent, ThreadVectorInstance threadVectorInstance, int rowNumber)
         {
             List<ThreadVectorInstance> instances = 
                 (_threadVectorPool.Values.Where(instance => instance.Thread != threadVectorInstance.Thread)).ToList();
@@ -136,8 +136,11 @@ namespace DPCLibrary.Algorithm.Manager
                         if (IsRaceCondition(ownThreadEvent, threadEvent))
                         {
                             //Console.WriteLine("RaceCondition detected... Ressource: " + ownThreadEvent.Ressource + ", in Thread: " + threadVectorInstance.Thread.ManagedThreadId);
-                            
-                            _logger.Error("RaceCondition detected... Ressource: " + ownThreadEvent.Ressource + ", in Thread: " + threadVectorInstance.Thread.ManagedThreadId);
+                            LogEventInfo info = new LogEventInfo();
+                            info.Level = LogLevel.Error;
+                            info.Properties["RowCount"] = rowNumber;
+                            info.Message = "RaceCondition detected... Ressource: " + ownThreadEvent.Ressource + ", in Thread: " + threadVectorInstance.Thread.ManagedThreadId;
+                            _logger.Log(info);
                             // TODO:Fabian show message
                         }
                     }
