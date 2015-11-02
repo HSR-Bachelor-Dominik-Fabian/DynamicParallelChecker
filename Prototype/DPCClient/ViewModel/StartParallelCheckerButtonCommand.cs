@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using DPCClient.Model;
 using DPCClient.Process;
@@ -24,6 +25,7 @@ namespace DPCClient.ViewModel
 
         public void Execute(object parameter)
         {
+            _obj.LogEntries = new ObservableCollection<NLogMessage>();
             _checkingProcessManager = new CheckingProcessManager();
             Dispatcher dispatcher = Dispatcher.CurrentDispatcher;
             Thread checkingThread = new Thread(() =>

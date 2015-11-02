@@ -45,10 +45,12 @@ namespace DPCClient.Process
             {
                 foreach (string file in Directory.GetFiles(directory))
                 {
+                    /*
                     if (File.Exists(_targetDirectory + @"\" + Path.GetFileName(file)))
                     {
                         Delete(_targetDirectory);
                     }
+                    */
                     File.Copy(file, _targetDirectory + @"\" + Path.GetFileName(file));
                 }
                 foreach (string directoryTemp in Directory.GetDirectories(directory))

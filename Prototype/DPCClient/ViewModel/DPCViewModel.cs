@@ -37,12 +37,16 @@ namespace DPCClient.ViewModel
 
         public FilePathModel FilePathModel => _filePathModel;
 
-        public ObservableCollection<NLogMessage> LogEntry
+        public ObservableCollection<NLogMessage> LogEntries
         {
             get { return _logEntryModels; }
             set
             {
-                _logEntryModels = value;
+                _logEntryModels.Clear();
+                foreach (NLogMessage message in value)
+                {
+                    _logEntryModels.Add(message);
+                }
                 CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
         }
