@@ -22,7 +22,7 @@ namespace DPCClient.Process
             _nLogSocketProcessor.Run(viewModel, dispatcher);
 
             // Copy all the files
-            string copyPath = Directory.GetCurrentDirectory() + @"s\" + _copyProcessor.Start(viewModel.FilePathModel);
+            string copyPath = Directory.GetCurrentDirectory() + @"\" + _copyProcessor.Start(viewModel.FilePathModel);
             
             _instrumentationProcessor.Start(copyPath);
 
