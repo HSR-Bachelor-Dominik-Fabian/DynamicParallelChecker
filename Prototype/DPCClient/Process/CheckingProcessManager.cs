@@ -17,7 +17,7 @@ namespace DPCClient.Process
             _nLogSocketProcessor = new NLogSocketProcessor();
         }
 
-        public void Start(DpcViewModel viewModel, Dispatcher dispatcher)
+        public void Start(DpcViewModel viewModel, Dispatcher dispatcher, StartParallelCheckerButtonCommand startCommand)
         {
             _nLogSocketProcessor.Run(viewModel, dispatcher);
 
@@ -29,6 +29,11 @@ namespace DPCClient.Process
             _copyProcessor.CleanUp();
 
             _nLogSocketProcessor.Stop();
+
+            dispatcher.Invoke(() =>
+            {
+                startCommand.IsChecking = false;
+            });
         }
     }
 }

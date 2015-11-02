@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -13,7 +14,6 @@ namespace DPCClient.ViewModel
         private readonly FilePathModel _filePathModel;
         private readonly ObservableCollection<NLogMessage> _logEntryModels;
         private readonly StartParallelCheckerButtonCommand _startParallelCheckerButtonCommand;
-
 
         public DpcViewModel()
         {
