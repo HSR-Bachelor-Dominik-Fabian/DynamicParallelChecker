@@ -36,6 +36,7 @@
                     <GridViewColumn Header="Timestamp" DisplayMemberBinding="{Binding Time}"/>
                     <GridViewColumn Header="Level" DisplayMemberBinding="{Binding Level}"/>
                     <GridViewColumn Header="Message" DisplayMemberBinding="{Binding Message}"/>
+                    <GridViewColumn Header="Row" DisplayMemberBinding="{Binding RowCount}"/>
                 </GridView>
             </ListView.View>
         </ListView>

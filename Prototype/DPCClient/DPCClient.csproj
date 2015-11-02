@@ -68,7 +68,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Compile Include="Model\FilePathModel.cs" />
-    <Compile Include="Model\LogEntryModel.cs" />
     <Compile Include="Model\NLogMessage.cs" />
     <Compile Include="Process\CheckingProcessManager.cs" />
     <Compile Include="Process\CopyProcessor.cs" />
