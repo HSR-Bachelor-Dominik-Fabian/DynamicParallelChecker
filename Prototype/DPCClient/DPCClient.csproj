@@ -39,6 +39,10 @@
       <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <HintPath>..\packages\NLog.4.2.0\lib\net45\NLog.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -100,6 +104,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <Content Include="NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -114,6 +121,10 @@
     <ProjectReference Include="..\CodeInstrumentationTest\CodeInstrumentationTest.csproj">
       <Project>{3d9399b5-91c2-410c-8a9a-3bc469eee0cb}</Project>
       <Name>CodeInstrumentationTest</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DPCLibrary\DPCLibrary.csproj">
+      <Project>{bcffb2ef-58c1-40d3-9344-46e5b95e70f2}</Project>
+      <Name>DPCLibrary</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
