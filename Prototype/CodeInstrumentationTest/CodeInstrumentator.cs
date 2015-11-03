@@ -47,7 +47,7 @@ namespace CodeInstrumentationTest
             TypeReference float64TypeReference = module.Import(typeof (double));
             foreach (TypeDefinition type in module.Types)
             {
-                InstrumentateType(type, int32TypeReference, int8TypeReference, int16TypeReference, int64TypeReference, float32TypeReference, float64TypeReference, referencedReadAccessMethod, referencedWriteAccessMethod, referencedLockObjectMethod, referencedUnlockObjectMethod, module);
+                InstrumentateType(type, int32TypeReference, int8TypeReference, int16TypeReference, int64TypeReference, float32TypeReference, float64TypeReference, referencedReadAccessMethod, referencedWriteAccessMethod, referencedLockObjectMethod, referencedUnlockObjectMethod);
             }
 
             module.Write(fileName);
@@ -57,13 +57,13 @@ namespace CodeInstrumentationTest
             TypeReference int8TypeReference, TypeReference int16TypeReference, TypeReference int64TypeReference,
             TypeReference float32TypeReference, TypeReference float64TypeReference, MethodReference referencedReadAccessMethod,
             MethodReference referencedWriteAccessMethod, MethodReference referencedLockObjectMethod,
-            MethodReference referencedUnlockObjectMethod, ModuleDefinition module)
+            MethodReference referencedUnlockObjectMethod)
         {
             if (type.HasNestedTypes)
             {
                 foreach (TypeDefinition nestedType in type.NestedTypes)
                 {
-                    InstrumentateType(nestedType, int32TypeReference, int8TypeReference, int16TypeReference, int64TypeReference, float32TypeReference, float64TypeReference, referencedReadAccessMethod, referencedWriteAccessMethod, referencedLockObjectMethod, referencedUnlockObjectMethod, module);
+                    InstrumentateType(nestedType, int32TypeReference, int8TypeReference, int16TypeReference, int64TypeReference, float32TypeReference, float64TypeReference, referencedReadAccessMethod, referencedWriteAccessMethod, referencedLockObjectMethod, referencedUnlockObjectMethod);
                 }
             }
             if (type.HasMethods)

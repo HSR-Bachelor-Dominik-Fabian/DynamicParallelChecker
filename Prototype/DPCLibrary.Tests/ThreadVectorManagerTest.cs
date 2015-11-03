@@ -3,7 +3,6 @@ using System.Threading;
 using DPCLibrary.Algorithm.Manager;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NLog;
-using NLog.Common;
 using NLog.Targets;
 
 namespace DPCLibrary.Tests

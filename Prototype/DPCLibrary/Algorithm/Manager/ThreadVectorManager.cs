@@ -136,8 +136,7 @@ namespace DPCLibrary.Algorithm.Manager
                         if (IsRaceCondition(ownThreadEvent, threadEvent))
                         {
                             //Console.WriteLine("RaceCondition detected... Ressource: " + ownThreadEvent.Ressource + ", in Thread: " + threadVectorInstance.Thread.ManagedThreadId);
-                            LogEventInfo info = new LogEventInfo();
-                            info.Level = LogLevel.Error;
+                            LogEventInfo info = new LogEventInfo {Level = LogLevel.Error};
                             info.Properties["RowCount"] = rowNumber;
                             info.Message = "RaceCondition detected... Ressource: " + ownThreadEvent.Ressource + ", in Thread: " + threadVectorInstance.Thread.ManagedThreadId;
                             _logger.Log(info);
