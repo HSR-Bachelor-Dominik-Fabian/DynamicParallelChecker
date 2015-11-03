@@ -44,17 +44,28 @@ namespace DPCClient.Process
             File.Copy(nLogConfigFileName, _targetDirectory + @"\" + nLogConfigFileName);
         }
 
-        private void Copy(string directory)
+        private void Copy(string directory, string relative = "")
         {
             if (directory != null)
             {
                 foreach (string file in Directory.GetFiles(directory))
                 {
-                    File.Copy(file, _targetDirectory + @"\" + Path.GetFileName(file));
+                    string fileName = Path.GetFileName(file);
+                    if (!string.IsNullOrWhiteSpace(fileName))
+                    {
+                        string pathDirectory = Path.Combine(_targetDirectory, relative);
+                        if (!Directory.Exists(pathDirectory))
+                        {
+                            Directory.CreateDirectory(pathDirectory);
+                        }
+                        File.Copy(file, Path.Combine(pathDirectory, fileName));
+                    }
+                       // _targetDirectory + @"\" + Path.GetFileName(file));
                 }
                 foreach (string directoryTemp in Directory.GetDirectories(directory))
                 {
-                    Copy(directoryTemp);
+                    string dirName = new DirectoryInfo(directoryTemp).Name;
+                    Copy(directoryTemp, Path.Combine(relative, dirName));
                 }
             }
         }
