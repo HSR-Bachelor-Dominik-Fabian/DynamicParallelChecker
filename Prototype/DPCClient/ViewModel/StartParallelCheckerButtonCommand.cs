@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows.Input;
 using DPCClient.Model;
 using DPCClient.Process;
@@ -12,32 +13,32 @@ namespace DPCClient.ViewModel
     {
         private readonly DpcViewModel _obj;
         private CheckingProcessManager _checkingProcessManager;
-        private bool _isChecking;
+        private bool _isReadyForChecking;
 
         public StartParallelCheckerButtonCommand(DpcViewModel obj)
         {
             _obj = obj;
-            _isChecking = false;
+            _isReadyForChecking = false;
         }
 
         public bool CanExecute(object parameter)
         {
-            return !_isChecking;
+            return _isReadyForChecking;
         }
 
-        public bool IsChecking
+        public bool IsReadyForChecking
         {
-            get { return _isChecking; }
+            get { return _isReadyForChecking; }
             set
             {
-                _isChecking = value;
-                CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+                _isReadyForChecking = value;
+                CanExecuteChanged?.Invoke(this, new PropertyChangedEventArgs("StartCheckerButton"));
             }
         }
 
         public void Execute(object parameter)
         {
-            IsChecking = true;
+            IsReadyForChecking = false;
             _obj.LogEntries = new ObservableCollection<NLogMessage>();
             _checkingProcessManager = new CheckingProcessManager();
             Dispatcher dispatcher = Dispatcher.CurrentDispatcher;

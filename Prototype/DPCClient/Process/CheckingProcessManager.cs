@@ -32,7 +32,7 @@ namespace DPCClient.Process
 
             dispatcher.Invoke(() =>
             {
-                startCommand.IsChecking = false;
+                startCommand.IsReadyForChecking = true;
             });
         }
     }

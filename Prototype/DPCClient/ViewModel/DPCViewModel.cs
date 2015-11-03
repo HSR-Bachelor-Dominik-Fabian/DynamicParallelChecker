@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using DPCClient.Model;
@@ -31,6 +32,14 @@ namespace DPCClient.ViewModel
             {
                 _filePathModel.FilePath = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("FilePath"));
+                if (!string.IsNullOrWhiteSpace(value) && File.Exists(value))
+                {
+                    _startParallelCheckerButtonCommand.IsReadyForChecking = true;
+                }
+                else
+                {
+                    _startParallelCheckerButtonCommand.IsReadyForChecking = false;
+                }
             }
         }
 
