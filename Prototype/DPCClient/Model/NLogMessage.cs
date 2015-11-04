@@ -1,6 +1,6 @@
 ﻿namespace DPCClient.Model
 {
-    class NLogMessage
+    public class NLogMessage
     {
         public string Message { get; set; }
         public string Time { get; set; }

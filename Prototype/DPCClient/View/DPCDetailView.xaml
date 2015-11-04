@@ -1,0 +1,18 @@
+﻿<Window x:Class="DPCClient.View.DpcDetailView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DPCClient.View"
+        mc:Ignorable="d"
+        xmlns:viewModel="clr-namespace:DPCClient.ViewModel"
+        Title="DPCDetailView" Height="293.878" Width="522.158">
+    <Window.Resources>
+        <viewModel:DpcDetailViewModel x:Key="DpcDetailViewModel" />
+    </Window.Resources>
+    <Grid>
+        <TextBox x:Name="MainMethod" HorizontalAlignment="Left" Height="23" Margin="10,20,0,0" TextWrapping="Wrap" Text="{Binding NLogMessage.MethodName, Source={StaticResource DpcDetailViewModel}}" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="ConflictingMethod" HorizontalAlignment="Left" Height="23" Margin="384,20,0,0" TextWrapping="Wrap" Text="{Binding NLogMessage.ConflictMethodName, Source={StaticResource DpcDetailViewModel}}" VerticalAlignment="Top" Width="120"/>
+
+    </Grid>
+</Window>
