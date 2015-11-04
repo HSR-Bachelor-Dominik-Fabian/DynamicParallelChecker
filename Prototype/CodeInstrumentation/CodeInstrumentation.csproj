@@ -7,8 +7,8 @@
     <ProjectGuid>{3D9399B5-91C2-410C-8A9A-3BC469EEE0CB}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CodeInstrumentationTest</RootNamespace>
-    <AssemblyName>CodeInstrumentationTest</AssemblyName>
+    <RootNamespace>CodeInstrumentation</RootNamespace>
+    <AssemblyName>CodeInstrumentation</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
