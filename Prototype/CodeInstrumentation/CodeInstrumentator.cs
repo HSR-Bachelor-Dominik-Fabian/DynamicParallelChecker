@@ -5,7 +5,7 @@ using System.Collections;
 using OpCodes = Mono.Cecil.Cil.OpCodes;
 using Mono.Cecil.Rocks;
 
-namespace CodeInstrumentationTest
+namespace CodeInstrumentation
 {
     public class CodeInstrumentator
     {

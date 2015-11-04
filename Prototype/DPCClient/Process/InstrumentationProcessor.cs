@@ -1,4 +1,4 @@
-﻿using CodeInstrumentationTest;
+﻿using CodeInstrumentation;
 
 namespace DPCClient.Process
 {
