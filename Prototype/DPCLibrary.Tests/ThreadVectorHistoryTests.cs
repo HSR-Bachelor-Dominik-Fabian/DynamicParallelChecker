@@ -15,7 +15,7 @@ namespace DPCLibrary.Tests
         {
             Thread thread = Thread.CurrentThread;
             ThreadVectorClock clock = new ThreadVectorClock(thread);
-            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, 1232132);
+            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, 1232132, 2, "TestMethodName");
             ThreadVectorHistory history = new ThreadVectorHistory();
             history.AddEvent(clock, threadEvent);
             Assert.AreEqual(threadEvent, history[clock][0]);
@@ -26,8 +26,8 @@ namespace DPCLibrary.Tests
         {
             Thread thread = Thread.CurrentThread;
             ThreadVectorClock clock = new ThreadVectorClock(thread);
-            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, 1232132);
-            ThreadEvent threadEvent2 = new ThreadEvent(ThreadEvent.EventType.Read, 132);
+            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, 1232132, 2, "TestMethodName");
+            ThreadEvent threadEvent2 = new ThreadEvent(ThreadEvent.EventType.Read, 132, 2, "TestMethodName");
             ThreadVectorHistory history = new ThreadVectorHistory();
             history.AddEvent(clock, threadEvent);
             history.AddEvent(clock,threadEvent2);
@@ -41,8 +41,8 @@ namespace DPCLibrary.Tests
         {
             Thread thread = Thread.CurrentThread;
             ThreadVectorClock clock = new ThreadVectorClock(thread);
-            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Write, 1232132);
-            ThreadEvent threadEvent2 = new ThreadEvent(ThreadEvent.EventType.Read, 1232132);
+            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Write, 1232132, 2, "TestMethodName");
+            ThreadEvent threadEvent2 = new ThreadEvent(ThreadEvent.EventType.Read, 1232132, 2, "TestMethodName");
             ThreadVectorHistory history = new ThreadVectorHistory();
             history.AddEvent(clock, threadEvent);
             history.AddEvent(clock, threadEvent2);
@@ -54,8 +54,8 @@ namespace DPCLibrary.Tests
         {
             Thread thread = Thread.CurrentThread;
             ThreadVectorClock clock = new ThreadVectorClock(thread);
-            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, 1232132);
-            ThreadEvent threadEvent2 = new ThreadEvent(ThreadEvent.EventType.Write, 1232132);
+            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, 1232132, 2, "TestMethodName");
+            ThreadEvent threadEvent2 = new ThreadEvent(ThreadEvent.EventType.Write, 1232132, 2, "TestMethodName");
             ThreadVectorHistory history = new ThreadVectorHistory();
             history.AddEvent(clock, threadEvent);
             history.AddEvent(clock, threadEvent2);
@@ -68,8 +68,8 @@ namespace DPCLibrary.Tests
         {
             Thread thread = Thread.CurrentThread;
             ThreadVectorClock clock = new ThreadVectorClock(thread);
-            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, 1232132);
-            ThreadEvent threadEvent2 = new ThreadEvent(ThreadEvent.EventType.Read, 132);
+            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, 1232132, 2, "TestMethodName");
+            ThreadEvent threadEvent2 = new ThreadEvent(ThreadEvent.EventType.Read, 132, 2, "TestMethodName");
             ThreadVectorHistory history = new ThreadVectorHistory();
             history.AddEvent(clock, threadEvent);
             history.AddEvent(clock, threadEvent2);
@@ -89,9 +89,9 @@ namespace DPCLibrary.Tests
         {
             Thread thread = Thread.CurrentThread;
             ThreadVectorClock clock = new ThreadVectorClock(thread);
-            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, 1232132);
-            ThreadEvent threadEvent2 = new ThreadEvent(ThreadEvent.EventType.Read, 132);
-            ThreadEvent threadEvent3 = new ThreadEvent(ThreadEvent.EventType.Read, 132);
+            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, 1232132, 2, "TestMethodName");
+            ThreadEvent threadEvent2 = new ThreadEvent(ThreadEvent.EventType.Read, 132, 2, "TestMethodName");
+            ThreadEvent threadEvent3 = new ThreadEvent(ThreadEvent.EventType.Read, 132, 2, "TestMethodName");
             ThreadVectorHistory history = new ThreadVectorHistory();
             history.AddEvent(clock, threadEvent);
             history.AddEvent(clock, threadEvent2);
@@ -105,7 +105,7 @@ namespace DPCLibrary.Tests
         {
             Thread thread = Thread.CurrentThread;
             ThreadVectorClock clock = new ThreadVectorClock(thread);
-            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, 1232132);
+            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, 1232132, 2, "TestMethodName");
             try
             {
                 // ReSharper disable once UnusedVariable
@@ -124,8 +124,8 @@ namespace DPCLibrary.Tests
             Thread thread2 = new Thread(() => { });
             ThreadVectorClock clock = new ThreadVectorClock(thread);
             ThreadVectorClock clock2 = new ThreadVectorClock(thread2);
-            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, 1232132);
-            ThreadEvent threadEvent2 = new ThreadEvent(ThreadEvent.EventType.Read, 1232132);
+            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, 1232132, 2, "TestMethodName");
+            ThreadEvent threadEvent2 = new ThreadEvent(ThreadEvent.EventType.Read, 1232132, 2, "TestMethodName");
             ThreadVectorHistory history = new ThreadVectorHistory();
             history.AddEvent(clock, threadEvent);
             history.AddEvent(clock2, threadEvent2);

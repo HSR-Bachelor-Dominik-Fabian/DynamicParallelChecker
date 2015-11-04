@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using NLog;
 
@@ -42,23 +43,23 @@ namespace DPCLibrary.Algorithm.Manager
         private readonly Logger _logger = LogManager.GetLogger("ThreadVectorManager");
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void HandleReadAccess(Thread thread, int ressource, int rowNumber)
+        public void HandleReadAccess(Thread thread, int ressource, int rowNumber, string methodName)
         {
             _logger.ConditionalDebug("ReadAccess: " + thread.ManagedThreadId + " on Ressource: " + ressource + "on Line:" + rowNumber);
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(thread);
-            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, ressource);
+            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, ressource, rowNumber, methodName);
             threadVectorInstance.WriteHistory(threadEvent);
-            CheckForRaceCondition(threadEvent, threadVectorInstance, rowNumber);
+            CheckForRaceCondition(threadEvent, threadVectorInstance, rowNumber, methodName);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void HandleWriteAccess(Thread thread, int ressource, int rowNumber)
+        public void HandleWriteAccess(Thread thread, int ressource, int rowNumber, string methodName)
         {
             _logger.ConditionalDebug("WriteAccess: " + thread.ManagedThreadId + " on Ressource: " + ressource + "on Line:" + rowNumber);
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(thread);
-            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Write, ressource);
+            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Write, ressource,rowNumber, methodName);
             threadVectorInstance.WriteHistory(threadEvent);
-            CheckForRaceCondition(threadEvent, threadVectorInstance, rowNumber);
+            CheckForRaceCondition(threadEvent, threadVectorInstance, rowNumber, methodName);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
@@ -122,7 +123,7 @@ namespace DPCLibrary.Algorithm.Manager
         }
 
 
-        private void CheckForRaceCondition(ThreadEvent ownThreadEvent, ThreadVectorInstance threadVectorInstance, int rowNumber)
+        private void CheckForRaceCondition(ThreadEvent ownThreadEvent, ThreadVectorInstance threadVectorInstance, int rowNumber, string methodName)
         {
             List<ThreadVectorInstance> instances = 
                 (_threadVectorPool.Values.Where(instance => instance.Thread != threadVectorInstance.Thread)).ToList();
@@ -135,12 +136,14 @@ namespace DPCLibrary.Algorithm.Manager
                     {
                         if (IsRaceCondition(ownThreadEvent, threadEvent))
                         {
-                            //Console.WriteLine("RaceCondition detected... Ressource: " + ownThreadEvent.Ressource + ", in Thread: " + threadVectorInstance.Thread.ManagedThreadId);
                             LogEventInfo info = new LogEventInfo {Level = LogLevel.Error};
                             info.Properties["RowCount"] = rowNumber;
-                            info.Message = "RaceCondition detected... Ressource: " + ownThreadEvent.Ressource + ", in Thread: " + threadVectorInstance.Thread.ManagedThreadId;
+                            info.Properties["MethodName"] = methodName;
+                            info.Properties["ConflictMethodName"] = threadEvent.MethodName;
+                            info.Properties["ConflictRow"] = threadEvent.Row;
+                            info.Message =
+                                $"RaceCondition detected... Ressource: {ownThreadEvent.Ressource} -> Thread: {threadVectorInstance.Thread.ManagedThreadId} to Thread: {instance.Thread.ManagedThreadId}";
                             _logger.Log(info);
-                            // TODO:Fabian show message
                         }
                     }
                 }

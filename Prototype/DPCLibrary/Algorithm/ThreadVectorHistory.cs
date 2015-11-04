@@ -56,6 +56,8 @@ namespace DPCLibrary.Algorithm
                 {
                     _logger.ConditionalTrace("Event updated");
                     foundEvent.ThreadEventType = threadEvent.ThreadEventType;
+                    foundEvent.Row = threadEvent.Row;
+                    foundEvent.MethodName = threadEvent.MethodName;
                 }
                 else if (foundEvent == null)
                 {

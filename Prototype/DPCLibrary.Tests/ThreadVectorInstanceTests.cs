@@ -42,7 +42,7 @@ namespace DPCLibrary.Tests
             Thread thread = Thread.CurrentThread;
             Thread thread2 = new Thread(() => { });
             ThreadVectorInstance instance = new ThreadVectorInstance(thread);
-            instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Read,123));
+            instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Read,123, 2, "TestMethodName"));
             ThreadVectorHistory dict = instance.GetConcurrentHistory(new ThreadVectorClock(thread2));
             Assert.AreEqual(1,dict[new ThreadVectorClock(thread)].Count);
         }
@@ -53,8 +53,8 @@ namespace DPCLibrary.Tests
             Thread thread = Thread.CurrentThread;
             Thread thread2 = new Thread(() => { });
             ThreadVectorInstance instance = new ThreadVectorInstance(thread);
-            instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Read, 123));
-            instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Read,3232));
+            instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Read, 123, 2, "TestMethodName"));
+            instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Read,3232, 2, "TestMethodName"));
             ThreadVectorHistory dict = instance.GetConcurrentHistory(new ThreadVectorClock(thread2));
             Assert.AreEqual(2, dict[new ThreadVectorClock(thread)].Count);
         }
@@ -65,8 +65,8 @@ namespace DPCLibrary.Tests
             Thread thread = Thread.CurrentThread;
             Thread thread2 = new Thread(() => { });
             ThreadVectorInstance instance = new ThreadVectorInstance(thread);
-            instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Read, 123));
-            instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Write, 123));
+            instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Read, 123, 2, "TestMethodName"));
+            instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Write, 123, 2, "TestMethodName"));
             ThreadVectorHistory dict = instance.GetConcurrentHistory(new ThreadVectorClock(thread2));
             Assert.AreEqual(1, dict[new ThreadVectorClock(thread)].Count);
         }
@@ -77,8 +77,8 @@ namespace DPCLibrary.Tests
             Thread thread = Thread.CurrentThread;
             Thread thread2 = new Thread(() => { });
             ThreadVectorInstance instance = new ThreadVectorInstance(thread);
-            instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Read, 123));
-            instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Write, 123));
+            instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Read, 123, 2, "TestMethodName"));
+            instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Write, 123, 2, "TestMethodName"));
             ThreadVectorHistory dict = instance.GetConcurrentHistory(new ThreadVectorClock(thread2));
             Assert.AreEqual(1, dict[new ThreadVectorClock(thread)].Count);
         }
@@ -89,8 +89,8 @@ namespace DPCLibrary.Tests
             Thread thread = Thread.CurrentThread;
             Thread thread2 = new Thread(() => { });
             ThreadVectorInstance instance = new ThreadVectorInstance(thread);
-            instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Read, 123));
-            instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Write, 123));
+            instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Read, 123, 2, "TestMethodName"));
+            instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Write, 123, 2, "TestMethodName"));
             var clock2 = new ThreadVectorClock(thread2) {{thread, 2}};
             ThreadVectorHistory dict = instance.GetConcurrentHistory(clock2);
             Assert.AreEqual(0, dict.Keys.Count);

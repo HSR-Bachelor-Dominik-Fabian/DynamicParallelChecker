@@ -23,7 +23,7 @@ namespace DPCLibrary.Tests
                 lock (obj)
                 {
                     DpcLibrary.LockObject(a);
-                    DpcLibrary.ReadAccess(a, lineofCode);
+                    DpcLibrary.ReadAccess(a, lineofCode,"TestMethod");
                     DpcLibrary.UnLockObject(a);
                 }
             });
@@ -32,7 +32,7 @@ namespace DPCLibrary.Tests
             lock (obj)
             {
                 DpcLibrary.LockObject(a);
-                DpcLibrary.ReadAccess(a, lineofCode);
+                DpcLibrary.ReadAccess(a, lineofCode, "TestMethod");
                 DpcLibrary.UnLockObject(a);
             }
             thread2.Join();
@@ -52,7 +52,7 @@ namespace DPCLibrary.Tests
                 lock (obj)
                 {
                     DpcLibrary.LockObject(a);
-                    DpcLibrary.WriteAccess(a, lineofCode);
+                    DpcLibrary.WriteAccess(a, lineofCode, "TestMethod");
                     DpcLibrary.UnLockObject(a);
                 }
             });
@@ -61,7 +61,7 @@ namespace DPCLibrary.Tests
             lock (obj)
             {
                 DpcLibrary.LockObject(a);
-                DpcLibrary.ReadAccess(a, lineofCode);
+                DpcLibrary.ReadAccess(a, lineofCode, "TestMethod");
                 DpcLibrary.UnLockObject(a);
             }
             
@@ -84,7 +84,7 @@ namespace DPCLibrary.Tests
                 lock (objB)
                 {
                     DpcLibrary.LockObject(b);
-                    DpcLibrary.WriteAccess(a, lineofCode);
+                    DpcLibrary.WriteAccess(a, lineofCode, "TestMethod");
                     DpcLibrary.UnLockObject(b);
                 }
             });
@@ -92,12 +92,12 @@ namespace DPCLibrary.Tests
             lock (obj)
             {
                 DpcLibrary.LockObject(a);
-                DpcLibrary.ReadAccess(a, lineofCode);
+                DpcLibrary.ReadAccess(a, lineofCode, "TestMethod");
                 DpcLibrary.UnLockObject(a);
             }
             thread2.Join();
 
-            string expected = "RaceCondition detected... Ressource: " + a + ", in Thread:";
+            string expected = $"RaceCondition detected... Ressource: {a} -> Thread: ";
             List<string> logs = GetMemoryLog();
             Assert.AreEqual(1, logs.Count);
             Assert.AreEqual(expected, logs[0].Substring(0, 50));
@@ -117,7 +117,7 @@ namespace DPCLibrary.Tests
                 lock (objB)
                 {
                     DpcLibrary.LockObject(b);
-                    DpcLibrary.WriteAccess(a, lineofCode);
+                    DpcLibrary.WriteAccess(a, lineofCode, "TestMethod");
                     DpcLibrary.UnLockObject(b);
                 }
             });
@@ -127,7 +127,7 @@ namespace DPCLibrary.Tests
                 lock (objB)
                 {
                     DpcLibrary.LockObject(b);
-                    DpcLibrary.WriteAccess(a, lineofCode);
+                    DpcLibrary.WriteAccess(a, lineofCode, "TestMethod");
                     DpcLibrary.UnLockObject(b);
                 }
             });
@@ -135,13 +135,13 @@ namespace DPCLibrary.Tests
             lock (obj)
             {
                 DpcLibrary.LockObject(a);
-                DpcLibrary.ReadAccess(a, lineofCode);
+                DpcLibrary.ReadAccess(a, lineofCode, "TestMethod");
                 DpcLibrary.UnLockObject(a);
             }
             thread2.Join();
             thread3.Join();
 
-            string expected = "RaceCondition detected... Ressource: " + a + ", in Thread:";
+            string expected = $"RaceCondition detected... Ressource: {a} -> Thread: ";
             List<string> logs = GetMemoryLog();
             Assert.AreNotEqual(0,logs.Count);
             Assert.AreEqual(expected, logs[0].Substring(0, 50));
