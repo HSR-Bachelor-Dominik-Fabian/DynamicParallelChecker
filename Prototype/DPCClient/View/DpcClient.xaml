@@ -36,7 +36,10 @@
                     <GridViewColumn Header="Timestamp" DisplayMemberBinding="{Binding Time}"/>
                     <GridViewColumn Header="Level" DisplayMemberBinding="{Binding Level}"/>
                     <GridViewColumn Header="Message" DisplayMemberBinding="{Binding Message}"/>
+                    <GridViewColumn Header="MethodName" DisplayMemberBinding="{Binding MethodName}"/>
                     <GridViewColumn Header="Row" DisplayMemberBinding="{Binding RowCount}"/>
+                    <GridViewColumn Header="ConflictMethodName" DisplayMemberBinding="{Binding ConflictMethodName}"/>
+                    <GridViewColumn Header="ConflictRow" DisplayMemberBinding="{Binding ConflictRow}"/>
                 </GridView>
             </ListView.View>
         </ListView>
