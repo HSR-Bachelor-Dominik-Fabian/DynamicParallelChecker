@@ -68,6 +68,8 @@
     <Compile Include="View\DpcDetailView.xaml.cs">
       <DependentUpon>DpcDetailView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\Factories\DpcDetailViewFactory.cs" />
+    <Compile Include="View\Factories\IWindowFactory.cs" />
     <Page Include="View\DpcClient.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

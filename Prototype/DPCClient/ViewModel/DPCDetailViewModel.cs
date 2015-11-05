@@ -22,7 +22,7 @@ namespace DPCClient.ViewModel
 
         public DpcDetailViewModel()
         {
-            _nLogMessage = new NLogMessage();
+            NLogMessage = new NLogMessage();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

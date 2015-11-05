@@ -3,16 +3,18 @@ using System.IO;
 using System.Windows.Input;
 using CodeInstrumentation;
 using DPCClient.Model;
+using DPCClient.View.Factories;
 
 namespace DPCClient.ViewModel
 {
     class ListClickCommand : ICommand
     {
         private readonly DpcViewModel _obj;
-
+        private readonly IWindowFactory _windowFactory;
         public ListClickCommand(DpcViewModel obj)
         {
             _obj = obj;
+            _windowFactory = new DpcDetailViewFactory();
         }
 
         public bool CanExecute(object parameter)
@@ -30,7 +32,7 @@ namespace DPCClient.ViewModel
             entry.ConflictContent =
                 CodeInstrumentator.DecompileCode(path, NLogMessage.GetTypeName(entry.ConflictMethodName),
                     entry.ConflictMethodName, entry.ConflictRow);
-            
+            _windowFactory.CreateNewWindow(entry);
         }
 
         public event EventHandler CanExecuteChanged;

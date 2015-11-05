@@ -5,13 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         xmlns:viewModel="clr-namespace:DPCClient.ViewModel"
-        Title="DPCDetailView" Height="293.878" Width="522.158">
-    <Window.Resources>
-        <viewModel:DpcDetailViewModel x:Key="DpcDetailViewModel" />
-    </Window.Resources>
+        Title="DPCDetailView" Height="384.739" Width="848.689">
+    <Window.DataContext>
+        <viewModel:DpcDetailViewModel />
+    </Window.DataContext>
     <Grid>
-        <TextBox x:Name="MainMethod" HorizontalAlignment="Left" Height="23" Margin="10,20,0,0" TextWrapping="Wrap" Text="{Binding NLogMessage.MethodName, Source={StaticResource DpcDetailViewModel}}" VerticalAlignment="Top" Width="120"/>
-        <TextBox x:Name="ConflictingMethod" HorizontalAlignment="Left" Height="23" Margin="384,20,0,0" TextWrapping="Wrap" Text="{Binding NLogMessage.ConflictMethodName, Source={StaticResource DpcDetailViewModel}}" VerticalAlignment="Top" Width="120"/>
+        <TextBlock x:Name="MainClass" HorizontalAlignment="Left" Height="23" Margin="10,20,0,0" TextWrapping="Wrap" Text="{Binding NLogMessage.ClassName}" VerticalAlignment="Top" Width="410"/>
+        <TextBlock x:Name="MainMethod" HorizontalAlignment="Left" Height="23" Margin="10,40,0,0" TextWrapping="Wrap" Text="{Binding NLogMessage.MethodName}" VerticalAlignment="Top" Width="410"/>
+        <TextBlock x:Name="ConflictClass" Height="23" Margin="0,20,23,0" TextWrapping="Wrap" Text="{Binding NLogMessage.ClassName}" VerticalAlignment="Top" HorizontalAlignment="Right" Width="410"/>
+        <TextBlock x:Name="ConflictingMethod" Height="23" Margin="0,40,23,0" TextWrapping="Wrap" Text="{Binding NLogMessage.ConflictMethodName}" VerticalAlignment="Top" HorizontalAlignment="Right" Width="410"/>
 
     </Grid>
 </Window>
