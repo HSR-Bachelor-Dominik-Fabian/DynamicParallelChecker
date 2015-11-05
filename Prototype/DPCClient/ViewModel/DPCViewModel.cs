@@ -19,7 +19,7 @@ namespace DPCClient.ViewModel
 
         public DpcViewModel()
         {
-            _listClickCommand = new ListClickCommand();
+            _listClickCommand = new ListClickCommand(this);
             _openButtonCommand = new OpenButtonCommand(this);
             _filePathModel = new FilePathModel("");
             _logEntryModels = new ObservableCollection<NLogMessage>();
