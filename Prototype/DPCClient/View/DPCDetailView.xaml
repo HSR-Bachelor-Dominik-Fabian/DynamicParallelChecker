@@ -10,10 +10,11 @@
         <viewModel:DpcDetailViewModel />
     </Window.DataContext>
     <Grid>
-        <TextBlock x:Name="MainClass" HorizontalAlignment="Left" Height="23" Margin="10,20,0,0" TextWrapping="Wrap" Text="{Binding NLogMessage.ClassName}" VerticalAlignment="Top" Width="410"/>
-        <TextBlock x:Name="MainMethod" HorizontalAlignment="Left" Height="23" Margin="10,40,0,0" TextWrapping="Wrap" Text="{Binding NLogMessage.MethodName}" VerticalAlignment="Top" Width="410"/>
-        <TextBlock x:Name="ConflictClass" Height="23" Margin="0,20,23,0" TextWrapping="Wrap" Text="{Binding NLogMessage.ClassName}" VerticalAlignment="Top" HorizontalAlignment="Right" Width="410"/>
-        <TextBlock x:Name="ConflictingMethod" Height="23" Margin="0,40,23,0" TextWrapping="Wrap" Text="{Binding NLogMessage.ConflictMethodName}" VerticalAlignment="Top" HorizontalAlignment="Right" Width="410"/>
-
+        <TextBlock x:Name="MainClass" HorizontalAlignment="Left" Height="23" Margin="10,20,0,0" TextWrapping="Wrap" Text="{Binding NLogMessage.ClassName}" VerticalAlignment="Top" Width="400"/>
+        <TextBlock x:Name="MainMethod" HorizontalAlignment="Left" Height="23" Margin="10,40,0,0" TextWrapping="Wrap" Text="{Binding NLogMessage.MethodName}" VerticalAlignment="Top" Width="400"/>
+        <TextBlock x:Name="ConflictClass" Height="23" Margin="0,20,10,0" TextWrapping="Wrap" Text="{Binding NLogMessage.ClassName}" VerticalAlignment="Top" HorizontalAlignment="Right" Width="400"/>
+        <TextBlock x:Name="ConflictingMethod" Height="23" Margin="0,40,10,0" TextWrapping="Wrap" Text="{Binding NLogMessage.ConflictMethodName}" VerticalAlignment="Top" HorizontalAlignment="Right" Width="400"/>
+        <TextBox x:Name="MainCode" HorizontalAlignment="Left" Height="284" Margin="10,60,0,0" Text="{Binding NLogMessage.MethodContent}" VerticalAlignment="Top" Width="400"/>
+        <TextBox x:Name="ConflictingCode" Height="284" Margin="0,60,10,0" Text="{Binding NLogMessage.ConflictContent}" VerticalAlignment="Top" HorizontalAlignment="Right" Width="400"/>
     </Grid>
 </Window>
