@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModel="clr-namespace:DPCClient.ViewModel"
+        xmlns:model="clr-namespace:DPCClient.Model"
         mc:Ignorable="d"
         Title="DPC Client" Height="680.441" Width="883.265">
     <Window.Resources>
@@ -33,13 +34,22 @@
             </ListView.Resources>
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Timestamp" DisplayMemberBinding="{Binding Time}"/>
-                    <GridViewColumn Header="Level" DisplayMemberBinding="{Binding Level}"/>
-                    <GridViewColumn Header="Message" DisplayMemberBinding="{Binding Message}"/>
-                    <GridViewColumn Header="MethodName" DisplayMemberBinding="{Binding MethodName}"/>
-                    <GridViewColumn Header="Row" DisplayMemberBinding="{Binding RowCount}"/>
-                    <GridViewColumn Header="ConflictMethodName" DisplayMemberBinding="{Binding ConflictMethodName}"/>
-                    <GridViewColumn Header="ConflictRow" DisplayMemberBinding="{Binding ConflictRow}"/>
+                    <GridView.Columns>
+                        <GridViewColumn>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate DataType="{x:Type model:NLogMessage}">
+                                    <Button Content="Detail" Command="{Binding ListClickComm,Source={StaticResource Dpcviewobj}}" CommandParameter="{Binding .}"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Timestamp" DisplayMemberBinding="{Binding Time}"/>
+                        <GridViewColumn Header="Level" DisplayMemberBinding="{Binding Level}"/>
+                        <GridViewColumn Header="Message" DisplayMemberBinding="{Binding Message}"/>
+                        <GridViewColumn Header="MethodName" DisplayMemberBinding="{Binding MethodName}"/>
+                        <GridViewColumn Header="Row" DisplayMemberBinding="{Binding RowCount}"/>
+                        <GridViewColumn Header="ConflictMethodName" DisplayMemberBinding="{Binding ConflictMethodName}"/>
+                        <GridViewColumn Header="ConflictRow" DisplayMemberBinding="{Binding ConflictRow}"/>
+                    </GridView.Columns>
                 </GridView>
             </ListView.View>
         </ListView>

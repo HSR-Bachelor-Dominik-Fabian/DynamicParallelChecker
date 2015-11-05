@@ -63,6 +63,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ViewModel\DPCDetailViewModel.cs" />
+    <Compile Include="ViewModel\ListClickCommand.cs" />
+    <Compile Include="View\DpcDetailView.xaml.cs">
+      <DependentUpon>DpcDetailView.xaml</DependentUpon>
+    </Compile>
     <Page Include="View\DpcClient.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -84,6 +89,10 @@
       <DependentUpon>DpcClient.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="View\DpcDetailView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

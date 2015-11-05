@@ -11,6 +11,7 @@ namespace DPCClient.ViewModel
 {
     class DpcViewModel : INotifyPropertyChanged , INotifyCollectionChanged
     {
+        private readonly ListClickCommand _listClickCommand;
         private readonly OpenButtonCommand _openButtonCommand;
         private readonly FilePathModel _filePathModel;
         private readonly ObservableCollection<NLogMessage> _logEntryModels;
@@ -18,6 +19,7 @@ namespace DPCClient.ViewModel
 
         public DpcViewModel()
         {
+            _listClickCommand = new ListClickCommand();
             _openButtonCommand = new OpenButtonCommand(this);
             _filePathModel = new FilePathModel("");
             _logEntryModels = new ObservableCollection<NLogMessage>();
@@ -25,7 +27,7 @@ namespace DPCClient.ViewModel
         }
 
         public ICommand OpenBtnClick => _openButtonCommand;
-
+        public ICommand ListClickComm => _listClickCommand;
         public string FilePath
         {
             get { return _filePathModel.FilePath; }
