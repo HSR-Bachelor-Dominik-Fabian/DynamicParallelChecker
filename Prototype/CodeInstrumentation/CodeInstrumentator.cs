@@ -498,11 +498,10 @@ namespace CodeInstrumentation
 
         private static MethodDefinition GetMethodeDefinition(string typeName, string methodName, TypeDefinition type, out TypeDefinition typeDefinition)
         {
-            MethodDefinition method = null;
             if (type.FullName.Equals(typeName))
             {
                 typeDefinition = type;
-                method = type.Methods.SingleOrDefault(x => x.FullName.Equals(methodName));
+                MethodDefinition method = type.Methods.SingleOrDefault(x => x.FullName.Equals(methodName));
                 if (method != null)
                 {
                     return method;
@@ -513,7 +512,7 @@ namespace CodeInstrumentation
             {
                 foreach (TypeDefinition nestedType in type.NestedTypes)
                 {
-                    method = GetMethodeDefinition(typeName, methodName, nestedType, out typeDefinition);
+                    MethodDefinition method = GetMethodeDefinition(typeName, methodName, nestedType, out typeDefinition);
                     if (method != null)
                     {
                         return method;
