@@ -7,6 +7,7 @@ namespace DPCClient.Process
     class CopyProcessor
     {
         private static readonly string _targetDirectory = "work";
+        private static readonly string _targetDirectoryDecompile = "work_decompile";
 
         public string Start(FilePathModel filePath)
         {
@@ -17,10 +18,17 @@ namespace DPCClient.Process
             {
                 Delete(_targetDirectory);
             }
+            if (Directory.Exists(_targetDirectoryDecompile))
+            {
+                Delete(_targetDirectoryDecompile);
+            }
 
             Directory.CreateDirectory(_targetDirectory);
+            Directory.CreateDirectory(_targetDirectoryDecompile);
 
-            Copy(directory);
+            Copy(directory, _targetDirectory);
+
+            Copy(directory, _targetDirectoryDecompile);
 
             CopyLibrary();
 
@@ -30,6 +38,7 @@ namespace DPCClient.Process
         public void CleanUp()
         {
             Delete(_targetDirectory);
+            Delete(_targetDirectoryDecompile);
         }
 
         private void CopyLibrary()
@@ -44,7 +53,7 @@ namespace DPCClient.Process
             File.Copy(nLogConfigFileName, _targetDirectory + @"\" + nLogConfigFileName);
         }
 
-        private void Copy(string directory, string relative = "")
+        private void Copy(string directory, string targetDirectory, string relative = "")
         {
             if (directory != null)
             {
@@ -53,14 +62,13 @@ namespace DPCClient.Process
                     string fileName = Path.GetFileName(file);
                     if (!string.IsNullOrWhiteSpace(fileName))
                     {
-                        string pathDirectory = Path.Combine(_targetDirectory, relative);
+                        string pathDirectory = Path.Combine(targetDirectory, relative);
                         if (!Directory.Exists(pathDirectory))
                         {
                             Directory.CreateDirectory(pathDirectory);
                         }
-                        File.Copy(file, Path.Combine(pathDirectory, fileName));
+                        File.Copy(file, Path.Combine(pathDirectory, fileName), true);
                     }
-                       // _targetDirectory + @"\" + Path.GetFileName(file));
                 }
                 foreach (string directoryTemp in Directory.GetDirectories(directory))
                 {

@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Windows.Threading;
+using CodeInstrumentation;
 using DPCClient.ViewModel;
 
 namespace DPCClient.Process
@@ -23,7 +24,9 @@ namespace DPCClient.Process
 
             // Copy all the files
             string copyPath = Directory.GetCurrentDirectory() + @"\" + _copyProcessor.Start(viewModel.FilePathModel);
-            
+
+            string method = CodeInstrumentator.DecompileCode(copyPath, "Program", "Test9", 24);
+
             _instrumentationProcessor.Start(copyPath);
 
             _copyProcessor.CleanUp();
@@ -34,6 +37,7 @@ namespace DPCClient.Process
             {
                 startCommand.IsReadyForChecking = true;
             });
+
         }
     }
 }

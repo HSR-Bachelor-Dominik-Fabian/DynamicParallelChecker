@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using CodeInstrumentation;
 using DPCClient.Model;
 
 namespace DPCClient.ViewModel

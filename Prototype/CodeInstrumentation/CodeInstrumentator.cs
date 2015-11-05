@@ -2,6 +2,9 @@
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System.Collections;
+using System.IO;
+using ICSharpCode.Decompiler;
+using ICSharpCode.Decompiler.Ast;
 using OpCodes = Mono.Cecil.Cil.OpCodes;
 using Mono.Cecil.Rocks;
 
@@ -24,6 +27,7 @@ namespace CodeInstrumentation
             }
         }
         */
+
         public static void InjectCodeInstrumentation(string fileName)
         {
             ModuleDefinition refModul = ModuleDefinition.ReadModule("DPCLibrary.dll");
@@ -32,6 +36,7 @@ namespace CodeInstrumentation
             MethodDefinition writeAccessDef = typeDefinition.Methods.Single(x => x.Name == "WriteAccess");
             MethodDefinition lockObjectDef = typeDefinition.Methods.Single(x => x.Name == "LockObject");
             MethodDefinition unlockObjectDef = typeDefinition.Methods.Single(x => x.Name == "UnLockObject");
+
 
             ModuleDefinition module = ModuleDefinition.ReadModule(fileName);
             MethodReference referencedReadAccessMethod = module.Import(readAccessDef);
@@ -47,7 +52,9 @@ namespace CodeInstrumentation
             TypeReference float64TypeReference = module.Import(typeof (double));
             foreach (TypeDefinition type in module.Types)
             {
-                InstrumentateType(type, int32TypeReference, int8TypeReference, int16TypeReference, int64TypeReference, float32TypeReference, float64TypeReference, referencedReadAccessMethod, referencedWriteAccessMethod, referencedLockObjectMethod, referencedUnlockObjectMethod);
+                InstrumentateType(type, int32TypeReference, int8TypeReference, int16TypeReference, int64TypeReference,
+                    float32TypeReference, float64TypeReference, referencedReadAccessMethod, referencedWriteAccessMethod,
+                    referencedLockObjectMethod, referencedUnlockObjectMethod);
             }
 
             module.Write(fileName);
@@ -55,7 +62,8 @@ namespace CodeInstrumentation
 
         private static void InstrumentateType(TypeDefinition type, TypeReference int32TypeReference,
             TypeReference int8TypeReference, TypeReference int16TypeReference, TypeReference int64TypeReference,
-            TypeReference float32TypeReference, TypeReference float64TypeReference, MethodReference referencedReadAccessMethod,
+            TypeReference float32TypeReference, TypeReference float64TypeReference,
+            MethodReference referencedReadAccessMethod,
             MethodReference referencedWriteAccessMethod, MethodReference referencedLockObjectMethod,
             MethodReference referencedUnlockObjectMethod)
         {
@@ -63,7 +71,9 @@ namespace CodeInstrumentation
             {
                 foreach (TypeDefinition nestedType in type.NestedTypes)
                 {
-                    InstrumentateType(nestedType, int32TypeReference, int8TypeReference, int16TypeReference, int64TypeReference, float32TypeReference, float64TypeReference, referencedReadAccessMethod, referencedWriteAccessMethod, referencedLockObjectMethod, referencedUnlockObjectMethod);
+                    InstrumentateType(nestedType, int32TypeReference, int8TypeReference, int16TypeReference,
+                        int64TypeReference, float32TypeReference, float64TypeReference, referencedReadAccessMethod,
+                        referencedWriteAccessMethod, referencedLockObjectMethod, referencedUnlockObjectMethod);
                 }
             }
             if (type.HasMethods)
@@ -96,8 +106,8 @@ namespace CodeInstrumentation
                     {
                         if (ins.OpCode.Equals(OpCodes.Ldsfld))
                         {
-                            FieldReference fieldDefinition = (FieldReference)ins.Operand;
-                             
+                            FieldReference fieldDefinition = (FieldReference) ins.Operand;
+
                             TypeReference fieldType = fieldDefinition.FieldType;
                             var processor = method.Body.GetILProcessor();
                             if (fieldType.IsPrimitive ||
@@ -123,8 +133,8 @@ namespace CodeInstrumentation
                                 var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
                                 var methodLoad2 = processor.Create(OpCodes.Ldstr, method.FullName);
                                 processor.InsertAfter(ins, dupInstruction);
-                                processor.InsertAfter(dupInstruction,constLoad);
-                                processor.InsertAfter(constLoad,methodLoad);
+                                processor.InsertAfter(dupInstruction, constLoad);
+                                processor.InsertAfter(constLoad, methodLoad);
                                 processor.InsertAfter(methodLoad, readAccessLibraryCall);
                                 processor.InsertAfter(readAccessLibraryCall, loadAddressInstruction);
                                 processor.InsertAfter(loadAddressInstruction, constLoad2);
@@ -433,5 +443,85 @@ namespace CodeInstrumentation
             processor.InsertBefore(dupInstruction, storeIndexInstrution);
         }
 
+        public static string DecompileCode(string fileName, string typeName, string methodName, int offset)
+        {
+            FileInfo assemblyFile = new FileInfo(fileName);
+            string pathToAssembly = assemblyFile.FullName;
+            AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(pathToAssembly);
+            string result = "";
+
+            MethodDefinition method = null;
+            TypeDefinition typeDefinition = null;
+            foreach (TypeDefinition type in assemblyDefinition.MainModule.Types)
+            {
+                method = GetMethodeDefinition(typeName, methodName, type, out typeDefinition);
+                if (method != null)
+                {
+                    break;
+                }
+            }
+
+            if (method != null)
+            {
+                Instruction ins = method.Body.Instructions.SingleOrDefault(x => x.Offset == offset);
+
+                AddDetectedInstructionBefore(assemblyDefinition.MainModule, method, ins);
+
+                AstBuilder astBuilder = new AstBuilder(new DecompilerContext(assemblyDefinition.MainModule)
+                {
+                    CurrentType = typeDefinition,
+                    CurrentMethod = method
+                });
+                astBuilder.AddMethod(method);
+                StringWriter output = new StringWriter();
+                astBuilder.GenerateCode(new PlainTextOutput(output));
+                result = output.ToString();
+                output.Dispose();
+            }
+            return result;
+        }
+
+        private static void AddDetectedInstructionBefore(ModuleDefinition module, MethodDefinition method, Instruction ins)
+        {
+            ModuleDefinition refModul = ModuleDefinition.ReadModule("DPCLibrary.dll");
+            TypeDefinition typeDefinition = refModul.Types.First(x => x.Name == "DpcLibrary");
+            MethodDefinition raceConditionDetectedDef =
+                typeDefinition.Methods.Single(x => x.Name == "RaceConditionDetectedIdentifier");
+            MethodReference raceConditionDetectedRef = module.Import(raceConditionDetectedDef);
+
+            var processor = method.Body.GetILProcessor();
+
+            var raceDetectedLibraryCall = processor.Create(OpCodes.Call,
+                                    raceConditionDetectedRef);
+            processor.InsertBefore(ins, raceDetectedLibraryCall);
+        }
+
+        private static MethodDefinition GetMethodeDefinition(string typeName, string methodName, TypeDefinition type, out TypeDefinition typeDefinition)
+        {
+            MethodDefinition method = null;
+            if (type.FullName.Equals(typeName))
+            {
+                typeDefinition = type;
+                method = type.Methods.SingleOrDefault(x => x.FullName.Equals(methodName));
+                if (method != null)
+                {
+                    return method;
+                }
+            }
+
+            if (type.HasNestedTypes)
+            {
+                foreach (TypeDefinition nestedType in type.NestedTypes)
+                {
+                    method = GetMethodeDefinition(typeName, methodName, nestedType, out typeDefinition);
+                    if (method != null)
+                    {
+                        return method;
+                    }
+                }
+            }
+            typeDefinition = null;
+            return null;
+        }
     }
 }

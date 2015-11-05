@@ -28,5 +28,10 @@ namespace DPCLibrary
             Thread thread = Thread.CurrentThread;
             ThreadVectorManager.GetInstance().HandleUnLock(thread, obj);
         }
+
+        public static void RaceConditionDetectedIdentifier()
+        {
+            
+        }
     }
 }
