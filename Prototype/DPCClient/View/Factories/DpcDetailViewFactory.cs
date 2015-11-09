@@ -1,6 +1,4 @@
-﻿using System;
-using DPCClient.Model;
-using DPCClient.Properties;
+﻿using DPCClient.Model;
 using DPCClient.ViewModel;
 
 namespace DPCClient.View.Factories
