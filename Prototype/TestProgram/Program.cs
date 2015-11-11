@@ -46,6 +46,7 @@ namespace TestProgram
             Test9();
             Test10();
             Test11();
+            Test12();
             Console.ReadKey();
         }
 
@@ -242,6 +243,35 @@ namespace TestProgram
                     b = 2;
                 }
             });
+            lock (lockA)
+            {
+                a = 3;
+            }
+            lock (lockB)
+            {
+                b = 2;
+            }
+        }
+
+        public static void Test12()
+        {
+            Console.WriteLine("Test12()");
+            object a = 1;
+            object lockA = new object();
+            object b = 1;
+            object lockB = new object();
+            Thread thread1 = new Thread(() =>
+            {
+                lock (lockA)
+                {
+                    a = 2;
+                }
+                lock (lockB)
+                {
+                    b = 2;
+                }
+            });
+            thread1.Start();
             lock (lockA)
             {
                 a = 3;

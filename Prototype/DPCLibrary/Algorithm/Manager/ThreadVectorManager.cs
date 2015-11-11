@@ -81,6 +81,16 @@ namespace DPCLibrary.Algorithm.Manager
             threadVectorInstance.IncrementClock();
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void HandleThreadStart(Thread newThread, Thread currentThread)
+        {
+            _logger.ConditionalDebug("NewThread: " + newThread.ManagedThreadId + " started from " + currentThread.ManagedThreadId);
+            ThreadVectorInstance currentThreadInstance = GetThreadVectorInstance(currentThread);
+            KeyValuePair<Thread, ThreadVectorClock> threadIdClockPair = new KeyValuePair<Thread, ThreadVectorClock>(currentThread, currentThreadInstance.VectorClock);
+            SynchronizeVectorClock(newThread, threadIdClockPair);
+            currentThreadInstance.IncrementClock();
+        }
+
         private ThreadVectorInstance GetThreadVectorInstance(Thread thread)
         {
             ThreadVectorInstance threadVectorInstance;

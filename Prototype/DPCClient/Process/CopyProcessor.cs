@@ -38,7 +38,6 @@ namespace DPCClient.Process
         public void CleanUp()
         {
             Delete(_targetDirectory);
-            Delete(_targetDirectoryDecompile);
         }
 
         private void CopyLibrary()

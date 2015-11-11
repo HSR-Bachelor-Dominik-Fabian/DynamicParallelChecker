@@ -35,6 +35,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ICSharpCode.AvalonEdit, Version=5.0.1.0, Culture=neutral, PublicKeyToken=9cc39be672370310, processorArchitecture=MSIL">
+      <HintPath>..\packages\AvalonEdit.5.0.2\lib\Net40\ICSharpCode.AvalonEdit.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -68,6 +72,8 @@
     <Compile Include="View\DpcDetailView.xaml.cs">
       <DependentUpon>DpcDetailView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\Factories\DpcDetailViewFactory.cs" />
+    <Compile Include="View\Factories\IWindowFactory.cs" />
     <Page Include="View\DpcClient.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
