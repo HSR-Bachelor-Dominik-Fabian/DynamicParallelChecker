@@ -36,6 +36,7 @@ namespace CodeInstrumentation
             MethodDefinition writeAccessDef = typeDefinition.Methods.Single(x => x.Name == "WriteAccess");
             MethodDefinition lockObjectDef = typeDefinition.Methods.Single(x => x.Name == "LockObject");
             MethodDefinition unlockObjectDef = typeDefinition.Methods.Single(x => x.Name == "UnLockObject");
+            MethodDefinition threadStartDef = typeDefinition.Methods.Single(x => x.Name == "StartThread");
 
 
             ModuleDefinition module = ModuleDefinition.ReadModule(fileName);
@@ -43,6 +44,7 @@ namespace CodeInstrumentation
             MethodReference referencedWriteAccessMethod = module.Import(writeAccessDef);
             MethodReference referencedLockObjectMethod = module.Import(lockObjectDef);
             MethodReference referencedUnlockObjectMethod = module.Import(unlockObjectDef);
+            MethodReference referencedStartThreadtMethod = module.Import(threadStartDef);
 
             TypeReference int8TypeReference = module.Import(typeof (byte));
             TypeReference int16TypeReference = module.Import(typeof (short));
@@ -54,7 +56,7 @@ namespace CodeInstrumentation
             {
                 InstrumentateType(type, int32TypeReference, int8TypeReference, int16TypeReference, int64TypeReference,
                     float32TypeReference, float64TypeReference, referencedReadAccessMethod, referencedWriteAccessMethod,
-                    referencedLockObjectMethod, referencedUnlockObjectMethod);
+                    referencedLockObjectMethod, referencedUnlockObjectMethod, referencedStartThreadtMethod);
             }
 
             module.Write(fileName);
@@ -65,7 +67,7 @@ namespace CodeInstrumentation
             TypeReference float32TypeReference, TypeReference float64TypeReference,
             MethodReference referencedReadAccessMethod,
             MethodReference referencedWriteAccessMethod, MethodReference referencedLockObjectMethod,
-            MethodReference referencedUnlockObjectMethod)
+            MethodReference referencedUnlockObjectMethod, MethodReference referencedStartThreadtMethod)
         {
             if (type.HasNestedTypes)
             {
@@ -73,7 +75,7 @@ namespace CodeInstrumentation
                 {
                     InstrumentateType(nestedType, int32TypeReference, int8TypeReference, int16TypeReference,
                         int64TypeReference, float32TypeReference, float64TypeReference, referencedReadAccessMethod,
-                        referencedWriteAccessMethod, referencedLockObjectMethod, referencedUnlockObjectMethod);
+                        referencedWriteAccessMethod, referencedLockObjectMethod, referencedUnlockObjectMethod, referencedStartThreadtMethod);
                 }
             }
             if (type.HasMethods)
@@ -161,7 +163,7 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stsfld))
                         {
-                            FieldDefinition fieldDefinition = (FieldDefinition) ins.Operand;
+                            FieldReference fieldDefinition = (FieldReference) ins.Operand;
                             var processor = method.Body.GetILProcessor();
                             var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
                             var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
@@ -385,6 +387,24 @@ namespace CodeInstrumentation
                                 processor.InsertBefore(unlockObjectLibraryCall, dupInstruction);
                             }
                         }
+                        else if (ins.OpCode.Equals(OpCodes.Callvirt))
+                        {
+                            MethodReference reference = (MethodReference) ins.Operand;
+                            if (reference.FullName.Contains("System.Void System.Threading.Thread::Start"))
+                            {
+                                var processor = method.Body.GetILProcessor();
+                                if (!reference.HasParameters)
+                                {
+                                    var ldNull = processor.Create(OpCodes.Ldnull);
+                                    processor.InsertBefore(ins,ldNull);
+                                }
+                                
+                                var startThreadCall = processor.Create(OpCodes.Call,
+                                    referencedStartThreadtMethod);
+
+                                processor.Replace(ins, startThreadCall);
+                            }
+                        }
                     }
                     method.Body.OptimizeMacros(); // Convert the normal branches back to short branches if possible
                 }
@@ -447,7 +467,15 @@ namespace CodeInstrumentation
         {
             FileInfo assemblyFile = new FileInfo(fileName);
             string pathToAssembly = assemblyFile.FullName;
-            AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(pathToAssembly);
+            var resolver = new DefaultAssemblyResolver();
+            resolver.AddSearchDirectory(assemblyFile.DirectoryName);
+
+            var parameters = new ReaderParameters
+            {
+                AssemblyResolver =  resolver
+            };
+
+            AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(pathToAssembly, parameters);
             string result = "";
 
             MethodDefinition method = null;
@@ -466,12 +494,12 @@ namespace CodeInstrumentation
                 Instruction ins = method.Body.Instructions.SingleOrDefault(x => x.Offset == offset);
 
                 AddDetectedInstructionBefore(assemblyDefinition.MainModule, method, ins);
-
                 AstBuilder astBuilder = new AstBuilder(new DecompilerContext(assemblyDefinition.MainModule)
                 {
                     CurrentType = typeDefinition,
                     CurrentMethod = method
                 });
+
                 astBuilder.AddMethod(method);
                 StringWriter output = new StringWriter();
                 astBuilder.GenerateCode(new PlainTextOutput(output));

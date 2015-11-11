@@ -146,7 +146,28 @@ namespace DPCLibrary.Tests
             Assert.AreNotEqual(0,logs.Count);
             Assert.AreEqual(expected, logs[0].Substring(0, 50));
         }
-        
+
+        [TestMethod]
+        public void TestNoRaceConditionStartThreads()
+        {
+            int a = 1;
+            int b = 2;
+            int lineofCode = 12;
+            DpcLibrary.WriteAccess(a, lineofCode, "TestMethod");
+            Thread thread2 = new Thread(() =>
+            {
+                DpcLibrary.LockObject(b);
+                DpcLibrary.WriteAccess(a, lineofCode, "TestMethod");
+                DpcLibrary.UnLockObject(b);
+            });
+            DpcLibrary.StartThread(thread2);
+            thread2.Join();
+
+            List<string> logs = GetMemoryLog();
+            Assert.AreEqual(0, logs.Count);
+        }
+
+
         [TestCleanup]
         public void CleanUp()
         {
