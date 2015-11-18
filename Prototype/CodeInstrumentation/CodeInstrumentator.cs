@@ -13,11 +13,13 @@ namespace CodeInstrumentation
 {
     public class CodeInstrumentator
     {
-        private static readonly Dictionary<string, MethodReference> _methodReferences = new Dictionary<string, MethodReference>(); 
-        private static readonly Dictionary<string, TypeReference> _typeReferences = new Dictionary<string, TypeReference>();
+        private static Dictionary<string, MethodReference> _methodReferences; 
+        private static Dictionary<string, TypeReference> _typeReferences;
 
         public static void InjectCodeInstrumentation(string fileName)
         {
+            _methodReferences = new Dictionary<string, MethodReference>();
+            _typeReferences = new Dictionary<string, TypeReference>();
             ModuleDefinition refModul = ModuleDefinition.ReadModule("DPCLibrary.dll");
             TypeDefinition typeDefinition = refModul.Types.First(x => x.Name == "DpcLibrary");
             ModuleDefinition module = ModuleDefinition.ReadModule(fileName);
