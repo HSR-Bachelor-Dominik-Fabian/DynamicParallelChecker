@@ -10,7 +10,7 @@ namespace DPCLibrary.Tests
         [TestMethod]
         public void TestConstructor()
         {
-            Thread thread = Thread.CurrentThread;
+            string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             ThreadVectorInstance instance = new ThreadVectorInstance(thread);
             Assert.AreEqual(thread,instance.ThreadId);
             Assert.AreEqual(0, instance.LockRessource);
@@ -18,7 +18,7 @@ namespace DPCLibrary.Tests
         [TestMethod]
         public void TestIncrementClock()
         {
-            Thread thread = Thread.CurrentThread;
+            string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             ThreadVectorInstance instance = new ThreadVectorInstance(thread);
             instance.IncrementClock();
             Assert.AreEqual(2, instance.VectorClock[thread]);
@@ -27,8 +27,8 @@ namespace DPCLibrary.Tests
         [TestMethod]
         public void TestIncrementMultipleClock()
         {
-            Thread thread = Thread.CurrentThread;
-            Thread thread2 = new Thread(() => { });
+            string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
             ThreadVectorInstance instance = new ThreadVectorInstance(thread);
             instance.VectorClock.Add(thread2, 1);
             instance.IncrementClock();
@@ -39,8 +39,8 @@ namespace DPCLibrary.Tests
         [TestMethod]
         public void TestWriteHistory()
         {
-            Thread thread = Thread.CurrentThread;
-            Thread thread2 = new Thread(() => { });
+            string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
             ThreadVectorInstance instance = new ThreadVectorInstance(thread);
             instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Read,123, 2, "TestMethodName"));
             ThreadVectorHistory dict = instance.GetConcurrentHistory(new ThreadVectorClock(thread2));
@@ -50,8 +50,8 @@ namespace DPCLibrary.Tests
         [TestMethod]
         public void TestWriteHistory2()
         {
-            Thread thread = Thread.CurrentThread;
-            Thread thread2 = new Thread(() => { });
+            string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
             ThreadVectorInstance instance = new ThreadVectorInstance(thread);
             instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Read, 123, 2, "TestMethodName"));
             instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Read,3232, 2, "TestMethodName"));
@@ -62,8 +62,8 @@ namespace DPCLibrary.Tests
         [TestMethod]
         public void TestWriteHistory3()
         {
-            Thread thread = Thread.CurrentThread;
-            Thread thread2 = new Thread(() => { });
+            string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
             ThreadVectorInstance instance = new ThreadVectorInstance(thread);
             instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Read, 123, 2, "TestMethodName"));
             instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Write, 123, 2, "TestMethodName"));
@@ -74,8 +74,8 @@ namespace DPCLibrary.Tests
         [TestMethod]
         public void TestGetConcurrentHistory()
         {
-            Thread thread = Thread.CurrentThread;
-            Thread thread2 = new Thread(() => { });
+            string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
             ThreadVectorInstance instance = new ThreadVectorInstance(thread);
             instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Read, 123, 2, "TestMethodName"));
             instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Write, 123, 2, "TestMethodName"));
@@ -86,8 +86,8 @@ namespace DPCLibrary.Tests
         [TestMethod]
         public void TestGetConcurrentHistoryNegativ()
         {
-            Thread thread = Thread.CurrentThread;
-            Thread thread2 = new Thread(() => { });
+            string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
             ThreadVectorInstance instance = new ThreadVectorInstance(thread);
             instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Read, 123, 2, "TestMethodName"));
             instance.WriteHistory(new ThreadEvent(ThreadEvent.EventType.Write, 123, 2, "TestMethodName"));

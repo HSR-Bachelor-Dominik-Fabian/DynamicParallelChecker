@@ -14,8 +14,8 @@ namespace DPCLibrary.Tests
         [DeploymentItem(@".\Nlog.config")]
         public void TestRaceConditionReadWrite()
         {
-            Thread thread = Thread.CurrentThread;
-            Thread thread2 = new Thread(() => { });
+            string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
 
             int ressource = 1;
             int ownLockRessource = 2;
@@ -31,15 +31,15 @@ namespace DPCLibrary.Tests
             ThreadVectorManager.GetInstance().HandleUnLock(thread2, otherLockRessource);
             List<string> logs = GetMemoryLog();
             CollectionAssert.Contains(logs,
-                $"RaceCondition detected... Ressource: {ressource} -> Thread: {thread2.ManagedThreadId} to Thread: {thread.ManagedThreadId}");
+                $"RaceCondition detected... Ressource: {ressource} -> Thread: {thread2} to Thread: {thread}");
             Assert.AreEqual(1, logs.Count);
         }
 
         [TestMethod]
         public void TestRaceConditionWriteWrite()
         {
-            Thread thread = Thread.CurrentThread;
-            Thread thread2 = new Thread(() => { });
+            string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
 
             int ressource = 1;
             int ownLockRessource = 2;
@@ -56,15 +56,15 @@ namespace DPCLibrary.Tests
 
             List<string> logs = GetMemoryLog();
             CollectionAssert.Contains(logs,
-                $"RaceCondition detected... Ressource: {ressource} -> Thread: {thread2.ManagedThreadId} to Thread: {thread.ManagedThreadId}");
+                $"RaceCondition detected... Ressource: {ressource} -> Thread: {thread2} to Thread: {thread}");
             Assert.AreEqual(1, logs.Count);
         }
 
         [TestMethod]
         public void TestNoRaceConditionReadRead()
         {
-            Thread thread = Thread.CurrentThread;
-            Thread thread2 = new Thread(() => { });
+            string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
 
             int ressource = 1;
             int ownLockRessource = 2;
@@ -85,8 +85,8 @@ namespace DPCLibrary.Tests
         [TestMethod]
         public void TestRaceConditionWriteRead()
         {
-            Thread thread = Thread.CurrentThread;
-            Thread thread2 = new Thread(() => { });
+            string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
 
             int ressource = 1;
             int ownLockRessource = 2;
@@ -102,7 +102,7 @@ namespace DPCLibrary.Tests
             ThreadVectorManager.GetInstance().HandleUnLock(thread2, otherLockRessource);
             List<string> logs = GetMemoryLog();
             CollectionAssert.Contains(logs,
-                $"RaceCondition detected... Ressource: {ressource} -> Thread: {thread2.ManagedThreadId} to Thread: {thread.ManagedThreadId}");
+                $"RaceCondition detected... Ressource: {ressource} -> Thread: {thread2} to Thread: {thread}");
             Assert.AreEqual(1, logs.Count);
         }
 
@@ -110,8 +110,8 @@ namespace DPCLibrary.Tests
         [TestMethod]
         public void TestRaceConditionReadWriteWithoutLock()
         {
-            Thread thread = Thread.CurrentThread;
-            Thread thread2 = new Thread(() => { });
+            string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
 
             int ressource = 1;
             int ownLockRessource = 2;
@@ -124,15 +124,15 @@ namespace DPCLibrary.Tests
             ThreadVectorManager.GetInstance().HandleReadAccess(thread2, ressource, lineofCode, "TestMethodName");
             List<string> logs = GetMemoryLog();
             CollectionAssert.Contains(logs,
-                $"RaceCondition detected... Ressource: {ressource} -> Thread: {thread2.ManagedThreadId} to Thread: {thread.ManagedThreadId}");
+                $"RaceCondition detected... Ressource: {ressource} -> Thread: {thread2} to Thread: {thread}");
             Assert.AreEqual(1, logs.Count);
         }
 
         [TestMethod]
         public void TestNoRaceConditionReadWriteDifferentRessource()
         {
-            Thread thread = Thread.CurrentThread;
-            Thread thread2 = new Thread(() => { });
+            string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
 
             int ownRessource = 1;
             int otherRessource = 2;
@@ -155,8 +155,8 @@ namespace DPCLibrary.Tests
         [TestMethod]
         public void TestNoRaceConditionWithSync()
         {
-            Thread thread = Thread.CurrentThread;
-            Thread thread2 = new Thread(() => { });
+            string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
 
             int ownRessource = 1;
             int ownLockRessource = 2;
@@ -177,8 +177,8 @@ namespace DPCLibrary.Tests
         [TestMethod]
         public void TestRaceConditionAfterSync()
         {
-            Thread thread = Thread.CurrentThread;
-            Thread thread2 = new Thread(() => { });
+            string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
 
             int ownRessource = 1;
             int ownLockRessource = 2;
@@ -195,16 +195,16 @@ namespace DPCLibrary.Tests
             ThreadVectorManager.GetInstance().HandleWriteAccess(thread, ownRessource, lineofCode, "TestMethodName");
             List<string> logs = GetMemoryLog();
             CollectionAssert.Contains(logs,
-                $"RaceCondition detected... Ressource: {ownRessource} -> Thread: {thread.ManagedThreadId} to Thread: {thread2.ManagedThreadId}");
+                $"RaceCondition detected... Ressource: {ownRessource} -> Thread: {thread} to Thread: {thread2}");
             Assert.AreEqual(1, logs.Count);
         }
 
         [TestMethod]
         public void TestNoRaceConditionThreeThreads()
         {
-            Thread thread = Thread.CurrentThread;
-            Thread thread2 = new Thread(() => { });
-            Thread thread3 = new Thread(() => { });
+            string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
+            string thread3 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 2}";
 
             int ownRessource = 1;
             int otherRessource = 2;
@@ -233,9 +233,9 @@ namespace DPCLibrary.Tests
         [TestMethod]
         public void TestRaceConditionThreeThreads()
         {
-            Thread thread = Thread.CurrentThread;
-            Thread thread2 = new Thread(() => { });
-            Thread thread3 = new Thread(() => { });
+            string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
+            string thread3 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 2}";
 
             int ownRessource = 1;
             int otherRessource = 2;
@@ -259,16 +259,16 @@ namespace DPCLibrary.Tests
             
             List<string> logs = GetMemoryLog();
             CollectionAssert.Contains(logs,
-                $"RaceCondition detected... Ressource: {otherRessource} -> Thread: {thread3.ManagedThreadId} to Thread: {thread2.ManagedThreadId}");
+                $"RaceCondition detected... Ressource: {otherRessource} -> Thread: {thread3} to Thread: {thread2}");
             Assert.AreEqual(1, logs.Count);
         }
 
         [TestMethod]
         public void TestNoRaceConditionAfterSyncThreeThreads()
         {
-            Thread thread = Thread.CurrentThread;
-            Thread thread2 = new Thread(() => { });
-            Thread thread3 = new Thread(() => { });
+            string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
+            string thread3 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 2}";
 
             int ownRessource = 1;
             int otherRessource = 2;
@@ -296,9 +296,9 @@ namespace DPCLibrary.Tests
         [TestMethod]
         public void TestNoRaceConditionSyncAfterSync()
         {
-            Thread thread = Thread.CurrentThread;
-            Thread thread2 = new Thread(() => { });
-            Thread thread3 = new Thread(() => { });
+            string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
+            string thread3 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 2}";
 
             int ownRessource = 1;
             int ownLockRessource = 2;

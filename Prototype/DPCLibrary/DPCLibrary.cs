@@ -76,7 +76,7 @@ namespace DPCLibrary
         public static void StartThread(Thread thread, object parameter = null)
         {
             _logger.ConditionalTrace("New threadId started: " + thread.ManagedThreadId + " from threadId " + Thread.CurrentThread.ManagedThreadId);
-            ThreadVectorManager.GetInstance().HandleThreadStart($"Thread_{thread.ManagedThreadId}", $"Thread_{Thread.CurrentThread}");
+            ThreadVectorManager.GetInstance().HandleThreadStart($"Thread_{thread.ManagedThreadId}", $"Thread_{Thread.CurrentThread.ManagedThreadId}");
             if (parameter != null)
             {
                 thread.Start(parameter);
