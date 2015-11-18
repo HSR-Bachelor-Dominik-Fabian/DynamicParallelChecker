@@ -13,7 +13,7 @@ namespace DPCLibrary.Tests
             Thread thread = Thread.CurrentThread;
             // ReSharper disable once CollectionNeverUpdated.Local
             ThreadVectorClock clock = new ThreadVectorClock(thread);
-            Assert.AreEqual(thread, clock.OwnThread);
+            Assert.AreEqual(thread, clock.OwnThreadId);
             int value;
             Assert.IsTrue(clock.TryGetValue(thread,out value));
             Assert.AreEqual(1,value);

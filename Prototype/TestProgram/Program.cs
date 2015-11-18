@@ -232,7 +232,7 @@ namespace TestProgram
             object b = 1;
             object lockB = new object();
 
-            Task.Factory.StartNew(() =>
+            Task task = Task.Factory.StartNew(() =>
             {
                 lock (lockA)
                 {
@@ -251,6 +251,7 @@ namespace TestProgram
             {
                 b = 2;
             }
+            task.Wait();
         }
 
         public static void Test12()

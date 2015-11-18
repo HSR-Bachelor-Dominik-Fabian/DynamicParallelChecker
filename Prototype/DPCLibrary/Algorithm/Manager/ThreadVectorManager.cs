@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using NLog;
 
 namespace DPCLibrary.Algorithm.Manager
@@ -34,17 +33,17 @@ namespace DPCLibrary.Algorithm.Manager
             _instance = null;
         }
 
-        private readonly Dictionary<Thread, ThreadVectorInstance> _threadVectorPool
-            = new Dictionary<Thread, ThreadVectorInstance>();
+        private readonly Dictionary<string, ThreadVectorInstance> _threadVectorPool
+            = new Dictionary<string, ThreadVectorInstance>();
 
         private readonly LockHistory _lockHistory = new LockHistory();
 
         private readonly Logger _logger = LogManager.GetLogger("ThreadVectorManager");
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void HandleReadAccess(Thread thread, int ressource, int rowNumber, string methodName)
+        public void HandleReadAccess(string thread, int ressource, int rowNumber, string methodName)
         {
-            _logger.ConditionalDebug("ReadAccess: " + thread.ManagedThreadId + " on Ressource: " + ressource + "on Line:" + rowNumber);
+            _logger.ConditionalDebug("ReadAccess: " + thread + " on Ressource: " + ressource + "on Line:" + rowNumber);
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(thread);
             ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, ressource, rowNumber, methodName);
             threadVectorInstance.WriteHistory(threadEvent);
@@ -52,9 +51,9 @@ namespace DPCLibrary.Algorithm.Manager
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void HandleWriteAccess(Thread thread, int ressource, int rowNumber, string methodName)
+        public void HandleWriteAccess(string thread, int ressource, int rowNumber, string methodName)
         {
-            _logger.ConditionalDebug("WriteAccess: " + thread.ManagedThreadId + " on Ressource: " + ressource + "on Line:" + rowNumber);
+            _logger.ConditionalDebug("WriteAccess: " + thread + " on Ressource: " + ressource + "on Line:" + rowNumber);
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(thread);
             ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Write, ressource,rowNumber, methodName);
             threadVectorInstance.WriteHistory(threadEvent);
@@ -62,10 +61,10 @@ namespace DPCLibrary.Algorithm.Manager
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void HandleLock(Thread thread, int lockRessource)
+        public void HandleLock(string thread, int lockRessource)
         {
-            _logger.ConditionalDebug("Lock: " + thread.ManagedThreadId + " on Ressource: " + lockRessource);
-            KeyValuePair<Thread, ThreadVectorClock> lockThreadIdClockPair;
+            _logger.ConditionalDebug("Lock: " + thread + " on Ressource: " + lockRessource);
+            KeyValuePair<string, ThreadVectorClock> lockThreadIdClockPair;
             if (CheckLockHistory(lockRessource, out lockThreadIdClockPair))
             {
                 SynchronizeVectorClock(thread, lockThreadIdClockPair);
@@ -73,25 +72,25 @@ namespace DPCLibrary.Algorithm.Manager
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void HandleUnLock(Thread thread, int lockRessource)
+        public void HandleUnLock(string thread, int lockRessource)
         {
-            _logger.ConditionalDebug("Unlock: " + thread.ManagedThreadId + " on Ressource: " + lockRessource);
+            _logger.ConditionalDebug("Unlock: " + thread + " on Ressource: " + lockRessource);
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(thread);
-            _lockHistory.AddLockEntry(lockRessource, new KeyValuePair<Thread, ThreadVectorClock>(thread, threadVectorInstance.VectorClock));
+            _lockHistory.AddLockEntry(lockRessource, new KeyValuePair<string, ThreadVectorClock>(thread, threadVectorInstance.VectorClock));
             threadVectorInstance.IncrementClock();
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void HandleThreadStart(Thread newThread, Thread currentThread)
+        public void HandleThreadStart(string newThread, string currentThread)
         {
-            _logger.ConditionalDebug("NewThread: " + newThread.ManagedThreadId + " started from " + currentThread.ManagedThreadId);
+            _logger.ConditionalDebug("NewThread: " + newThread + " started from " + currentThread);
             ThreadVectorInstance currentThreadInstance = GetThreadVectorInstance(currentThread);
-            KeyValuePair<Thread, ThreadVectorClock> threadIdClockPair = new KeyValuePair<Thread, ThreadVectorClock>(currentThread, currentThreadInstance.VectorClock);
+            KeyValuePair<string, ThreadVectorClock> threadIdClockPair = new KeyValuePair<string, ThreadVectorClock>(currentThread, currentThreadInstance.VectorClock);
             SynchronizeVectorClock(newThread, threadIdClockPair);
             currentThreadInstance.IncrementClock();
         }
 
-        private ThreadVectorInstance GetThreadVectorInstance(Thread thread)
+        private ThreadVectorInstance GetThreadVectorInstance(string thread)
         {
             ThreadVectorInstance threadVectorInstance;
             if (!_threadVectorPool.TryGetValue(thread, out threadVectorInstance))
@@ -102,12 +101,12 @@ namespace DPCLibrary.Algorithm.Manager
             return threadVectorInstance;
         }
 
-        private bool CheckLockHistory(int lockRessource, out KeyValuePair<Thread, ThreadVectorClock> lockThreadIdClockPair)
+        private bool CheckLockHistory(int lockRessource, out KeyValuePair<string, ThreadVectorClock> lockThreadIdClockPair)
         {
             return _lockHistory.IsRessourceInLockHistory(lockRessource, out lockThreadIdClockPair);
         }
 
-        private void SynchronizeVectorClock(Thread ownThread, KeyValuePair<Thread, ThreadVectorClock> lockThreadIdClockPair)
+        private void SynchronizeVectorClock(string ownThread, KeyValuePair<string, ThreadVectorClock> lockThreadIdClockPair)
         {
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(ownThread);
             ThreadVectorClock vectorClock = threadVectorInstance.VectorClock;
@@ -117,7 +116,7 @@ namespace DPCLibrary.Algorithm.Manager
                 {
                     vectorClock[thread] += 1;
                 }
-                else if (thread == lockThreadIdClockPair.Key)
+                else if (thread.Equals(lockThreadIdClockPair.Key))
                 {
                     vectorClock[thread] = lockThreadIdClockPair.Value[thread];
                 }
@@ -135,7 +134,7 @@ namespace DPCLibrary.Algorithm.Manager
         private void CheckForRaceCondition(ThreadEvent ownThreadEvent, ThreadVectorInstance threadVectorInstance, int rowNumber, string methodName)
         {
             List<ThreadVectorInstance> instances = 
-                (_threadVectorPool.Values.Where(instance => instance.Thread != threadVectorInstance.Thread)).ToList();
+                (_threadVectorPool.Values.Where(instance => instance.ThreadId != threadVectorInstance.ThreadId)).ToList();
             foreach (ThreadVectorInstance instance in instances) {
                 foreach (
                     List<ThreadEvent> concurrentEvents in
@@ -151,7 +150,7 @@ namespace DPCLibrary.Algorithm.Manager
                             info.Properties["ConflictMethodName"] = threadEvent.MethodName;
                             info.Properties["ConflictRow"] = threadEvent.Row;
                             info.Message =
-                                $"RaceCondition detected... Ressource: {ownThreadEvent.Ressource} -> Thread: {threadVectorInstance.Thread.ManagedThreadId} to Thread: {instance.Thread.ManagedThreadId}";
+                                $"RaceCondition detected... Ressource: {ownThreadEvent.Ressource} -> Thread: {threadVectorInstance.ThreadId} to Thread: {instance.ThreadId}";
                             _logger.Log(info);
                         }
                     }

@@ -12,7 +12,7 @@ namespace DPCLibrary.Tests
         {
             Thread thread = Thread.CurrentThread;
             ThreadVectorInstance instance = new ThreadVectorInstance(thread);
-            Assert.AreEqual(thread,instance.Thread);
+            Assert.AreEqual(thread,instance.ThreadId);
             Assert.AreEqual(0, instance.LockRessource);
         }
         [TestMethod]
