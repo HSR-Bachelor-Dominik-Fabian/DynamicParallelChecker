@@ -47,6 +47,7 @@ namespace TestProgram
             Test10();
             Test11();
             Test12();
+            Test13();
             Console.ReadKey();
         }
 
@@ -262,33 +263,24 @@ namespace TestProgram
             object lockB = new object();
             Thread thread1 = new Thread(() =>
             {
-                lock (lockA)
-                {
-                    a = 2;
-                }
-                lock (lockB)
-                {
-                    b = 2;
-                }
+                a = 2;
+                b = 2;
             });
             thread1.Start();
-            lock (lockA)
-            {
-                a = 3;
-            }
-            lock (lockB)
-            {
-                b = 2;
-            }
+            thread1.Join();
+            a = 3;
+            b = 2;
         }
 
 
-        public static void Test13()
+        public static void Test13(TimeSpan timespan = new TimeSpan())
         {
             Console.WriteLine("Task");
 
             Task task = new Task(() => { });
+
             task.Start();
+            //task.Start(TaskScheduler.Current);
 
             task.Wait();
 
@@ -328,6 +320,18 @@ namespace TestProgram
 
             thread.Join();
 
+            thread = new Thread(() => { DoComputation(100.0); });
+
+            thread.Start();
+
+            thread.Join(100);
+
+            thread = new Thread(() => { DoComputation(100.0); });
+
+            thread.Start();
+
+            thread.Join(new TimeSpan(0, 0, 1));
+
             Console.WriteLine("Thread.Start / Abort");
 
             thread = new Thread(() => { DoComputation(100.0); });
@@ -358,7 +362,7 @@ namespace TestProgram
         private static Double DoComputation(Double start)
         {
             Double sum = 0;
-            for (var value = start; value <= start + 10; value += .1)
+            for (var value = start; value <= start + 1000; value += .1)
                 sum += value;
 
             return sum;
