@@ -37,14 +37,21 @@ namespace CodeInstrumentation
             MethodDefinition lockObjectDef = typeDefinition.Methods.Single(x => x.Name == "LockObject");
             MethodDefinition unlockObjectDef = typeDefinition.Methods.Single(x => x.Name == "UnLockObject");
             MethodDefinition threadStartDef = typeDefinition.Methods.Single(x => x.Name == "StartThread");
-
+            MethodDefinition threadJoinMilliDef = typeDefinition.Methods.Single(x => x.Name == "JoinThreadMilliseconds");
+            MethodDefinition threadJoinTimeoutDef = typeDefinition.Methods.Single(x => x.Name == "JoinThreadTimeout");
+            MethodDefinition threadJoinDef = typeDefinition.Methods.Single(x => x.Name == "JoinThread");
+            MethodDefinition taskStartDef = typeDefinition.Methods.Single(x => x.Name == "StartTask");
 
             ModuleDefinition module = ModuleDefinition.ReadModule(fileName);
             MethodReference referencedReadAccessMethod = module.Import(readAccessDef);
             MethodReference referencedWriteAccessMethod = module.Import(writeAccessDef);
             MethodReference referencedLockObjectMethod = module.Import(lockObjectDef);
             MethodReference referencedUnlockObjectMethod = module.Import(unlockObjectDef);
-            MethodReference referencedStartThreadtMethod = module.Import(threadStartDef);
+            MethodReference referencedStartThreadMethod = module.Import(threadStartDef);
+            MethodReference referencedJoinThreadMilliMethod = module.Import(threadJoinMilliDef);
+            MethodReference referencedJoinThreadTimeoutMethod = module.Import(threadJoinTimeoutDef);
+            MethodReference referencedJoinThreadMethod = module.Import(threadJoinDef);
+            MethodReference referencedStartTaskMethod = module.Import(taskStartDef);
 
             TypeReference int8TypeReference = module.Import(typeof (byte));
             TypeReference int16TypeReference = module.Import(typeof (short));
@@ -56,7 +63,8 @@ namespace CodeInstrumentation
             {
                 InstrumentateType(type, int32TypeReference, int8TypeReference, int16TypeReference, int64TypeReference,
                     float32TypeReference, float64TypeReference, referencedReadAccessMethod, referencedWriteAccessMethod,
-                    referencedLockObjectMethod, referencedUnlockObjectMethod, referencedStartThreadtMethod);
+                    referencedLockObjectMethod, referencedUnlockObjectMethod, referencedStartThreadMethod, referencedJoinThreadMilliMethod,
+                    referencedJoinThreadTimeoutMethod, referencedJoinThreadMethod, referencedStartTaskMethod);
             }
 
             module.Write(fileName);
@@ -67,7 +75,9 @@ namespace CodeInstrumentation
             TypeReference float32TypeReference, TypeReference float64TypeReference,
             MethodReference referencedReadAccessMethod,
             MethodReference referencedWriteAccessMethod, MethodReference referencedLockObjectMethod,
-            MethodReference referencedUnlockObjectMethod, MethodReference referencedStartThreadtMethod)
+            MethodReference referencedUnlockObjectMethod, MethodReference referencedStartThreadtMethod,
+            MethodReference referencedJoinThreadMilliMethod, MethodReference referencedJoinThreadTimeoutMethod,
+            MethodReference referencedJoinThreadMethod, MethodReference referencedStartTaskMethod)
         {
             if (type.HasNestedTypes)
             {
@@ -75,7 +85,8 @@ namespace CodeInstrumentation
                 {
                     InstrumentateType(nestedType, int32TypeReference, int8TypeReference, int16TypeReference,
                         int64TypeReference, float32TypeReference, float64TypeReference, referencedReadAccessMethod,
-                        referencedWriteAccessMethod, referencedLockObjectMethod, referencedUnlockObjectMethod, referencedStartThreadtMethod);
+                        referencedWriteAccessMethod, referencedLockObjectMethod, referencedUnlockObjectMethod, referencedStartThreadtMethod,
+                        referencedJoinThreadMilliMethod, referencedJoinThreadTimeoutMethod, referencedJoinThreadMethod, referencedStartTaskMethod);
                 }
             }
             if (type.HasMethods)
@@ -106,12 +117,12 @@ namespace CodeInstrumentation
                     ArrayList tempList = new ArrayList(method.Body.Instructions.ToList());
                     foreach (Instruction ins in tempList)
                     {
+                        var processor = method.Body.GetILProcessor();
                         if (ins.OpCode.Equals(OpCodes.Ldsfld))
                         {
                             FieldReference fieldDefinition = (FieldReference) ins.Operand;
 
                             TypeReference fieldType = fieldDefinition.FieldType;
-                            var processor = method.Body.GetILProcessor();
                             if (fieldType.IsPrimitive ||
                                 (fieldType.IsDefinition && ((TypeDefinition) fieldType).IsValueType))
                             {
@@ -149,8 +160,6 @@ namespace CodeInstrumentation
                             TypeReference fieldType = (TypeReference) ins.Operand;
                             if (fieldType.IsDefinition && ((TypeDefinition) fieldType).IsValueType)
                             {
-                                // TODO: Mehr Fälle bei denen initobj beachtet werden muss?
-                                var processor = method.Body.GetILProcessor();
                                 var dupInstruction = processor.Create(OpCodes.Dup);
                                 var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
                                 var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
@@ -164,7 +173,6 @@ namespace CodeInstrumentation
                         else if (ins.OpCode.Equals(OpCodes.Stsfld))
                         {
                             FieldReference fieldDefinition = (FieldReference) ins.Operand;
-                            var processor = method.Body.GetILProcessor();
                             var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
                             var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
                             var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
@@ -179,7 +187,6 @@ namespace CodeInstrumentation
                         {
                             FieldDefinition fieldDefinition = (FieldDefinition) ins.Operand;
                             TypeReference fieldType = fieldDefinition.FieldType;
-                            var processor = method.Body.GetILProcessor();
                             if (fieldType.IsPrimitive ||
                                 (fieldType.IsDefinition && ((TypeDefinition) fieldType).IsValueType))
                             {
@@ -242,7 +249,6 @@ namespace CodeInstrumentation
                                 varDefinition = new VariableDefinition(fieldDefinition.FieldType);
                                 method.Body.Variables.Add(varDefinition);
                             }
-                            var processor = method.Body.GetILProcessor();
                             var storeLocalInstrution = processor.Create(OpCodes.Stloc, varDefinition);
                             var dupInstruction = processor.Create(OpCodes.Dup);
                             var loadAddressInstruction = processor.Create(OpCodes.Ldflda, fieldDefinition);
@@ -361,8 +367,6 @@ namespace CodeInstrumentation
 
                             if (monitorEnterFullName.Equals(methodReference.FullName))
                             {
-                                // TODO:Fabian Bessere Lösung für Vergleich finden.
-                                var processor = method.Body.GetILProcessor();
                                 var dupInstruction = processor.Create(OpCodes.Dup);
                                 var storeTempInstruction = processor.Create(OpCodes.Stloc,
                                     firstInt32VariableDefinition);
@@ -378,7 +382,6 @@ namespace CodeInstrumentation
                             }
                             else if (monitorExitFullName.Equals(methodReference.FullName))
                             {
-                                var processor = method.Body.GetILProcessor();
                                 var dupInstruction = processor.Create(OpCodes.Dup);
                                 var unlockObjectLibraryCall = processor.Create(OpCodes.Call,
                                     referencedUnlockObjectMethod);
@@ -392,7 +395,6 @@ namespace CodeInstrumentation
                             MethodReference reference = (MethodReference) ins.Operand;
                             if (reference.FullName.Contains("System.Void System.Threading.Thread::Start"))
                             {
-                                var processor = method.Body.GetILProcessor();
                                 if (!reference.HasParameters)
                                 {
                                     var ldNull = processor.Create(OpCodes.Ldnull);
@@ -403,6 +405,35 @@ namespace CodeInstrumentation
                                     referencedStartThreadtMethod);
 
                                 processor.Replace(ins, startThreadCall);
+                            }
+                            else if (reference.FullName.Contains("System.Void System.Threading.Thread::Join"))
+                            {
+                                var joinThreadCall = processor.Create(OpCodes.Call, referencedJoinThreadMethod);
+                                processor.Replace(ins, joinThreadCall);
+                            }
+                            else if (reference.FullName.Contains("System.Boolean System.Threading.Thread::Join"))
+                            {
+                                if (reference.Parameters[0].ParameterType.IsPrimitive)
+                                {
+                                    var joinThreadMilliCall = processor.Create(OpCodes.Call, referencedJoinThreadMilliMethod);
+                                    processor.Replace(ins, joinThreadMilliCall);
+                                }
+                                else
+                                {
+                                    var joinThreadTimeoutCall = processor.Create(OpCodes.Call, referencedJoinThreadTimeoutMethod);
+                                    processor.Replace(ins, joinThreadTimeoutCall);
+                                }
+                            }
+                            else if (reference.FullName.Contains("System.Void System.Threading.Tasks.Task::Start"))
+                            {
+                                if (!reference.HasParameters)
+                                {
+                                    var ldNull = processor.Create(OpCodes.Ldnull);
+                                    processor.InsertBefore(ins, ldNull);
+                                }
+
+                                var startTaskCall = processor.Create(OpCodes.Call, referencedStartTaskMethod);
+                                processor.Replace(ins, startTaskCall);
                             }
                         }
                     }

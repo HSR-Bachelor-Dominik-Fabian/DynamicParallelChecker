@@ -1,4 +1,6 @@
-﻿using System.Threading;
+﻿using System;
+using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using DPCLibrary.Algorithm.Manager;
 using NLog;
@@ -85,6 +87,48 @@ namespace DPCLibrary
             {
                 thread.Start();
             }
+        }
+
+        public static void JoinThread(Thread thread)
+        {
+            JoinThreadAll(thread);
+            thread.Join();
+        }
+            
+        public static bool JoinThreadMilliseconds(Thread thread, int millisecondsTimeout = 0)
+        {
+            JoinThreadAll(thread);
+            return thread.Join(millisecondsTimeout);
+        }
+
+        public static bool JoinThreadTimeout(Thread thread, TimeSpan timeout)
+        {
+            JoinThreadAll(thread);
+            return thread.Join(timeout);
+        }
+
+        private static void JoinThreadAll(Thread thread)
+        {
+            _logger.ConditionalTrace("Thread joined: " + thread.ManagedThreadId + " from Thread " + Thread.CurrentThread.ManagedThreadId);
+            ThreadVectorManager.GetInstance().HandleThreadJoin(thread, Thread.CurrentThread);
+        }
+
+        public static void StartTask(Task task, TaskScheduler scheduler = null)
+        {
+            _logger.ConditionalTrace("New Task started: " + task.Id + " from Thread " + Thread.CurrentThread.ManagedThreadId);
+            // TODO:Fabian ThreadVectorManager.GetInstance().HandleStartTask(task);
+            if (scheduler != null)
+            {
+                task.Start(scheduler);
+            }
+            else
+            {
+                task.Start();
+            }
+        }
+
+        public static void StartNew()
+        {
             
         }
 

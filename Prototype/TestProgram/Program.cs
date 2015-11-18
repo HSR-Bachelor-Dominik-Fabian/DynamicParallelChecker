@@ -47,6 +47,7 @@ namespace TestProgram
             Test10();
             Test11();
             Test12();
+            Test13();
             Console.ReadKey();
         }
 
@@ -263,26 +264,110 @@ namespace TestProgram
             object lockB = new object();
             Thread thread1 = new Thread(() =>
             {
-                lock (lockA)
-                {
-                    a = 2;
-                }
-                lock (lockB)
-                {
-                    b = 2;
-                }
+                a = 2;
+                b = 2;
             });
             thread1.Start();
-            lock (lockA)
-            {
-                a = 3;
-            }
-            lock (lockB)
-            {
-                b = 2;
-            }
+            thread1.Join();
+            a = 3;
+            b = 2;
         }
 
+
+        public static void Test13(TimeSpan timespan = new TimeSpan())
+        {
+            Console.WriteLine("Task");
+
+            Task task = new Task(() => { });
+
+            task.Start();
+            //task.Start(TaskScheduler.Current);
+
+            task.Wait();
+
+            task = Task.Run(() => { });
+
+            task.Wait();
+
+            Console.WriteLine("Task.Factory");
+
+            task = Task.Factory.StartNew(() => { return 3; });
+
+            task.ContinueWith((x) => { return x; });
+            
+            task.Wait();
+
+            Console.WriteLine("Task.Factory WaitAll/WaitAny");
+
+            Task<Double>[] taskArray = { Task<Double>.Factory.StartNew(() => DoComputation(1.0)),
+                                     Task<Double>.Factory.StartNew(() => DoComputation(100.0)),
+                                     Task<Double>.Factory.StartNew(() => DoComputation(1000.0)) };
+
+            Task.WaitAll(taskArray);
+
+            Console.WriteLine("");
+
+            taskArray = new Task<double>[] { Task<Double>.Factory.StartNew(() => DoComputation(1.0)),
+                                     Task<Double>.Factory.StartNew(() => DoComputation(100.0)),
+                                     Task<Double>.Factory.StartNew(() => DoComputation(1000.0)) };
+
+            Task.WaitAny(taskArray);
+            
+            Console.WriteLine("Thread.Start / Join");
+
+            Thread thread = new Thread(() => { DoComputation(100.0); });
+
+            thread.Start();
+
+            thread.Join();
+
+            thread = new Thread(() => { DoComputation(100.0); });
+
+            thread.Start();
+
+            thread.Join(100);
+
+            thread = new Thread(() => { DoComputation(100.0); });
+
+            thread.Start();
+
+            thread.Join(new TimeSpan(0, 0, 1));
+
+            Console.WriteLine("Thread.Start / Abort");
+
+            thread = new Thread(() => { DoComputation(100.0); });
+
+            thread.Start();
+
+            thread.Abort();
+
+            Console.WriteLine("Thread.Start / Interrupt");
+
+            thread = new Thread(() => { DoComputation(100.0); });
+
+            thread.Start();
+
+            thread.Interrupt();
+
+            Console.WriteLine("Parallel");
+
+            Parallel.Invoke(() => { DoComputation(10000.0); }, () => { DoComputation(10000.0); });
+
+            Parallel.For(0, 10, (x) => { DoComputation(x); });
+
+            double[] ints = new double[] {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0};
+
+            Parallel.ForEach(ints, (x) => { DoComputation(x); });
+        }
+
+        private static Double DoComputation(Double start)
+        {
+            Double sum = 0;
+            for (var value = start; value <= start + 1000; value += .1)
+                sum += value;
+
+            return sum;
+        }
     }
 
     struct TestStruct

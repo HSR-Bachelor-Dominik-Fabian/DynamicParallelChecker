@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using NLog;
 
 namespace DPCLibrary.Algorithm.Manager
@@ -88,6 +90,25 @@ namespace DPCLibrary.Algorithm.Manager
             KeyValuePair<string, ThreadVectorClock> threadIdClockPair = new KeyValuePair<string, ThreadVectorClock>(currentThread, currentThreadInstance.VectorClock);
             SynchronizeVectorClock(newThread, threadIdClockPair);
             currentThreadInstance.IncrementClock();
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void HandleThreadJoin(Thread joinedThread, Thread currentThread)
+        {
+            _logger.ConditionalDebug("Thread joined: " + joinedThread.ManagedThreadId + " from Thread " + currentThread.ManagedThreadId);
+            ThreadVectorInstance joinedThreadVectorInstance = GetThreadVectorInstance(joinedThread);
+            KeyValuePair<Thread, ThreadVectorClock> threadIdClockPair = new KeyValuePair<Thread, ThreadVectorClock>(joinedThread, joinedThreadVectorInstance.VectorClock); 
+            SynchronizeVectorClock(currentThread, threadIdClockPair);
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void HandleStartTask(Task task, Task currentTask)
+        {
+            _logger.ConditionalDebug("New Task started: " + task.Id + " from Thread " + Thread.CurrentThread.ManagedThreadId);
+            //ThreadVectorInstance currentTaskVectorInstance = GetThreadVectorInstance(currentTask);
+            //KeyValuePair<String, ThreadVectorInstance> threadIdClockPair = new KeyValuePair<string, ThreadVectorInstance>("", currentTaskVectorInstance);
+            //SynchronizeVectorClock(task, threadIdClockPair);
+            //currentTaskVectorInstance.IncrementClock();
         }
 
         private ThreadVectorInstance GetThreadVectorInstance(string thread)
