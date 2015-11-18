@@ -119,6 +119,12 @@ namespace DPCLibrary.Algorithm.Manager
             SynchronizeVectorClock(currentTaskOrThread, threadIdClockPair);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void HandleTaskRun(string task, string currentTaskOrThread)
+        {
+            _logger.ConditionalDebug("Run task: " + task + " from Thread " + Thread.CurrentThread.ManagedThreadId);
+        }
+
         private ThreadVectorInstance GetThreadVectorInstance(string thread)
         {
             ThreadVectorInstance threadVectorInstance;

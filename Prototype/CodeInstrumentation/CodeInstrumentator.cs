@@ -298,14 +298,14 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Call))
                         {
-                            MethodReference methodReference = (MethodReference) ins.Operand;
+                            MethodReference reference = (MethodReference) ins.Operand;
 
                             string monitorEnterFullName =
                                 "System.Void System.Threading.Monitor::Enter(System.Object,System.Boolean&)";
                             string monitorExitFullName =
                                 "System.Void System.Threading.Monitor::Exit(System.Object)";
 
-                            if (monitorEnterFullName.Equals(methodReference.FullName))
+                            if (monitorEnterFullName.Equals(reference.FullName))
                             {
                                 var dupInstruction = processor.Create(OpCodes.Dup);
                                 var storeTempInstruction = processor.Create(OpCodes.Stloc,
@@ -320,7 +320,7 @@ namespace CodeInstrumentation
                                 processor.InsertBefore(lockObjectLibraryCall, dupInstruction);
                                 processor.InsertBefore(dupInstruction, storeTempInstruction);
                             }
-                            else if (monitorExitFullName.Equals(methodReference.FullName))
+                            else if (monitorExitFullName.Equals(reference.FullName))
                             {
                                 var dupInstruction = processor.Create(OpCodes.Dup);
                                 var unlockObjectLibraryCall = processor.Create(OpCodes.Call,
@@ -328,6 +328,10 @@ namespace CodeInstrumentation
 
                                 processor.InsertBefore(ins, unlockObjectLibraryCall);
                                 processor.InsertBefore(unlockObjectLibraryCall, dupInstruction);
+                            }
+                            else if (reference.FullName.Contains("System.Threading.Tasks.Task System.Threading.Tasks.Task::Run)"))
+                            {
+                                processor.Replace(ins, processor.Create(OpCodes.Call, _methodReferences["RunTask"]));
                             }
                         }
                         else if (ins.OpCode.Equals(OpCodes.Callvirt))

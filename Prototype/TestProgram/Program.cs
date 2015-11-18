@@ -303,17 +303,17 @@ namespace TestProgram
 
             Console.WriteLine("Task.Factory WaitAll/WaitAny");
 
-            Task<Double>[] taskArray = { Task<Double>.Factory.StartNew(() => DoComputation(1.0)),
-                                     Task<Double>.Factory.StartNew(() => DoComputation(100.0)),
-                                     Task<Double>.Factory.StartNew(() => DoComputation(1000.0)) };
+            Task<double>[] taskArray = { Task<double>.Factory.StartNew(() => DoComputation(1.0)),
+                                     Task<double>.Factory.StartNew(() => DoComputation(100.0)),
+                                     Task<double>.Factory.StartNew(() => DoComputation(1000.0)) };
 
             Task.WaitAll(taskArray);
 
             Console.WriteLine("");
 
-            taskArray = new Task<double>[] { Task<Double>.Factory.StartNew(() => DoComputation(1.0)),
-                                     Task<Double>.Factory.StartNew(() => DoComputation(100.0)),
-                                     Task<Double>.Factory.StartNew(() => DoComputation(1000.0)) };
+            taskArray = new Task<double>[] { Task<double>.Factory.StartNew(() => DoComputation(1.0)),
+                                     Task<double>.Factory.StartNew(() => DoComputation(100.0)),
+                                     Task<double>.Factory.StartNew(() => DoComputation(1000.0)) };
 
             Task.WaitAny(taskArray);
             
@@ -364,9 +364,9 @@ namespace TestProgram
             Parallel.ForEach(ints, (x) => { DoComputation(x); });
         }
 
-        private static Double DoComputation(Double start)
+        private static double DoComputation(double start)
         {
-            Double sum = 0;
+            double sum = 0;
             for (var value = start; value <= start + 1000; value += .1)
                 sum += value;
 

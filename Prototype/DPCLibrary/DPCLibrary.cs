@@ -199,6 +199,46 @@ namespace DPCLibrary
             }
             ThreadVectorManager.GetInstance().HandleTaskWait($"Task_{task.Id}", currentThreadId);
         }
+
+        public static Task RunTask(Action action, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            Task result;
+            if (cancellationToken.Equals(default(CancellationToken)))
+            {
+                result = Task.Run(action, cancellationToken);
+            }
+            else
+            {
+                result = Task.Run(action);
+            }
+            RunTaskAll(result);
+            return result;
+        }
+        /*
+        public static Task RunTaskCancelToken(Action action, )
+        {
+            Task result = Task.Run(action);
+            RunTaskAll(result);
+            return result;
+        }
+        */
+        private static void RunTaskAll(Task task)
+        {
+            string currentThreadId;
+            if (Task.CurrentId.HasValue)
+            {
+                _logger.ConditionalTrace(
+                    $"Wait for Task: {task.Id} in Task: {Task.CurrentId} on WorkerThread {Thread.CurrentThread.ManagedThreadId}");
+                currentThreadId = $"Task_{Task.CurrentId}";
+            }
+            else
+            {
+                _logger.ConditionalTrace($"Wait for Task: {task.Id} on Thread {Thread.CurrentThread.ManagedThreadId}");
+                currentThreadId = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            }
+
+            ThreadVectorManager.GetInstance().HandleTaskRun($"Task_{task.Id}", currentThreadId);
+        }
         
         public static void RaceConditionDetectedIdentifier()
         {
