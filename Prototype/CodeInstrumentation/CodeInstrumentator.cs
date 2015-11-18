@@ -530,7 +530,7 @@ namespace CodeInstrumentation
                     CurrentType = typeDefinition,
                     CurrentMethod = method
                 });
-
+                
                 astBuilder.AddMethod(method);
                 StringWriter output = new StringWriter();
                 astBuilder.GenerateCode(new PlainTextOutput(output));
@@ -549,7 +549,6 @@ namespace CodeInstrumentation
             MethodReference raceConditionDetectedRef = module.Import(raceConditionDetectedDef);
 
             var processor = method.Body.GetILProcessor();
-
             var raceDetectedLibraryCall = processor.Create(OpCodes.Call,
                                     raceConditionDetectedRef);
             processor.InsertBefore(ins, raceDetectedLibraryCall);
