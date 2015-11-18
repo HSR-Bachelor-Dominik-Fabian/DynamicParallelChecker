@@ -277,9 +277,8 @@ namespace TestProgram
         public static void Test13(TimeSpan timespan = new TimeSpan())
         {
             Console.WriteLine("Task");
-
-            Task task = new Task(() => { });
-
+            _a = 4;
+            Task task = new Task(() => { _a = 5; });
             task.Start();
             //task.Start(TaskScheduler.Current);
 

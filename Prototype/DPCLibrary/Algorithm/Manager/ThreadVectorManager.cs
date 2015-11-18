@@ -105,10 +105,10 @@ namespace DPCLibrary.Algorithm.Manager
         public void HandleStartTask(string task, string currentTask)
         {
             _logger.ConditionalDebug("New Task started: " + task + " from Thread " + Thread.CurrentThread.ManagedThreadId);
-            //ThreadVectorInstance currentTaskVectorInstance = GetThreadVectorInstance(currentTask);
-            //KeyValuePair<String, ThreadVectorInstance> threadIdClockPair = new KeyValuePair<string, ThreadVectorInstance>("", currentTaskVectorInstance);
-            //SynchronizeVectorClock(task, threadIdClockPair);
-            //currentTaskVectorInstance.IncrementClock();
+            ThreadVectorInstance currentTaskVectorInstance = GetThreadVectorInstance(currentTask);
+            KeyValuePair<string, ThreadVectorClock> threadIdClockPair = new KeyValuePair<string, ThreadVectorClock>("", currentTaskVectorInstance.VectorClock);
+            SynchronizeVectorClock(task, threadIdClockPair);
+            currentTaskVectorInstance.IncrementClock();
         }
 
         private ThreadVectorInstance GetThreadVectorInstance(string thread)

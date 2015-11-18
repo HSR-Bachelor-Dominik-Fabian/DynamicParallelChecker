@@ -77,7 +77,8 @@ namespace DPCLibrary
 
         public static void StartThread(Thread thread, object parameter = null)
         {
-            _logger.ConditionalTrace("New threadId started: " + thread.ManagedThreadId + " from threadId " + Thread.CurrentThread.ManagedThreadId);
+            _logger.ConditionalTrace(
+                $"New threadId started: {thread.ManagedThreadId} from threadId {Thread.CurrentThread.ManagedThreadId}");
             ThreadVectorManager.GetInstance().HandleThreadStart($"Thread_{thread.ManagedThreadId}", $"Thread_{Thread.CurrentThread.ManagedThreadId}");
             if (parameter != null)
             {
@@ -118,7 +119,8 @@ namespace DPCLibrary
             }
             else
             {
-                _logger.ConditionalTrace("Thread joined: " + thread.ManagedThreadId + " from Thread " + Thread.CurrentThread.ManagedThreadId);
+                _logger.ConditionalTrace(
+                    $"Thread joined: {thread.ManagedThreadId} on Thread {Thread.CurrentThread.ManagedThreadId}");
                 threadId = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             }
             
@@ -127,21 +129,20 @@ namespace DPCLibrary
 
         public static void StartTask(Task task, TaskScheduler scheduler = null)
         {
-            string threadId;
+            string currentThreadId;
             if (Task.CurrentId.HasValue)
             {
                 _logger.ConditionalTrace(
-                    $"StartTask in Task: {Task.CurrentId} on WorkerThread {Thread.CurrentThread.ManagedThreadId}");
-                threadId = $"Task_{Task.CurrentId}";
+                    $"New Task started: {task.Id} in Task: {Task.CurrentId} on WorkerThread {Thread.CurrentThread.ManagedThreadId}");
+                currentThreadId = $"Task_{Task.CurrentId}";
             }
             else
             {
-                threadId = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+                _logger.ConditionalTrace($"New Task started: {task.Id} on Thread {Thread.CurrentThread.ManagedThreadId}");
+                currentThreadId = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             }
-            //threadId für HandleStartTask
 
-            _logger.ConditionalTrace("New Task started: " + task.Id + " from Thread " + Thread.CurrentThread.ManagedThreadId);
-            // TODO:Fabian ThreadVectorManager.GetInstance().HandleStartTask(task);
+            ThreadVectorManager.GetInstance().HandleStartTask($"Task_{task.Id}", currentThreadId);
             if (scheduler != null)
             {
                 task.Start(scheduler);
