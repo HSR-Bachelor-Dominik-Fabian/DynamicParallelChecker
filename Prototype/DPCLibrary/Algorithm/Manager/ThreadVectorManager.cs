@@ -93,18 +93,18 @@ namespace DPCLibrary.Algorithm.Manager
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void HandleThreadJoin(Thread joinedThread, Thread currentThread)
+        public void HandleThreadJoin(string joinedThread, string currentThread)
         {
-            _logger.ConditionalDebug("Thread joined: " + joinedThread.ManagedThreadId + " from Thread " + currentThread.ManagedThreadId);
+            _logger.ConditionalDebug("Thread joined: " + joinedThread + " from Thread " + currentThread);
             ThreadVectorInstance joinedThreadVectorInstance = GetThreadVectorInstance(joinedThread);
-            KeyValuePair<Thread, ThreadVectorClock> threadIdClockPair = new KeyValuePair<Thread, ThreadVectorClock>(joinedThread, joinedThreadVectorInstance.VectorClock); 
+            KeyValuePair<string, ThreadVectorClock> threadIdClockPair = new KeyValuePair<string, ThreadVectorClock>(joinedThread, joinedThreadVectorInstance.VectorClock); 
             SynchronizeVectorClock(currentThread, threadIdClockPair);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void HandleStartTask(Task task, Task currentTask)
+        public void HandleStartTask(string task, string currentTask)
         {
-            _logger.ConditionalDebug("New Task started: " + task.Id + " from Thread " + Thread.CurrentThread.ManagedThreadId);
+            _logger.ConditionalDebug("New Task started: " + task + " from Thread " + Thread.CurrentThread.ManagedThreadId);
             //ThreadVectorInstance currentTaskVectorInstance = GetThreadVectorInstance(currentTask);
             //KeyValuePair<String, ThreadVectorInstance> threadIdClockPair = new KeyValuePair<string, ThreadVectorInstance>("", currentTaskVectorInstance);
             //SynchronizeVectorClock(task, threadIdClockPair);

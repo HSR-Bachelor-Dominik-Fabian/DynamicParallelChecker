@@ -109,12 +109,38 @@ namespace DPCLibrary
 
         private static void JoinThreadAll(Thread thread)
         {
-            _logger.ConditionalTrace("Thread joined: " + thread.ManagedThreadId + " from Thread " + Thread.CurrentThread.ManagedThreadId);
-            ThreadVectorManager.GetInstance().HandleThreadJoin(thread, Thread.CurrentThread);
+            string threadId;
+            if (Task.CurrentId.HasValue)
+            {
+                _logger.ConditionalTrace(
+                    $"JoinThread in Task: {Task.CurrentId} on WorkerThread {Thread.CurrentThread.ManagedThreadId}");
+                threadId = $"Task_{Task.CurrentId}";
+            }
+            else
+            {
+                _logger.ConditionalTrace("Thread joined: " + thread.ManagedThreadId + " from Thread " + Thread.CurrentThread.ManagedThreadId);
+                threadId = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            }
+            
+            ThreadVectorManager.GetInstance().HandleThreadJoin($"Thread_{thread.ManagedThreadId}", threadId);
         }
 
         public static void StartTask(Task task, TaskScheduler scheduler = null)
         {
+            string currentThreadId;
+            if (Task.CurrentId.HasValue)
+            {
+                _logger.ConditionalTrace(
+                    $"JoinThread in Task: {Task.CurrentId} on WorkerThread {Thread.CurrentThread.ManagedThreadId}");
+                currentThreadId = $"Task_{Task.CurrentId}";
+            }
+            else
+            {
+                _logger.ConditionalTrace("Thread joined: " + thread.ManagedThreadId + " from Thread " + Thread.CurrentThread.ManagedThreadId);
+                currentThreadId = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            }
+            //currentThreadId für HandleStartTask
+
             _logger.ConditionalTrace("New Task started: " + task.Id + " from Thread " + Thread.CurrentThread.ManagedThreadId);
             // TODO:Fabian ThreadVectorManager.GetInstance().HandleStartTask(task);
             if (scheduler != null)
