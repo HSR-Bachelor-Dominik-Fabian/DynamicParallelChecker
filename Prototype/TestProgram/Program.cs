@@ -283,6 +283,10 @@ namespace TestProgram
             //task.Start(TaskScheduler.Current);
 
             task.Wait();
+            //task.Wait(100);
+            //task.Wait(new TimeSpan(0, 0, 1));
+            //task.Wait(CancellationToken.None);
+            //task.Wait(100, new CancellationToken(true));
 
             _a = 4;
             task = Task.Run(() => { });
