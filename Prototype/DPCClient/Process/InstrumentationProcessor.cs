@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using CodeInstrumentation;
-using DPCClient.ViewModel;
 
 namespace DPCClient.Process
 {
@@ -10,8 +9,9 @@ namespace DPCClient.Process
 
         public bool Start(string path)
         {
+            string workingDir = Path.GetDirectoryName(path);
             CodeInstrumentator.InjectCodeInstrumentation(path);
-            System.Diagnostics.Process process = new System.Diagnostics.Process { StartInfo = { FileName = path } };
+            System.Diagnostics.Process process = new System.Diagnostics.Process { StartInfo = { FileName = path, WorkingDirectory = workingDir } };
             process.Start();
             process.WaitForExit();
 

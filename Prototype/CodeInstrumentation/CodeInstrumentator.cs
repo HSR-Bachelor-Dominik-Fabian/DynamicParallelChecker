@@ -20,7 +20,7 @@ namespace CodeInstrumentation
         {
             _methodReferences = new Dictionary<string, MethodReference>();
             _typeReferences = new Dictionary<string, TypeReference>();
-            ModuleDefinition refModul = ModuleDefinition.ReadModule("DPCLibrary.dll");
+            ModuleDefinition refModul = ModuleDefinition.ReadModule(@"work\DPCLibrary.dll");
             TypeDefinition typeDefinition = refModul.Types.First(x => x.Name == "DpcLibrary");
             ModuleDefinition module = ModuleDefinition.ReadModule(fileName);
             ImportAllPublicMethods(typeDefinition, module);
