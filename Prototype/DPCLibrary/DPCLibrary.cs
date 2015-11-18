@@ -127,19 +127,18 @@ namespace DPCLibrary
 
         public static void StartTask(Task task, TaskScheduler scheduler = null)
         {
-            string currentThreadId;
+            string threadId;
             if (Task.CurrentId.HasValue)
             {
                 _logger.ConditionalTrace(
-                    $"JoinThread in Task: {Task.CurrentId} on WorkerThread {Thread.CurrentThread.ManagedThreadId}");
-                currentThreadId = $"Task_{Task.CurrentId}";
+                    $"StartTask in Task: {Task.CurrentId} on WorkerThread {Thread.CurrentThread.ManagedThreadId}");
+                threadId = $"Task_{Task.CurrentId}";
             }
             else
             {
-                _logger.ConditionalTrace("Thread joined: " + thread.ManagedThreadId + " from Thread " + Thread.CurrentThread.ManagedThreadId);
-                currentThreadId = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+                threadId = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             }
-            //currentThreadId für HandleStartTask
+            //threadId für HandleStartTask
 
             _logger.ConditionalTrace("New Task started: " + task.Id + " from Thread " + Thread.CurrentThread.ManagedThreadId);
             // TODO:Fabian ThreadVectorManager.GetInstance().HandleStartTask(task);
