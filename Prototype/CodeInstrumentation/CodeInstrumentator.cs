@@ -375,6 +375,28 @@ namespace CodeInstrumentation
                                 var startTaskCall = processor.Create(OpCodes.Call, _methodReferences["StartTask"]);
                                 processor.Replace(ins, startTaskCall);
                             }
+                            else if (reference.FullName.Contains("System.Void System.Threading.Tasks.Task::Wait"))
+                            {
+                                processor.Replace(ins,
+                                    !reference.HasParameters
+                                        ? processor.Create(OpCodes.Call, _methodReferences["TaskWait"])
+                                        : processor.Create(OpCodes.Call, _methodReferences["TaskWaitCancelToken"]));
+                            }
+                            else if (reference.FullName.Contains("System.Boolean System.Threading.Tasks.Task::Wait"))
+                            {
+                                if (reference.Parameters.Count == 1 && reference.Parameters[0].ParameterType.IsPrimitive)
+                                {
+                                    processor.Replace(ins, processor.Create(OpCodes.Call, _methodReferences["TaskWaitTimeout"]));
+                                }
+                                else if (reference.Parameters.Count == 2)
+                                {
+                                    processor.Replace(ins, processor.Create(OpCodes.Call, _methodReferences["TaskWaitTimeOutCancelToken"]));
+                                }
+                                else
+                                {
+                                    processor.Replace(ins, processor.Create(OpCodes.Call, _methodReferences["TaskWaitTimespan"]));
+                                }
+                            }
                         }
                     }
                     method.Body.OptimizeMacros(); // Convert the normal branches back to short branches if possible

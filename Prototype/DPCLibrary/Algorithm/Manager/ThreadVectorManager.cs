@@ -104,17 +104,19 @@ namespace DPCLibrary.Algorithm.Manager
         public void HandleStartTask(string task, string currentTaskOrThread)
         {
             _logger.ConditionalDebug("New Task started: " + task + " from Thread " + Thread.CurrentThread.ManagedThreadId);
-            ThreadVectorInstance currentTaskVectorInstance = GetThreadVectorInstance(currentTaskOrThread);
-            KeyValuePair<string, ThreadVectorClock> threadIdClockPair = new KeyValuePair<string, ThreadVectorClock>("", currentTaskVectorInstance.VectorClock);
+            ThreadVectorInstance currentTaskOrThreadVectorInstance = GetThreadVectorInstance(currentTaskOrThread);
+            KeyValuePair<string, ThreadVectorClock> threadIdClockPair = new KeyValuePair<string, ThreadVectorClock>(currentTaskOrThread, currentTaskOrThreadVectorInstance.VectorClock);
             SynchronizeVectorClock(task, threadIdClockPair);
-            currentTaskVectorInstance.IncrementClock();
+            currentTaskOrThreadVectorInstance.IncrementClock();
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void HandleTaskWait(string task, string currentTaskOrThread)
         {
             _logger.ConditionalDebug("Wait for task: " + task + " from Thread " + Thread.CurrentThread.ManagedThreadId);
-
+            ThreadVectorInstance waitedTaskOrThreadVectorInstance = GetThreadVectorInstance(task);
+            KeyValuePair<string, ThreadVectorClock> threadIdClockPair = new KeyValuePair<string, ThreadVectorClock>(task, waitedTaskOrThreadVectorInstance.VectorClock);
+            SynchronizeVectorClock(currentTaskOrThread, threadIdClockPair);
         }
 
         private ThreadVectorInstance GetThreadVectorInstance(string thread)
