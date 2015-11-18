@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using DPCLibrary.Algorithm.Manager;
@@ -153,11 +152,54 @@ namespace DPCLibrary
             }
         }
 
-        public static void StartNew()
+        public static void TaskWait(Task task)
         {
-            
+            TaskWaitAll(task);
+            task.Wait();
         }
 
+        public static bool TaskWaitTimespan(Task task, TimeSpan timespan)
+        {
+            TaskWaitAll(task);
+            return task.Wait(timespan);
+        }
+
+        public static bool TaskWaitTimeout(Task task, int millisecondsTimeout)
+        {
+            TaskWaitAll(task);
+            return task.Wait(millisecondsTimeout);
+        }
+
+        public static void TaskWaitCancelToken(Task task, CancellationToken cancellationToken)
+        {
+            TaskWaitAll(task);
+            task.Wait(cancellationToken);
+        }
+
+        public static bool TaskWaitTimeOutCancelToken(Task task, int millisecondsTimeout, 
+            CancellationToken cancellationToken)
+        {
+            TaskWaitAll(task);
+            return task.Wait(millisecondsTimeout, cancellationToken);
+        }
+
+        private static void TaskWaitAll(Task task)
+        {
+            string currentThreadId;
+            if (Task.CurrentId.HasValue)
+            {
+                _logger.ConditionalTrace(
+                    $"Wait for Task: {task.Id} in Task: {Task.CurrentId} on WorkerThread {Thread.CurrentThread.ManagedThreadId}");
+                currentThreadId = $"Task_{Task.CurrentId}";
+            }
+            else
+            {
+                _logger.ConditionalTrace($"Wait for Task: {task.Id} on Thread {Thread.CurrentThread.ManagedThreadId}");
+                currentThreadId = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            }
+            ThreadVectorManager.GetInstance().HandleTaskWait($"Task_{task.Id}", currentThreadId);
+        }
+        
         public static void RaceConditionDetectedIdentifier()
         {
             

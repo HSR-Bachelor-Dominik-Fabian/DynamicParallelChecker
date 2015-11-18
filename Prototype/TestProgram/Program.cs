@@ -284,6 +284,7 @@ namespace TestProgram
 
             task.Wait();
 
+            _a = 4;
             task = Task.Run(() => { });
 
             task.Wait();
