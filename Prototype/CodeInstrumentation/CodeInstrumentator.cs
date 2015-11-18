@@ -400,6 +400,7 @@ namespace CodeInstrumentation
         private static Dictionary<string, VariableDefinition> AddAllVariablesToMethod(MethodDefinition method)
         {
             Dictionary<string, VariableDefinition> result = new Dictionary<string, VariableDefinition>();
+            // ReSharper disable once JoinDeclarationAndInitializer
             VariableDefinition tempVariableDefinition;
             _typeReferences.ToList().ForEach(x => { if (!x.Key.Equals("int32"))
                 {

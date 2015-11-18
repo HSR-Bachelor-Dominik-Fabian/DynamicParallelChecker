@@ -8,8 +8,7 @@ namespace DPCClient.View.Factories
         public void CreateNewWindow(object model = null)
         {
             NLogMessage nLogMessage = (NLogMessage)model;
-            DpcDetailViewModel viewModel = new DpcDetailViewModel();
-            viewModel.NLogMessage = nLogMessage;
+            DpcDetailViewModel viewModel = new DpcDetailViewModel {NLogMessage = nLogMessage};
             DpcDetailView window = new DpcDetailView{
                 DataContext = viewModel
             };
