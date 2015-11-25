@@ -56,7 +56,6 @@ namespace CodeInstrumentation
                         continue;
                     }
                     method.Body.SimplifyMacros(); // convert every br.s (short branch) to a normal branch
-
                     Dictionary<string, VariableDefinition> variableDefinitions = AddAllVariablesToMethod(method);
 
                     ArrayList tempList = new ArrayList(method.Body.Instructions.ToList());
@@ -281,10 +280,15 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stelem_I) || ins.OpCode.Equals(OpCodes.Stelem_I1)
                                  || ins.OpCode.Equals(OpCodes.Stelem_I2) || ins.OpCode.Equals(OpCodes.Stelem_I4)
-                                 || ins.OpCode.Equals(OpCodes.Stelem_Ref))
+                                 )
                         {
                             InjectStrElement(variableDefinitions["firstint32"], variableDefinitions["secondint32"],
                                 _typeReferences["int32"], method, _methodReferences["WriteAccess"], ins);
+                        }
+                        else if (ins.OpCode.Equals(OpCodes.Stelem_Ref))
+                        {
+                            InjectStrElement(variableDefinitions["object"], variableDefinitions["secondint32"],
+                                    _typeReferences["int32"], method, _methodReferences["WriteAccess"], ins);
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stelem_I8))
                         {
@@ -303,7 +307,7 @@ namespace CodeInstrumentation
                         }
                         if (ins.OpCode.Equals(OpCodes.Call))
                         {
-                            MethodReference reference = (MethodReference) ins.Operand;
+                            MethodReference reference = (MethodReference)ins.Operand;
 
                             string monitorEnterFullName =
                                 "System.Void System.Threading.Monitor::Enter(System.Object,System.Boolean&)";
@@ -382,17 +386,17 @@ namespace CodeInstrumentation
                                     GenericInstanceMethod genericMethod = (GenericInstanceMethod)methodReference;
                                     TypeReference genericArgument = genericMethod.GenericArguments[0];
                                     if (reference.Parameters.Count == 1)
-                                    {
+                            {
                                         var newGenericMethod = new GenericInstanceMethod(_methodReferences["RunTaskTaskTResult"]);
                                         newGenericMethod.GenericArguments.Add(genericArgument);
                                         ins.Operand = newGenericMethod;
-                                    }
+                            }
                                     else if (reference.Parameters.Count == 2)
                                     {
                                         var newGenericMethod = new GenericInstanceMethod(_methodReferences["RunTaskTaskTResultCancel"]);
                                         newGenericMethod.GenericArguments.Add(genericArgument);
                                         ins.Operand = newGenericMethod;
-                                    }
+                        }
                                 }
                             }
                         }
@@ -476,6 +480,7 @@ namespace CodeInstrumentation
             _typeReferences.Add("int64", module.Import(typeof(long)));
             _typeReferences.Add("float32", module.Import(typeof(float)));
             _typeReferences.Add("float64", module.Import(typeof(double)));
+            _typeReferences.Add("object", new ByReferenceType(module.Import(typeof(object))));
         }
 
         private static Dictionary<string, VariableDefinition> AddAllVariablesToMethod(MethodDefinition method)
@@ -500,7 +505,7 @@ namespace CodeInstrumentation
             tempVariableDefinition = new VariableDefinition(_typeReferences["int32"]);
             method.Body.Variables.Add(tempVariableDefinition);
             result.Add("secondint32", tempVariableDefinition);
-
+            method.Body.InitLocals = true;
             return result;
         }
 
@@ -525,7 +530,7 @@ namespace CodeInstrumentation
             processor.InsertBefore(loadIndexInstruction, writeAccessLibraryCall);
             processor.InsertBefore(writeAccessLibraryCall, methodLoad);
             processor.InsertBefore(methodLoad, constLoad);
-            processor.InsertBefore(constLoad, loadAddressInstruction);
+            processor.InsertBefore(constLoad,loadAddressInstruction);
             processor.InsertBefore(loadAddressInstruction, loadIndexInstruction2);
             processor.InsertBefore(loadIndexInstruction2, dupInstruction);
             processor.InsertBefore(dupInstruction, storeIndexInstruction);
