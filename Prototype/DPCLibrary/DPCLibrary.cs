@@ -154,33 +154,37 @@ namespace DPCLibrary
 
         public static void TaskWait(Task task)
         {
-            TaskWaitAll(task);
             task.Wait();
+            TaskWaitAll(task);
         }
 
         public static bool TaskWaitTimespan(Task task, TimeSpan timespan)
         {
+            bool result = task.Wait(timespan);
             TaskWaitAll(task);
-            return task.Wait(timespan);
+            return result;
         }
 
         public static bool TaskWaitTimeout(Task task, int millisecondsTimeout)
         {
+            bool result = task.Wait(millisecondsTimeout);
             TaskWaitAll(task);
-            return task.Wait(millisecondsTimeout);
+            return result;
+
         }
 
         public static void TaskWaitCancelToken(Task task, CancellationToken cancellationToken)
         {
-            TaskWaitAll(task);
             task.Wait(cancellationToken);
+            TaskWaitAll(task);
         }
 
         public static bool TaskWaitTimeOutCancelToken(Task task, int millisecondsTimeout, 
             CancellationToken cancellationToken)
         {
+            bool result = task.Wait(millisecondsTimeout, cancellationToken);
             TaskWaitAll(task);
-            return task.Wait(millisecondsTimeout, cancellationToken);
+            return result;
         }
 
         private static void TaskWaitAll(Task task)
@@ -200,40 +204,82 @@ namespace DPCLibrary
             ThreadVectorManager.GetInstance().HandleTaskWait($"Task_{task.Id}", currentThreadId);
         }
 
-        public static Task RunTask(Action action, CancellationToken cancellationToken = default(CancellationToken))
+        public static Task RunTask(Action action)
         {
-            Task result;
-            if (cancellationToken.Equals(default(CancellationToken)))
-            {
-                result = Task.Run(action, cancellationToken);
-            }
-            else
-            {
-                result = Task.Run(action);
-            }
+            Task result = new Task(action);
             RunTaskAll(result);
+            result.Start();
             return result;
         }
-        /*
-        public static Task RunTaskCancelToken(Action action, )
+
+        public static Task RunTaskCancel(Action action, CancellationToken cancellationToken)
         {
-            Task result = Task.Run(action);
+            Task result = new Task(action, cancellationToken);
             RunTaskAll(result);
+            result.Start();
             return result;
         }
-        */
+
+        public static Task RunTaskFunc(Func<Task> func)
+        {
+            Task result = new Task<Task>(func);
+            RunTaskAll(result);
+            result.Start();
+            return result;
+        }
+
+        public static Task RunTaskFuncCancel(Func<Task> func, CancellationToken cancellationToken)
+        {
+            Task<Task> result = new Task<Task>(func, cancellationToken, TaskCreationOptions.DenyChildAttach);
+            RunTaskAll(result);
+            result.Start();
+            return result;
+        }
+
+        public static Task<TResult> RunTaskTResult<TResult>(Func<TResult> function)
+        {
+            Task<TResult> result = new Task<TResult>(function);
+            RunTaskAll(result);
+            result.Start();
+            return result;
+        }
+
+        public static Task<TResult> RunTaskTResultCancel<TResult>(Func<TResult> function, CancellationToken cancellationToken)
+        {
+            Task<TResult> result = new Task<TResult>(function, cancellationToken);
+            RunTaskAll(result);
+            result.Start();
+            return result;
+        }
+
+        public static Task<TResult> RunTaskTaskTResult<TResult>(Func<Task<TResult>> function)
+        {
+            Task<Task<TResult>> result = new Task<Task<TResult>>(function);
+            RunTaskAll(result);
+            result.Start();
+            return result.Result;
+        }
+
+        public static Task<TResult> RunTaskTaskTResultCancel<TResult>(Func<Task<TResult>> function, CancellationToken cancellationToken)
+        {
+            Task<Task<TResult>> result = new Task<Task<TResult>>(function, cancellationToken);
+            RunTaskAll(result);
+            result.Start();
+            return result.Result;
+        }
+
         private static void RunTaskAll(Task task)
         {
             string currentThreadId;
             if (Task.CurrentId.HasValue)
             {
                 _logger.ConditionalTrace(
-                    $"Wait for Task: {task.Id} in Task: {Task.CurrentId} on WorkerThread {Thread.CurrentThread.ManagedThreadId}");
+                    $"Run Task: {task.Id} in Task: {Task.CurrentId} on WorkerThread {Thread.CurrentThread.ManagedThreadId}");
                 currentThreadId = $"Task_{Task.CurrentId}";
             }
             else
             {
-                _logger.ConditionalTrace($"Wait for Task: {task.Id} on Thread {Thread.CurrentThread.ManagedThreadId}");
+                _logger.ConditionalTrace($"Run Task: {task.Id} on Thread {Thread.CurrentThread.ManagedThreadId}");
                 currentThreadId = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             }
 

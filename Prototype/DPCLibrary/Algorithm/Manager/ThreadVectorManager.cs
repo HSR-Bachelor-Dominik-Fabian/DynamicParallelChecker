@@ -123,6 +123,10 @@ namespace DPCLibrary.Algorithm.Manager
         public void HandleTaskRun(string task, string currentTaskOrThread)
         {
             _logger.ConditionalDebug("Run task: " + task + " from Thread " + Thread.CurrentThread.ManagedThreadId);
+            ThreadVectorInstance currentTakOrThreadVectorInstance = GetThreadVectorInstance(currentTaskOrThread);
+            KeyValuePair<string, ThreadVectorClock> threadIdClockPair = new KeyValuePair<string, ThreadVectorClock>(currentTaskOrThread, currentTakOrThreadVectorInstance.VectorClock);
+            SynchronizeVectorClock(task, threadIdClockPair);
+            currentTakOrThreadVectorInstance.IncrementClock();
         }
 
         private ThreadVectorInstance GetThreadVectorInstance(string thread)

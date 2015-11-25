@@ -1,13 +1,16 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using ICSharpCode.Decompiler;
 using ICSharpCode.Decompiler.Ast;
 using OpCodes = Mono.Cecil.Cil.OpCodes;
 using Mono.Cecil.Rocks;
+using Mono.Collections.Generic;
 
 namespace CodeInstrumentation
 {
@@ -62,11 +65,11 @@ namespace CodeInstrumentation
                         var processor = method.Body.GetILProcessor();
                         if (ins.OpCode.Equals(OpCodes.Ldsfld))
                         {
-                            FieldReference fieldDefinition = (FieldReference) ins.Operand;
+                            FieldReference fieldDefinition = (FieldReference)ins.Operand;
 
                             TypeReference fieldType = fieldDefinition.FieldType;
                             if (fieldType.IsPrimitive ||
-                                (fieldType.IsDefinition && ((TypeDefinition) fieldType).IsValueType))
+                                (fieldType.IsDefinition && ((TypeDefinition)fieldType).IsValueType))
                             {
                                 var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
                                 var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
@@ -99,8 +102,8 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Initobj))
                         {
-                            TypeReference fieldType = (TypeReference) ins.Operand;
-                            if (fieldType.IsDefinition && ((TypeDefinition) fieldType).IsValueType)
+                            TypeReference fieldType = (TypeReference)ins.Operand;
+                            if (fieldType.IsDefinition && ((TypeDefinition)fieldType).IsValueType)
                             {
                                 var dupInstruction = processor.Create(OpCodes.Dup);
                                 var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
@@ -114,7 +117,7 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stsfld))
                         {
-                            FieldReference fieldDefinition = (FieldReference) ins.Operand;
+                            FieldReference fieldDefinition = (FieldReference)ins.Operand;
                             var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
                             var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
                             var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
@@ -127,10 +130,10 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Ldfld))
                         {
-                            FieldDefinition fieldDefinition = (FieldDefinition) ins.Operand;
+                            FieldDefinition fieldDefinition = (FieldDefinition)ins.Operand;
                             TypeReference fieldType = fieldDefinition.FieldType;
                             if (fieldType.IsPrimitive ||
-                                (fieldType.IsDefinition && ((TypeDefinition) fieldType).IsValueType))
+                                (fieldType.IsDefinition && ((TypeDefinition)fieldType).IsValueType))
                             {
                                 var dupInstruction = processor.Create(OpCodes.Dup);
                                 var loadAddressInstruction = processor.Create(OpCodes.Ldflda, fieldDefinition);
@@ -159,7 +162,7 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stfld))
                         {
-                            FieldDefinition fieldDefinition = (FieldDefinition) ins.Operand;
+                            FieldDefinition fieldDefinition = (FieldDefinition)ins.Operand;
                             VariableDefinition varDefinition;
 
                             if (fieldDefinition.FieldType.Equals(_typeReferences["int8"]))
@@ -211,7 +214,7 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Ldelem_Any))
                         {
-                            TypeReference arrayTypeReference = (TypeReference) ins.Operand;
+                            TypeReference arrayTypeReference = (TypeReference)ins.Operand;
                             InjectArrayLdElement(variableDefinitions["firstint32"], arrayTypeReference, method,
                                 _methodReferences["ReadAccess"], ins);
                         }
@@ -241,7 +244,7 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stelem_Any))
                         {
-                            TypeReference valueTypeReference = (TypeReference) ins.Operand;
+                            TypeReference valueTypeReference = (TypeReference)ins.Operand;
                             VariableDefinition varDefinition;
 
                             if (valueTypeReference.Equals(_typeReferences["int8"]))
@@ -298,7 +301,7 @@ namespace CodeInstrumentation
                             InjectStrElement(variableDefinitions["float64"], variableDefinitions["firstint32"],
                                 _typeReferences["float64"], method, _methodReferences["WriteAccess"], ins);
                         }
-                        else if (ins.OpCode.Equals(OpCodes.Call))
+                        if (ins.OpCode.Equals(OpCodes.Call))
                         {
                             MethodReference reference = (MethodReference) ins.Operand;
 
@@ -331,44 +334,92 @@ namespace CodeInstrumentation
                                 processor.InsertBefore(ins, unlockObjectLibraryCall);
                                 processor.InsertBefore(unlockObjectLibraryCall, dupInstruction);
                             }
-                            else if (reference.FullName.Contains("System.Threading.Tasks.Task System.Threading.Tasks.Task::Run)"))
+                            else if (reference.FullName.Contains("System.Threading.Tasks.Task::Run"))
                             {
-                                processor.Replace(ins, processor.Create(OpCodes.Call, _methodReferences["RunTask"]));
+                                if (reference.Parameters[0].ParameterType.FullName.Equals("System.Action"))
+                                {
+                                    if (reference.Parameters.Count == 1)
+                                    {
+                                        ins.Operand = _methodReferences["RunTask"];
+                                    }
+                                    else if (reference.Parameters.Count == 2)
+                                    {
+                                        ins.Operand = _methodReferences["RunTaskCancel"];
+                                    }
+                                }
+                                else if (reference.Parameters[0].ParameterType.FullName.Equals("System.Func`1<!!0>"))
+                                {
+                                    MethodReference methodReference = (MethodReference) ins.Operand;
+                                    GenericInstanceMethod genericMethod = (GenericInstanceMethod) methodReference;
+                                    TypeReference genericArgument = genericMethod.GenericArguments[0];
+                                    if (reference.Parameters.Count == 1)
+                                    {
+                                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["RunTaskTResult"]);
+                                        newGenericMethod.GenericArguments.Add(genericArgument);
+                                        ins.Operand = newGenericMethod;
+                                    }
+                                    else if (reference.Parameters.Count == 2)
+                                    {
+                                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["RunTaskTResultCancel"]);
+                                        newGenericMethod.GenericArguments.Add(genericArgument);
+                                        ins.Operand = newGenericMethod;
+                                    }
+                                }
+                                else if (reference.Parameters[0].ParameterType.FullName.Equals("System.Func`1<System.Threading.Tasks.Task>"))
+                                {
+                                    if (reference.Parameters.Count == 1)
+                                    {
+                                        ins.Operand = _methodReferences["RunTaskFunc"];
+                                    }
+                                    else if (reference.Parameters.Count == 2)
+                                    {
+                                        ins.Operand = _methodReferences["RunTaskFuncCancel"];
+                                    }
+                                }
+                                else if (reference.Parameters[0].ParameterType.FullName.Equals("System.Func`1<System.Threading.Tasks.Task`1<!!0>>"))
+                                {
+                                    MethodReference methodReference = (MethodReference)ins.Operand;
+                                    GenericInstanceMethod genericMethod = (GenericInstanceMethod)methodReference;
+                                    TypeReference genericArgument = genericMethod.GenericArguments[0];
+                                    if (reference.Parameters.Count == 1)
+                                    {
+                                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["RunTaskTaskTResult"]);
+                                        newGenericMethod.GenericArguments.Add(genericArgument);
+                                        ins.Operand = newGenericMethod;
+                                    }
+                                    else if (reference.Parameters.Count == 2)
+                                    {
+                                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["RunTaskTaskTResultCancel"]);
+                                        newGenericMethod.GenericArguments.Add(genericArgument);
+                                        ins.Operand = newGenericMethod;
+                                    }
+                                }
                             }
                         }
                         else if (ins.OpCode.Equals(OpCodes.Callvirt))
                         {
-                            MethodReference reference = (MethodReference) ins.Operand;
+                            MethodReference reference = (MethodReference)ins.Operand;
                             if (reference.FullName.Contains("System.Void System.Threading.Thread::Start"))
                             {
                                 if (!reference.HasParameters)
                                 {
                                     var ldNull = processor.Create(OpCodes.Ldnull);
-                                    processor.InsertBefore(ins,ldNull);
+                                    processor.InsertBefore(ins, ldNull);
                                 }
-                                
-                                var startThreadCall = processor.Create(OpCodes.Call,
-                                    _methodReferences["StartThread"]);
-
-                                processor.Replace(ins, startThreadCall);
+                                ins.OpCode = OpCodes.Call;
+                                ins.Operand = _methodReferences["StartThread"];
                             }
                             else if (reference.FullName.Contains("System.Void System.Threading.Thread::Join"))
                             {
-                                var joinThreadCall = processor.Create(OpCodes.Call, _methodReferences["JoinThread"]);
-                                processor.Replace(ins, joinThreadCall);
+                                ins.OpCode = OpCodes.Call;
+                                ins.Operand = _methodReferences["JoinThread"];
                             }
                             else if (reference.FullName.Contains("System.Boolean System.Threading.Thread::Join"))
                             {
-                                if (reference.Parameters[0].ParameterType.IsPrimitive)
-                                {
-                                    var joinThreadMilliCall = processor.Create(OpCodes.Call, _methodReferences["JoinThreadMilliseconds"]);
-                                    processor.Replace(ins, joinThreadMilliCall);
-                                }
-                                else
-                                {
-                                    var joinThreadTimeoutCall = processor.Create(OpCodes.Call, _methodReferences["JoinThreadTimeout"]);
-                                    processor.Replace(ins, joinThreadTimeoutCall);
-                                }
+                                ins.OpCode = OpCodes.Call;
+                                ins.Operand = reference.Parameters[0].ParameterType.IsPrimitive 
+                                    ? _methodReferences["JoinThreadMilliseconds"] 
+                                    : _methodReferences["JoinThreadTimeout"];
                             }
                             else if (reference.FullName.Contains("System.Void System.Threading.Tasks.Task::Start"))
                             {
@@ -377,30 +428,32 @@ namespace CodeInstrumentation
                                     var ldNull = processor.Create(OpCodes.Ldnull);
                                     processor.InsertBefore(ins, ldNull);
                                 }
-
-                                var startTaskCall = processor.Create(OpCodes.Call, _methodReferences["StartTask"]);
-                                processor.Replace(ins, startTaskCall);
+                                ins.OpCode = OpCodes.Call;
+                                ins.Operand = _methodReferences["StartTask"];
                             }
                             else if (reference.FullName.Contains("System.Void System.Threading.Tasks.Task::Wait"))
                             {
-                                processor.Replace(ins,
-                                    !reference.HasParameters
-                                        ? processor.Create(OpCodes.Call, _methodReferences["TaskWait"])
-                                        : processor.Create(OpCodes.Call, _methodReferences["TaskWaitCancelToken"]));
+                                ins.OpCode = OpCodes.Call;
+                                ins.Operand = !reference.HasParameters
+                                    ? _methodReferences["TaskWait"]
+                                    : _methodReferences["TaskWaitCancelToken"];
                             }
                             else if (reference.FullName.Contains("System.Boolean System.Threading.Tasks.Task::Wait"))
                             {
                                 if (reference.Parameters.Count == 1 && reference.Parameters[0].ParameterType.IsPrimitive)
                                 {
-                                    processor.Replace(ins, processor.Create(OpCodes.Call, _methodReferences["TaskWaitTimeout"]));
+                                    ins.OpCode = OpCodes.Call;
+                                    ins.Operand = _methodReferences["TaskWaitTimeout"];
                                 }
                                 else if (reference.Parameters.Count == 2)
                                 {
-                                    processor.Replace(ins, processor.Create(OpCodes.Call, _methodReferences["TaskWaitTimeOutCancelToken"]));
+                                    ins.OpCode = OpCodes.Call;
+                                    ins.Operand = _methodReferences["TaskWaitTimeOutCancelToken"];
                                 }
                                 else
                                 {
-                                    processor.Replace(ins, processor.Create(OpCodes.Call, _methodReferences["TaskWaitTimespan"]));
+                                    ins.OpCode = OpCodes.Call;
+                                    ins.Operand = _methodReferences["TaskWaitTimespan"];
                                 }
                             }
                         }

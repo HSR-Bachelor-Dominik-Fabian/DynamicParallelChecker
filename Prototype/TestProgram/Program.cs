@@ -274,8 +274,9 @@ namespace TestProgram
         }
 
 
-        public static void Test13(TimeSpan timespan = new TimeSpan())
+        public static void Test13()
         {
+            Console.WriteLine("Test13()");
             Console.WriteLine("Task");
             _a = 4;
             Task task = new Task(() => { _a = 5; });
@@ -289,10 +290,20 @@ namespace TestProgram
             //task.Wait(100, new CancellationToken(true));
 
             _a = 4;
-            task = Task.Run(() => { });
+            Task task2 = Task.Run(() => { });
+            Task task3 = Task.Run(() => { }, CancellationToken.None);
 
-            task.Wait();
+            Task task4 = Task.Run(() => { return 2; });
+            Task task5 = Task.Run(() => { return 2; }, CancellationToken.None);
 
+            Task task6 = Task.Run(() => { return task; });
+            task6.Wait();
+            Task task7 = Task.Run(() => { return task; }, CancellationToken.None);
+            task7.Wait();
+
+            Task task8 = Task.Run(() => { return new Task<object>(() => { Console.Write("Task.Run() - func");return _a; }); });
+            Task task9 = Task.Run(() => { return new Task<int>(() => { return 3; }); }, CancellationToken.None);
+            
             Console.WriteLine("Task.Factory");
 
             task = Task.Factory.StartNew(() => { return 3; });
@@ -362,6 +373,7 @@ namespace TestProgram
             double[] ints = new double[] {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0};
 
             Parallel.ForEach(ints, (x) => { DoComputation(x); });
+            
         }
 
         private static double DoComputation(double start)
