@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+
 // ReSharper disable All
 
 namespace TestProgram
@@ -17,17 +18,17 @@ namespace TestProgram
         private static readonly bool _bool = true;
         private static readonly char _char = 'a';
         private static readonly sbyte _sbyte = 2;
-        private static readonly Int16 _int16 = 23;
-        private static readonly Int32 _int32 = 2342;
-        private static readonly Int64 _int64 = 23429824398247198;
+        private static readonly short _int16 = 23;
+        private static readonly int _int32 = 2342;
+        private static readonly long _int64 = 23429824398247198;
         private static readonly IntPtr _intPtr = new IntPtr(0);
-        private static readonly Byte _byte = 2;
-        private static readonly UInt16 _uint16 = 23;
-        private static readonly UInt32 _uint32 = 2342;
-        private static readonly UInt64 _uint64 = 23984329479832;
+        private static readonly byte _byte = 2;
+        private static readonly ushort _uint16 = 23;
+        private static readonly uint _uint32 = 2342;
+        private static readonly ulong _uint64 = 23984329479832;
         private static readonly UIntPtr _uIntPtr = new UIntPtr(4);
-        private static readonly Single _single = 3F;
-        private static readonly Double _double = 3.2;
+        private static readonly float _single = 3F;
+        private static readonly double _double = 3.2;
         private static TestStruct _testStruct = new TestStruct();
         private static readonly string _string = "Test";
         private static object _arace = 1;
@@ -232,7 +233,41 @@ namespace TestProgram
             object lockA = new object();
             object b = 1;
             object lockB = new object();
+            object[] test = new object[] {1, 2, 3};
+            object[] test3 = new object[] {1,2,null};
+            TestClass class123 = new TestClass();
+            string[] stringarray = new string[] {"Test", "Test2331", class123.B};
+            object[] test4 = new object[] {new NewObject(123), new Action(()=>Test12())};
+            string test2 = string.Concat(new string[] {"asdf", stringarray[0], "dasddad"});
 
+            object[][] objArray = new object[3][] {new object[3] {new NewObject(123), new Action(() => Test12()), 123 }, new object[3] {"Test", "123", 123}, new object[3] {323, 12332,12333}  };
+
+
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    objArray[i][j] = _uint16;
+                    for (int k = 0; i < 3; i++)
+                    {
+                        objArray[j][k] = _int32;
+                        for (int l = 0; j < 3; j++)
+                        {
+                            objArray[k][l] = _double;
+                            for (int m = 0; i < 3; i++)
+                            {
+                                objArray[l][m] = _single;
+                                for (int n = 0; j < 3; j++)
+                                {
+                                    objArray[m][n] = "123";
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            test4[1] = new Action(()=> {Console.WriteLine("Test");});
             Task task = Task.Factory.StartNew(() =>
             {
                 lock (lockA)
@@ -371,6 +406,20 @@ namespace TestProgram
                 sum += value;
 
             return sum;
+        }
+    }
+
+    class TestClass
+    {
+        private string _b = "Test";
+
+        public string B
+        {
+            get
+            {
+                return _b;
+            }
+            set { _b = value; }
         }
     }
 

@@ -53,7 +53,6 @@ namespace CodeInstrumentation
                         continue;
                     }
                     method.Body.SimplifyMacros(); // convert every br.s (short branch) to a normal branch
-
                     Dictionary<string, VariableDefinition> variableDefinitions = AddAllVariablesToMethod(method);
 
                     ArrayList tempList = new ArrayList(method.Body.Instructions.ToList());
@@ -62,11 +61,11 @@ namespace CodeInstrumentation
                         var processor = method.Body.GetILProcessor();
                         if (ins.OpCode.Equals(OpCodes.Ldsfld))
                         {
-                            FieldReference fieldDefinition = (FieldReference) ins.Operand;
+                            FieldReference fieldDefinition = (FieldReference)ins.Operand;
 
                             TypeReference fieldType = fieldDefinition.FieldType;
                             if (fieldType.IsPrimitive ||
-                                (fieldType.IsDefinition && ((TypeDefinition) fieldType).IsValueType))
+                                (fieldType.IsDefinition && ((TypeDefinition)fieldType).IsValueType))
                             {
                                 var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
                                 var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
@@ -99,8 +98,8 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Initobj))
                         {
-                            TypeReference fieldType = (TypeReference) ins.Operand;
-                            if (fieldType.IsDefinition && ((TypeDefinition) fieldType).IsValueType)
+                            TypeReference fieldType = (TypeReference)ins.Operand;
+                            if (fieldType.IsDefinition && ((TypeDefinition)fieldType).IsValueType)
                             {
                                 var dupInstruction = processor.Create(OpCodes.Dup);
                                 var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
@@ -114,7 +113,7 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stsfld))
                         {
-                            FieldReference fieldDefinition = (FieldReference) ins.Operand;
+                            FieldReference fieldDefinition = (FieldReference)ins.Operand;
                             var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
                             var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
                             var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
@@ -127,10 +126,10 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Ldfld))
                         {
-                            FieldDefinition fieldDefinition = (FieldDefinition) ins.Operand;
+                            FieldDefinition fieldDefinition = (FieldDefinition)ins.Operand;
                             TypeReference fieldType = fieldDefinition.FieldType;
                             if (fieldType.IsPrimitive ||
-                                (fieldType.IsDefinition && ((TypeDefinition) fieldType).IsValueType))
+                                (fieldType.IsDefinition && ((TypeDefinition)fieldType).IsValueType))
                             {
                                 var dupInstruction = processor.Create(OpCodes.Dup);
                                 var loadAddressInstruction = processor.Create(OpCodes.Ldflda, fieldDefinition);
@@ -159,7 +158,7 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stfld))
                         {
-                            FieldDefinition fieldDefinition = (FieldDefinition) ins.Operand;
+                            FieldDefinition fieldDefinition = (FieldDefinition)ins.Operand;
                             VariableDefinition varDefinition;
 
                             if (fieldDefinition.FieldType.Equals(_typeReferences["int8"]))
@@ -211,7 +210,7 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Ldelem_Any))
                         {
-                            TypeReference arrayTypeReference = (TypeReference) ins.Operand;
+                            TypeReference arrayTypeReference = (TypeReference)ins.Operand;
                             InjectArrayLdElement(variableDefinitions["firstint32"], arrayTypeReference, method,
                                 _methodReferences["ReadAccess"], ins);
                         }
@@ -241,7 +240,7 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stelem_Any))
                         {
-                            TypeReference valueTypeReference = (TypeReference) ins.Operand;
+                            TypeReference valueTypeReference = (TypeReference)ins.Operand;
                             VariableDefinition varDefinition;
 
                             if (valueTypeReference.Equals(_typeReferences["int8"]))
@@ -278,10 +277,15 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stelem_I) || ins.OpCode.Equals(OpCodes.Stelem_I1)
                                  || ins.OpCode.Equals(OpCodes.Stelem_I2) || ins.OpCode.Equals(OpCodes.Stelem_I4)
-                                 || ins.OpCode.Equals(OpCodes.Stelem_Ref))
+                                 )
                         {
                             InjectStrElement(variableDefinitions["firstint32"], variableDefinitions["secondint32"],
                                 _typeReferences["int32"], method, _methodReferences["WriteAccess"], ins);
+                        }
+                        else if (ins.OpCode.Equals(OpCodes.Stelem_Ref))
+                        {
+                            InjectStrElement(variableDefinitions["object"], variableDefinitions["secondint32"],
+                                    _typeReferences["int32"], method, _methodReferences["WriteAccess"], ins);
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stelem_I8))
                         {
@@ -300,7 +304,7 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Call))
                         {
-                            MethodReference reference = (MethodReference) ins.Operand;
+                            MethodReference reference = (MethodReference)ins.Operand;
 
                             string monitorEnterFullName =
                                 "System.Void System.Threading.Monitor::Enter(System.Object,System.Boolean&)";
@@ -338,15 +342,15 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Callvirt))
                         {
-                            MethodReference reference = (MethodReference) ins.Operand;
+                            MethodReference reference = (MethodReference)ins.Operand;
                             if (reference.FullName.Contains("System.Void System.Threading.Thread::Start"))
                             {
                                 if (!reference.HasParameters)
                                 {
                                     var ldNull = processor.Create(OpCodes.Ldnull);
-                                    processor.InsertBefore(ins,ldNull);
+                                    processor.InsertBefore(ins, ldNull);
                                 }
-                                
+
                                 var startThreadCall = processor.Create(OpCodes.Call,
                                     _methodReferences["StartThread"]);
 
@@ -423,6 +427,7 @@ namespace CodeInstrumentation
             _typeReferences.Add("int64", module.Import(typeof(long)));
             _typeReferences.Add("float32", module.Import(typeof(float)));
             _typeReferences.Add("float64", module.Import(typeof(double)));
+            _typeReferences.Add("object", new ByReferenceType(module.Import(typeof(object))));
         }
 
         private static Dictionary<string, VariableDefinition> AddAllVariablesToMethod(MethodDefinition method)
@@ -447,7 +452,7 @@ namespace CodeInstrumentation
             tempVariableDefinition = new VariableDefinition(_typeReferences["int32"]);
             method.Body.Variables.Add(tempVariableDefinition);
             result.Add("secondint32", tempVariableDefinition);
-
+            method.Body.InitLocals = true;
             return result;
         }
 
@@ -472,7 +477,7 @@ namespace CodeInstrumentation
             processor.InsertBefore(loadIndexInstruction, writeAccessLibraryCall);
             processor.InsertBefore(writeAccessLibraryCall, methodLoad);
             processor.InsertBefore(methodLoad, constLoad);
-            processor.InsertBefore(constLoad, loadAddressInstruction);
+            processor.InsertBefore(constLoad,loadAddressInstruction);
             processor.InsertBefore(loadAddressInstruction, loadIndexInstruction2);
             processor.InsertBefore(loadIndexInstruction2, dupInstruction);
             processor.InsertBefore(dupInstruction, storeIndexInstruction);
