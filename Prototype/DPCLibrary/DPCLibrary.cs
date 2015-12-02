@@ -285,7 +285,113 @@ namespace DPCLibrary
 
             ThreadVectorManager.GetInstance().HandleTaskRun($"Task_{task.Id}", currentThreadId);
         }
-        
+
+        public static Task StartNew(Action action, TaskCreationOptions taskCreationOptions )
+        {
+            Task result = taskCreationOptions.Equals(TaskCreationOptions.None)
+                ? new Task(action) : new Task(action, taskCreationOptions);
+            StartNewTaskAll(result);
+            result.Start();
+            return result;
+        }
+
+        public static Task StartNewCancel(Action action, CancellationToken cancellationToken, 
+            TaskCreationOptions taskCreationOptions, TaskScheduler taskScheduler)
+        {
+            Task result = taskCreationOptions.Equals(TaskCreationOptions.None) 
+                ? new Task(action, cancellationToken) : new Task(action, cancellationToken, taskCreationOptions);
+            StartNewTaskAll(result);
+            if (taskScheduler != null)
+                result.Start(taskScheduler);
+            else
+                result.Start();
+            return result;
+        }
+
+        public static Task StartNewObject(Action<object> action, object state, TaskCreationOptions creationOptions)
+        {
+            Task result = creationOptions.Equals(TaskCreationOptions.None)
+                ? new Task(action, TaskCreationOptions.None) : new Task(action, creationOptions);
+            StartNewTaskAll(result);
+            result.Start();
+            return result;
+        }
+
+        public static Task StartNewObjectCancel(Action<object> action, object state, CancellationToken cancellationToken, 
+            TaskCreationOptions creationOptions, TaskScheduler scheduler)
+        {
+            Task result = creationOptions.Equals(TaskCreationOptions.None)
+                ? new Task(action, state, cancellationToken) : new Task(action, state, cancellationToken, creationOptions);
+            StartNewTaskAll(result);
+            if (scheduler != null)
+                result.Start(scheduler);
+            else
+                result.Start();
+            return result;
+        }
+
+        public static Task<TResult> StartNewTResult<TResult>(Func<TResult> function, TaskCreationOptions creationOptions)
+        {
+            Task<TResult> result = creationOptions.Equals(TaskCreationOptions.None)
+                ? new Task<TResult>(function, TaskCreationOptions.None) : new Task<TResult>(function, creationOptions);
+            StartNewTaskAll(result);
+            result.Start();
+            return result;
+        }
+
+        public static Task<TResult> StartNewTResultCancel<TResult>(Func<TResult> function, CancellationToken cancellationToken, 
+            TaskCreationOptions creationOptions, TaskScheduler scheduler)
+        {
+            Task<TResult> result = creationOptions.Equals(TaskCreationOptions.None)
+                ? new Task<TResult>(function, cancellationToken) : new Task<TResult>(function, cancellationToken, creationOptions);
+            StartNewTaskAll(result);
+            if (scheduler != null)
+                result.Start(scheduler);
+            else
+                result.Start();
+            return result;
+        }
+
+        public static Task<TResult> StartNewObjectTResult<TResult>(Func<object, TResult> function, object state, TaskCreationOptions creationOptions)
+        {
+            Task<TResult> result = creationOptions.Equals(TaskCreationOptions.None)
+                ? new Task<TResult>(function, state, TaskCreationOptions.None) : new Task<TResult>(function, state, creationOptions);
+            StartNewTaskAll(result);
+            result.Start();
+            return result;
+        }
+
+        public static Task<TResult> StartNewObjectTResultCancel<TResult>(Func<object, TResult> function, object state, CancellationToken cancellationToken,
+            TaskCreationOptions creationOptions, TaskScheduler scheduler)
+        {
+            Task<TResult> result = creationOptions.Equals(TaskCreationOptions.None)
+                ? new Task<TResult>(function, state, cancellationToken) : new Task<TResult>(function, state, cancellationToken, creationOptions);
+            StartNewTaskAll(result);
+            if (scheduler != null)
+                result.Start(scheduler);
+            else
+                result.Start();
+            return result;
+        }
+
+        private static void StartNewTaskAll(Task task)
+        {
+            string currentThreadId;
+            if (Task.CurrentId.HasValue)
+            {
+                _logger.ConditionalTrace(
+                    $"Run Task: {task.Id} in Task: {Task.CurrentId} on WorkerThread {Thread.CurrentThread.ManagedThreadId}");
+                currentThreadId = $"Task_{Task.CurrentId}";
+            }
+            else
+            {
+                _logger.ConditionalTrace($"Run Task: {task.Id} on Thread {Thread.CurrentThread.ManagedThreadId}");
+                currentThreadId = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
+            }
+
+            ThreadVectorManager.GetInstance().HandleStartNewTask($"Task_{task.Id}", currentThreadId);
+        }
+
         public static void RaceConditionDetectedIdentifier()
         {
             

@@ -319,10 +319,10 @@ namespace TestProgram
             //task.Start(TaskScheduler.Current);
 
             task.Wait();
-            //task.Wait(100);
-            //task.Wait(new TimeSpan(0, 0, 1));
-            //task.Wait(CancellationToken.None);
-            //task.Wait(100, new CancellationToken(true));
+            task.Wait(100);
+            task.Wait(new TimeSpan(0, 0, 1));
+            task.Wait(CancellationToken.None);
+            task.Wait(100, new CancellationToken(true));
 
             _a = 4;
             Task task2 = Task.Run(() => { });
@@ -336,16 +336,58 @@ namespace TestProgram
             Task task7 = Task.Run(() => { return task; }, CancellationToken.None);
             task7.Wait();
 
-            Task task8 = Task.Run(() => { return new Task<object>(() => { Console.Write("Task.Run() - func");return _a; }); });
+            Task task8 = Task.Run(() => { return new Task<object>(() => { Console.Write("Task.Run() - func"); return _a; }); });
             Task task9 = Task.Run(() => { return new Task<int>(() => { return 3; }); }, CancellationToken.None);
-            
+
             Console.WriteLine("Task.Factory");
 
-            task = Task.Factory.StartNew(() => { return 3; });
+            Action action = new Action(() => { });
 
-            task.ContinueWith((x) => { return x; });
-            
-            task.Wait();
+            Task task10 = Task.Factory.StartNew(action);
+
+            task10.ContinueWith((x) => { return x; });
+
+            task10.Wait();
+
+            Task task11 = Task.Factory.StartNew(action, CancellationToken.None);
+
+            Task task12 = Task.Factory.StartNew(action, TaskCreationOptions.None);
+
+            Task task13 = Task.Factory.StartNew(action, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current);
+
+            Func<int> func = new Func<int>(() => { return 3; });
+
+            Task<int> task14 = Task.Factory.StartNew(func);
+
+            Task<int> task15 = Task.Factory.StartNew(func, CancellationToken.None);
+
+            Task<int> task16 = Task.Factory.StartNew(func, TaskCreationOptions.None);
+
+            Task<int> task17 = Task.Factory.StartNew(func, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current);
+
+            Task.WaitAll(new Task[] { task11, task12, task13, task14, task15, task16, task17 });
+
+            Action<object> action2 = new Action<object>((x) => { });
+
+            Task task18 = Task.Factory.StartNew(action2, new object());
+
+            Task task19 = Task.Factory.StartNew(action2, new object(), CancellationToken.None);
+
+            Task task20 = Task.Factory.StartNew(action2, new object(), TaskCreationOptions.None);
+
+            Task task21 = Task.Factory.StartNew(action2, new object(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current);
+
+            Func<object, int> func2 = o => { return 2; };
+
+            Task<int> task22 = Task.Factory.StartNew(func2, new object());
+
+            Task<int> task23 = Task.Factory.StartNew(func2, new object(), CancellationToken.None);
+
+            Task<int> task24 = Task.Factory.StartNew(func2, new object(), TaskCreationOptions.None);
+
+            Task<int> task25 = Task.Factory.StartNew(func2, new object(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current);
+
+            Task.WaitAll(new Task[] { task18, task19, task20, task21, task22, task23, task24, task25 });
 
             Console.WriteLine("Task.Factory WaitAll/WaitAny");
 
@@ -362,7 +404,7 @@ namespace TestProgram
                                      Task<double>.Factory.StartNew(() => DoComputation(1000.0)) };
 
             Task.WaitAny(taskArray);
-            
+
             Console.WriteLine("Thread.Start / Join");
 
             Thread thread = new Thread(() => { DoComputation(100.0); });
@@ -405,10 +447,10 @@ namespace TestProgram
 
             Parallel.For(0, 10, (x) => { DoComputation(x); });
 
-            double[] ints = new double[] {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0};
+            double[] ints = new double[] { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 };
 
             Parallel.ForEach(ints, (x) => { DoComputation(x); });
-            
+
         }
 
         private static double DoComputation(double start)
