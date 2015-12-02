@@ -28,8 +28,7 @@ namespace DPCClient.ViewModel
 
             if (result == true)
             {
-                string fileName = fileDialog.FileName;
-                _obj.FilePath = fileName;
+                _obj.FilePath = fileDialog.FileName;
             }
         }
 

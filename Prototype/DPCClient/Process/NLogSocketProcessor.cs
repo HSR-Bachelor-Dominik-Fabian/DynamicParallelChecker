@@ -45,10 +45,10 @@ namespace DPCClient.Process
                             catch
                             {
                                 // ignored
-                            } // suppress any exceptions
+                                
+                            }
                             finally
                             {
-                                // always close the stream
                                 ctx?.Response.OutputStream.Close();
                             }
                         }, _listener.GetContext());
@@ -57,7 +57,7 @@ namespace DPCClient.Process
                 catch
                 {
                     // ignored
-                } // suppress any exceptions
+                }
             });
         }
 
@@ -66,6 +66,5 @@ namespace DPCClient.Process
             _listener.Stop();
             _listener.Close();
         }
-
     }
 }

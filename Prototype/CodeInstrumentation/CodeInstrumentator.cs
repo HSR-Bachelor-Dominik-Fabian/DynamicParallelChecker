@@ -1,16 +1,13 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 using ICSharpCode.Decompiler;
 using ICSharpCode.Decompiler.Ast;
 using OpCodes = Mono.Cecil.Cil.OpCodes;
 using Mono.Cecil.Rocks;
-using Mono.Collections.Generic;
 
 namespace CodeInstrumentation
 {
@@ -49,12 +46,8 @@ namespace CodeInstrumentation
             }
             if (type.HasMethods)
             {
-                foreach (MethodDefinition method in type.Methods)
+                foreach (MethodDefinition method in type.Methods.Where(method => method.Body != null))
                 {
-                    if (method.Body == null)
-                    {
-                        continue;
-                    }
                     method.Body.SimplifyMacros(); // convert every br.s (short branch) to a normal branch
                     Dictionary<string, VariableDefinition> variableDefinitions = AddAllVariablesToMethod(method);
 
@@ -280,7 +273,7 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stelem_I) || ins.OpCode.Equals(OpCodes.Stelem_I1)
                                  || ins.OpCode.Equals(OpCodes.Stelem_I2) || ins.OpCode.Equals(OpCodes.Stelem_I4)
-                                 )
+                            )
                         {
                             InjectStrElement(variableDefinitions["firstint32"], variableDefinitions["secondint32"],
                                 _typeReferences["int32"], method, _methodReferences["WriteAccess"], ins);
@@ -288,7 +281,7 @@ namespace CodeInstrumentation
                         else if (ins.OpCode.Equals(OpCodes.Stelem_Ref))
                         {
                             InjectStrElement(variableDefinitions["object"], variableDefinitions["secondint32"],
-                                    _typeReferences["int32"], method, _methodReferences["WriteAccess"], ins);
+                                _typeReferences["int32"], method, _methodReferences["WriteAccess"], ins);
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stelem_I8))
                         {
@@ -308,7 +301,7 @@ namespace CodeInstrumentation
                         if (ins.OpCode.Equals(OpCodes.Call))
                         {
                             MethodReference reference = (MethodReference)ins.Operand;
-
+                            
                             string monitorEnterFullName =
                                 "System.Void System.Threading.Monitor::Enter(System.Object,System.Boolean&)";
                             string monitorExitFullName =
@@ -386,17 +379,17 @@ namespace CodeInstrumentation
                                     GenericInstanceMethod genericMethod = (GenericInstanceMethod)methodReference;
                                     TypeReference genericArgument = genericMethod.GenericArguments[0];
                                     if (reference.Parameters.Count == 1)
-                            {
+                                    {
                                         var newGenericMethod = new GenericInstanceMethod(_methodReferences["RunTaskTaskTResult"]);
                                         newGenericMethod.GenericArguments.Add(genericArgument);
                                         ins.Operand = newGenericMethod;
-                            }
+                                    }
                                     else if (reference.Parameters.Count == 2)
                                     {
                                         var newGenericMethod = new GenericInstanceMethod(_methodReferences["RunTaskTaskTResultCancel"]);
                                         newGenericMethod.GenericArguments.Add(genericArgument);
                                         ins.Operand = newGenericMethod;
-                        }
+                                    }
                                 }
                             }
                         }
@@ -574,7 +567,7 @@ namespace CodeInstrumentation
             };
 
             AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(pathToAssembly, parameters);
-            string result = "";
+            string result = string.Empty;
 
             MethodDefinition method = null;
             TypeDefinition typeDefinition = null;
@@ -599,6 +592,7 @@ namespace CodeInstrumentation
                 });
                 
                 astBuilder.AddMethod(method);
+                
                 StringWriter output = new StringWriter();
                 astBuilder.GenerateCode(new PlainTextOutput(output));
                 result = output.ToString();
