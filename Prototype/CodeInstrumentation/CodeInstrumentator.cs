@@ -4,6 +4,7 @@ using Mono.Cecil.Cil;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using ICSharpCode.Decompiler;
 using ICSharpCode.Decompiler.Ast;
 using OpCodes = Mono.Cecil.Cil.OpCodes;
