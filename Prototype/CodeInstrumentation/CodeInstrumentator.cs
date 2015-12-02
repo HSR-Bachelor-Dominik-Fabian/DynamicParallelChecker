@@ -32,19 +32,19 @@ namespace CodeInstrumentation
             
             foreach (TypeDefinition type in module.Types)
             {
-                InstrumentateType(type);
+                InstrumentateType(type, module);
             }
 
             module.Write(fileName);
         }
 
-        private static void InstrumentateType(TypeDefinition type)
+        private static void InstrumentateType(TypeDefinition type, ModuleDefinition module)
         {
             if (type.HasNestedTypes)
             {
                 foreach (TypeDefinition nestedType in type.NestedTypes)
                 {
-                    InstrumentateType(nestedType);
+                    InstrumentateType(nestedType, module);
                 }
             }
             if (type.HasMethods)
@@ -460,11 +460,167 @@ namespace CodeInstrumentation
                                     ins.Operand = _methodReferences["TaskWaitTimespan"];
                                 }
                             }
+                            else if (reference.FullName.Contains("System.Threading.Tasks.Task System.Threading.Tasks.TaskFactory::StartNew"))
+                            {
+                                if (reference.Parameters.Count > 0 && reference.Parameters[0].ParameterType.FullName.Equals("System.Action"))
+                                {
+                                    if (reference.Parameters.Count >= 2 &&
+                                        reference.Parameters[1].ParameterType.FullName.Equals(
+                                            "System.Threading.CancellationToken"))
+                                    {
+                                        ins.OpCode = OpCodes.Call;
+                                        ins.Operand = _methodReferences["StartNewCancel"];
+                                        if (reference.Parameters.Count == 2)
+                                        {
+                                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
+                                            var ldNull = processor.Create(OpCodes.Ldnull);
+                                            processor.InsertBefore(ins, ldNull);
+                                            processor.InsertBefore(ldNull, ldZero);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        ins.OpCode = OpCodes.Call;
+                                        ins.Operand = _methodReferences["StartNew"];
+                                        if (reference.Parameters.Count == 1)
+                                        {
+
+                                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
+                                            processor.InsertBefore(ins, ldZero);
+                                        }
+                                    }
+                                } else if (reference.Parameters.Count > 0 &&
+                                           reference.Parameters[0].ParameterType.FullName.Equals("System.Action`1<System.Object>"))
+                                {
+                                    if (reference.Parameters.Count > 2 &&
+                                        reference.Parameters[2].ParameterType.FullName.Equals(
+                                            "System.Threading.CancellationToken"))
+                                    {
+                                        ins.OpCode = OpCodes.Call;
+                                        ins.Operand = _methodReferences["StartNewObjectCancel"];
+                                        if (reference.Parameters.Count == 3)
+                                        {
+                                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
+                                            var ldNull = processor.Create(OpCodes.Ldnull);
+                                            processor.InsertBefore(ins, ldNull);
+                                            processor.InsertBefore(ldNull, ldZero);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        ins.OpCode = OpCodes.Call;
+                                        ins.Operand = _methodReferences["StartNewObject"];
+                                        if (reference.Parameters.Count == 2)
+                                        {
+                                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
+                                            processor.InsertBefore(ins, ldZero);
+                                        }
+                                    }
+                                }
+                                PopTaskFactory(module, method, ins, processor, variableDefinitions, false);
+                            }
+                            else if (reference.FullName.Contains("System.Threading.Tasks.Task`1<!!0> System.Threading.Tasks.TaskFactory::StartNew"))
+                            {
+                                MethodReference methodReference = (MethodReference)ins.Operand;
+                                GenericInstanceMethod genericMethod = (GenericInstanceMethod)methodReference;
+                                TypeReference genericArgument = genericMethod.GenericArguments[0];
+                                if (reference.Parameters.Count > 0 && reference.Parameters[0].ParameterType.FullName.Equals("System.Func`1<!!0>"))
+                                {
+                                    if (reference.Parameters.Count >= 2 &&
+                                    reference.Parameters[1].ParameterType.FullName.Equals(
+                                        "System.Threading.CancellationToken"))
+                                    {
+                                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["StartNewTResultCancel"]);
+                                        newGenericMethod.GenericArguments.Add(genericArgument);
+                                        ins.OpCode = OpCodes.Call;
+                                        ins.Operand = newGenericMethod;
+                                        if (reference.Parameters.Count == 2)
+                                        {
+                                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
+                                            var ldNull = processor.Create(OpCodes.Ldnull);
+                                            processor.InsertBefore(ins, ldNull);
+                                            processor.InsertBefore(ldNull, ldZero);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["StartNewTResult"]);
+                                        newGenericMethod.GenericArguments.Add(genericArgument);
+                                        ins.OpCode = OpCodes.Call;
+                                        ins.Operand = newGenericMethod;
+                                        if (reference.Parameters.Count == 1)
+                                        {
+                                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
+                                            processor.InsertBefore(ins, ldZero);
+                                        }
+                                    }
+                                }
+                                else if (reference.Parameters.Count > 0 &&
+                                         reference.Parameters[0].ParameterType.FullName.Equals("System.Func`2<System.Object,!!0>"))
+                                {
+                                    if (reference.Parameters.Count > 2 &&
+                                        reference.Parameters[2].ParameterType.FullName.Equals(
+                                            "System.Threading.CancellationToken"))
+                                    {
+                                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["StartNewObjectTResultCancel"]);
+                                        newGenericMethod.GenericArguments.Add(genericArgument);
+                                        ins.OpCode = OpCodes.Call;
+                                        ins.Operand = newGenericMethod;
+                                        if (reference.Parameters.Count == 3)
+                                        {
+                                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
+                                            var ldNull = processor.Create(OpCodes.Ldnull);
+                                            processor.InsertBefore(ins, ldNull);
+                                            processor.InsertBefore(ldNull, ldZero);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["StartNewObjectTResult"]);
+                                        newGenericMethod.GenericArguments.Add(genericArgument);
+                                        ins.OpCode = OpCodes.Call;
+                                        ins.Operand = newGenericMethod;
+                                        if (reference.Parameters.Count == 2)
+                                        {
+                                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
+                                            processor.InsertBefore(ins, ldZero);
+                                        }
+                                    }
+                                }
+                                PopTaskFactory(module, method, ins, processor, variableDefinitions, true);
+                            }
                         }
                     }
                     method.Body.OptimizeMacros(); // Convert the normal branches back to short branches if possible
                 }
             }
+        }
+
+        private static void PopTaskFactory(ModuleDefinition module, MethodDefinition method, Instruction ins, ILProcessor processor, 
+            Dictionary<string, VariableDefinition> variableDefinitions, bool generics)
+        {
+            VariableDefinition varDefinition;
+            if (!generics)
+            {
+                varDefinition = variableDefinitions["task"];
+            }
+            else
+            {
+                MethodReference methodReference = (MethodReference)ins.Operand;
+                GenericInstanceMethod genericMethod = (GenericInstanceMethod) methodReference;
+                GenericInstanceType genericType = new GenericInstanceType(genericMethod.ReturnType.GetElementType());
+                genericType.GenericArguments.Add(genericMethod.GenericArguments[0]);
+                TypeReference typeReference = module.Import(genericType);
+                varDefinition = new VariableDefinition(typeReference);
+                method.Body.Variables.Add(varDefinition);
+            }
+
+            var storeTask = processor.Create(OpCodes.Stloc_S, varDefinition);
+            var loadTask = processor.Create(OpCodes.Ldloc_S, varDefinition);
+            var pop = processor.Create(OpCodes.Pop);
+            processor.InsertAfter(ins, storeTask);
+            processor.InsertAfter(storeTask, pop);
+            processor.InsertAfter(pop, loadTask);
         }
 
         private static void ImportAllPublicMethods(TypeDefinition typeDefinition, ModuleDefinition module)
@@ -481,6 +637,7 @@ namespace CodeInstrumentation
             _typeReferences.Add("float32", module.Import(typeof(float)));
             _typeReferences.Add("float64", module.Import(typeof(double)));
             _typeReferences.Add("object", new ByReferenceType(module.Import(typeof(object))));
+            _typeReferences.Add("task", new ByReferenceType(module.Import(typeof(Task))));
         }
 
         private static Dictionary<string, VariableDefinition> AddAllVariablesToMethod(MethodDefinition method)
