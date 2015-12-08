@@ -1,18 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
+using NLog;
 
 namespace DPCLibrary.Algorithm
 {
-    class ThreadVectorClock : Dictionary<Thread, int>
+    class ThreadVectorClock : Dictionary<string, int>
     {
-        public Thread OwnThread { get; }
+        private readonly Logger _logger = LogManager.GetLogger("ThreadVectorClock");
+        public string OwnThreadId { get; }
 
-        public ThreadVectorClock(Thread thread)
+        public ThreadVectorClock(string threadId)
         {
-            OwnThread = thread;    
-            Add(thread,1);
+            OwnThreadId = threadId;    
+            Add(threadId,1);
         }
 
         /// <summary>
@@ -26,16 +27,16 @@ namespace DPCLibrary.Algorithm
             int compared = 0;
             int myValueInOther, otherValueInMe, myValueInMe, otherValueInOther;
 
-            if(!other.TryGetValue(OwnThread, out myValueInOther) )
+            if(!other.TryGetValue(OwnThreadId, out myValueInOther) )
             {
                 myValueInOther = 0;
             }
-            if (!TryGetValue(other.OwnThread, out otherValueInMe))
+            if (!TryGetValue(other.OwnThreadId, out otherValueInMe))
             {
                 otherValueInMe = 0;
             }
 
-            if (TryGetValue(OwnThread, out myValueInMe) && other.TryGetValue(other.OwnThread, out otherValueInOther))
+            if (TryGetValue(OwnThreadId, out myValueInMe) && other.TryGetValue(other.OwnThreadId, out otherValueInOther))
             {
                 if (myValueInMe >= myValueInOther && otherValueInMe >= otherValueInOther)
                 {
@@ -46,6 +47,7 @@ namespace DPCLibrary.Algorithm
                     compared = -1;
                 }
             }
+            _logger.ConditionalTrace("(this) " + ToString() + " comparison to (other) " + other + "Result = " + compared);
             return compared;
         }
 
@@ -56,22 +58,22 @@ namespace DPCLibrary.Algorithm
             if (clock != null)
             {
                 ThreadVectorClock dict2 = clock;
-                equals = OwnThread == clock.OwnThread && Keys.Count == dict2.Keys.Count && Keys.All(k => dict2.ContainsKey(k) && Equals(dict2[k], this[k]));
+                equals = OwnThreadId.Equals(clock.OwnThreadId) && Keys.Count == dict2.Keys.Count && Keys.All(k => dict2.ContainsKey(k) && Equals(dict2[k], this[k]));
             }
             return equals;
         }
 
         public override int GetHashCode()
         {
-            return (OwnThread.GetHashCode()*17 + Keys.Count.GetHashCode())*17 + Keys.Sum(x => x.GetHashCode());
+            return (OwnThreadId.GetHashCode()*17 ^ Keys.Count.GetHashCode())*17;
         }
 
         public ThreadVectorClock GetCopy()
         {
-            ThreadVectorClock newClock = new ThreadVectorClock(OwnThread);
+            ThreadVectorClock newClock = new ThreadVectorClock(OwnThreadId);
             foreach (var key in Keys)
             {
-                if (!key.Equals(OwnThread))
+                if (!key.Equals(OwnThreadId))
                 {
                     newClock.Add(key, this[key]);
                 }
@@ -81,6 +83,15 @@ namespace DPCLibrary.Algorithm
                 }
             }
             return newClock;
+        }
+
+        public override string ToString()
+        {
+            string output = string.Empty;
+            output += "{";
+            output = this.Aggregate(output, (current, entry) => current + ("{" + entry.Key + " : " + entry.Value + "}"));
+            output += "}";
+            return output;
         }
     }
 }

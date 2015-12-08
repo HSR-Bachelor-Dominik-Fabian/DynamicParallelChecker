@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using NLog;
 
 namespace DPCLibrary.Algorithm.Manager
 {
@@ -10,7 +11,7 @@ namespace DPCLibrary.Algorithm.Manager
     {
         private static volatile ThreadVectorManager _instance;
         private static readonly object _syncRoot = new object();
-
+        
         public static ThreadVectorManager GetInstance()
         {
             if (_instance == null)
@@ -26,40 +27,45 @@ namespace DPCLibrary.Algorithm.Manager
             return _instance;
         }
 
-        private ThreadVectorManager() { }
+        private ThreadVectorManager(){}
 
         internal static void Reset()
         {
             _instance = null;
         }
 
-        private readonly Dictionary<Thread, ThreadVectorInstance> _threadVectorPool
-            = new Dictionary<Thread, ThreadVectorInstance>();
+        private readonly Dictionary<string, ThreadVectorInstance> _threadVectorPool
+            = new Dictionary<string, ThreadVectorInstance>();
 
         private readonly LockHistory _lockHistory = new LockHistory();
 
+        private readonly Logger _logger = LogManager.GetLogger("ThreadVectorManager");
+
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void HandleReadAccess(Thread thread, int ressource)
+        public void HandleReadAccess(string thread, int ressource, int rowNumber, string methodName)
         {
+            _logger.ConditionalDebug("ReadAccess: " + thread + " on Ressource: " + ressource + "on Line:" + rowNumber);
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(thread);
-            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, ressource);
+            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, ressource, rowNumber, methodName);
             threadVectorInstance.WriteHistory(threadEvent);
-            CheckForRaceCondition(threadEvent, threadVectorInstance);
+            CheckForRaceCondition(threadEvent, threadVectorInstance, rowNumber, methodName);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void HandleWriteAccess(Thread thread, int ressource)
+        public void HandleWriteAccess(string thread, int ressource, int rowNumber, string methodName)
         {
+            _logger.ConditionalDebug("WriteAccess: " + thread + " on Ressource: " + ressource + "on Line:" + rowNumber);
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(thread);
-            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Write, ressource);
+            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Write, ressource,rowNumber, methodName);
             threadVectorInstance.WriteHistory(threadEvent);
-            CheckForRaceCondition(threadEvent, threadVectorInstance);
+            CheckForRaceCondition(threadEvent, threadVectorInstance, rowNumber, methodName);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void HandleLock(Thread thread, int lockRessource)
+        public void HandleLock(string thread, int lockRessource)
         {
-            KeyValuePair<Thread, ThreadVectorClock> lockThreadIdClockPair;
+            _logger.ConditionalDebug("Lock: " + thread + " on Ressource: " + lockRessource);
+            KeyValuePair<string, ThreadVectorClock> lockThreadIdClockPair;
             if (CheckLockHistory(lockRessource, out lockThreadIdClockPair))
             {
                 SynchronizeVectorClock(thread, lockThreadIdClockPair);
@@ -67,14 +73,73 @@ namespace DPCLibrary.Algorithm.Manager
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void HandleUnLock(Thread thread, int lockRessource)
+        public void HandleUnLock(string thread, int lockRessource)
         {
+            _logger.ConditionalDebug("Unlock: " + thread + " on Ressource: " + lockRessource);
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(thread);
-            _lockHistory.AddLockEntry(lockRessource, new KeyValuePair<Thread, ThreadVectorClock>(thread, threadVectorInstance.VectorClock));
+            _lockHistory.AddLockEntry(lockRessource, new KeyValuePair<string, ThreadVectorClock>(thread, threadVectorInstance.VectorClock));
             threadVectorInstance.IncrementClock();
         }
 
-        private ThreadVectorInstance GetThreadVectorInstance(Thread thread)
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void HandleThreadStart(string newThread, string currentThread)
+        {
+            _logger.ConditionalDebug("NewThread: " + newThread + " started from " + currentThread);
+            ThreadVectorInstance currentThreadInstance = GetThreadVectorInstance(currentThread);
+            KeyValuePair<string, ThreadVectorClock> threadIdClockPair = new KeyValuePair<string, ThreadVectorClock>(currentThread, currentThreadInstance.VectorClock);
+            SynchronizeVectorClock(newThread, threadIdClockPair);
+            currentThreadInstance.IncrementClock();
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void HandleThreadJoin(string joinedThread, string currentThread)
+        {
+            _logger.ConditionalDebug("Thread joined: " + joinedThread + " from Thread " + currentThread);
+            ThreadVectorInstance joinedThreadVectorInstance = GetThreadVectorInstance(joinedThread);
+            KeyValuePair<string, ThreadVectorClock> threadIdClockPair = new KeyValuePair<string, ThreadVectorClock>(joinedThread, joinedThreadVectorInstance.VectorClock); 
+            SynchronizeVectorClock(currentThread, threadIdClockPair);
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void HandleStartTask(string task, string currentTaskOrThread)
+        {
+            _logger.ConditionalDebug("New Task started: " + task + " from Thread " + Thread.CurrentThread.ManagedThreadId);
+            ThreadVectorInstance currentTaskOrThreadVectorInstance = GetThreadVectorInstance(currentTaskOrThread);
+            KeyValuePair<string, ThreadVectorClock> threadIdClockPair = new KeyValuePair<string, ThreadVectorClock>(currentTaskOrThread, currentTaskOrThreadVectorInstance.VectorClock);
+            SynchronizeVectorClock(task, threadIdClockPair);
+            currentTaskOrThreadVectorInstance.IncrementClock();
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void HandleTaskWait(string task, string currentTaskOrThread)
+        {
+            _logger.ConditionalDebug("Wait for task: " + task + " from Thread " + Thread.CurrentThread.ManagedThreadId);
+            ThreadVectorInstance waitedTaskOrThreadVectorInstance = GetThreadVectorInstance(task);
+            KeyValuePair<string, ThreadVectorClock> threadIdClockPair = new KeyValuePair<string, ThreadVectorClock>(task, waitedTaskOrThreadVectorInstance.VectorClock);
+            SynchronizeVectorClock(currentTaskOrThread, threadIdClockPair);
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void HandleTaskRun(string task, string currentTaskOrThread)
+        {
+            _logger.ConditionalDebug("Run task: " + task + " from Thread " + Thread.CurrentThread.ManagedThreadId);
+            ThreadVectorInstance currentTakOrThreadVectorInstance = GetThreadVectorInstance(currentTaskOrThread);
+            KeyValuePair<string, ThreadVectorClock> threadIdClockPair = new KeyValuePair<string, ThreadVectorClock>(currentTaskOrThread, currentTakOrThreadVectorInstance.VectorClock);
+            SynchronizeVectorClock(task, threadIdClockPair);
+            currentTakOrThreadVectorInstance.IncrementClock();
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void HandleStartNewTask(string task, string currentTaskOrThread)
+        {
+            _logger.ConditionalDebug("StartNew task: " + task + " from Thread " + Thread.CurrentThread.ManagedThreadId);
+            ThreadVectorInstance currentTakOrThreadVectorInstance = GetThreadVectorInstance(currentTaskOrThread);
+            KeyValuePair<string, ThreadVectorClock> threadIdClockPair = new KeyValuePair<string, ThreadVectorClock>(currentTaskOrThread, currentTakOrThreadVectorInstance.VectorClock);
+            SynchronizeVectorClock(task, threadIdClockPair);
+            currentTakOrThreadVectorInstance.IncrementClock();
+        }
+
+        private ThreadVectorInstance GetThreadVectorInstance(string thread)
         {
             ThreadVectorInstance threadVectorInstance;
             if (!_threadVectorPool.TryGetValue(thread, out threadVectorInstance))
@@ -85,12 +150,12 @@ namespace DPCLibrary.Algorithm.Manager
             return threadVectorInstance;
         }
 
-        private bool CheckLockHistory(int lockRessource, out KeyValuePair<Thread, ThreadVectorClock> lockThreadIdClockPair)
+        private bool CheckLockHistory(int lockRessource, out KeyValuePair<string, ThreadVectorClock> lockThreadIdClockPair)
         {
             return _lockHistory.IsRessourceInLockHistory(lockRessource, out lockThreadIdClockPair);
         }
 
-        private void SynchronizeVectorClock(Thread ownThread, KeyValuePair<Thread, ThreadVectorClock> lockThreadIdClockPair)
+        private void SynchronizeVectorClock(string ownThread, KeyValuePair<string, ThreadVectorClock> lockThreadIdClockPair)
         {
             ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(ownThread);
             ThreadVectorClock vectorClock = threadVectorInstance.VectorClock;
@@ -100,7 +165,7 @@ namespace DPCLibrary.Algorithm.Manager
                 {
                     vectorClock[thread] += 1;
                 }
-                else if (thread == lockThreadIdClockPair.Key)
+                else if (thread.Equals(lockThreadIdClockPair.Key))
                 {
                     vectorClock[thread] = lockThreadIdClockPair.Value[thread];
                 }
@@ -115,10 +180,10 @@ namespace DPCLibrary.Algorithm.Manager
         }
 
 
-        private void CheckForRaceCondition(ThreadEvent ownThreadEvent, ThreadVectorInstance threadVectorInstance)
+        private void CheckForRaceCondition(ThreadEvent ownThreadEvent, ThreadVectorInstance threadVectorInstance, int rowNumber, string methodName)
         {
             List<ThreadVectorInstance> instances = 
-                (_threadVectorPool.Values.Where(instance => instance.Thread != threadVectorInstance.Thread)).ToList();
+                (_threadVectorPool.Values.Where(instance => instance.ThreadId != threadVectorInstance.ThreadId)).ToList();
             foreach (ThreadVectorInstance instance in instances) {
                 foreach (
                     List<ThreadEvent> concurrentEvents in
@@ -128,8 +193,14 @@ namespace DPCLibrary.Algorithm.Manager
                     {
                         if (IsRaceCondition(ownThreadEvent, threadEvent))
                         {
-                            Console.WriteLine("RaceCondition detected... Ressource: " + ownThreadEvent.Ressource + ", in Thread: " + threadVectorInstance.Thread.ManagedThreadId);
-                            // TODO:Fabian show message
+                            LogEventInfo info = new LogEventInfo {Level = LogLevel.Error};
+                            info.Properties["RowCount"] = rowNumber;
+                            info.Properties["MethodName"] = methodName;
+                            info.Properties["ConflictMethodName"] = threadEvent.MethodName;
+                            info.Properties["ConflictRow"] = threadEvent.Row;
+                            info.Message =
+                                $"RaceCondition detected... Ressource: {ownThreadEvent.Ressource} -> Thread: {threadVectorInstance.ThreadId} to Thread: {instance.ThreadId}";
+                            _logger.Log(info);
                         }
                     }
                 }

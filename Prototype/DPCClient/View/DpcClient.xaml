@@ -1,0 +1,56 @@
+﻿<Window x:Class="DPCClient.View.DpcClient"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModel="clr-namespace:DPCClient.ViewModel"
+        xmlns:model="clr-namespace:DPCClient.Model"
+        mc:Ignorable="d"
+        Title="DPC Client" Height="680.441" Width="883.265">
+    <Window.Resources>
+        <viewModel:DpcViewModel x:Key="Dpcviewobj"/>
+    </Window.Resources>
+    <Grid Margin="0,0,2,0">
+        <TextBox x:Name="FilePath" HorizontalAlignment="Left" Height="20" Margin="103,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="760" Text="{Binding FilePath, Source={StaticResource Dpcviewobj}}"/>
+        <Button x:Name="OpenButton" Content="Open" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Command="{Binding OpenBtnClick, Mode=OneWay, Source={StaticResource Dpcviewobj}}"/>
+        <Button x:Name="StartCheckerButton" Content="Start Parallel Checker" HorizontalAlignment="Left" Margin="726,42,0,0" VerticalAlignment="Top" Width="137" Command="{Binding StartParallelCheckerBtnClick, Mode=OneWay, Source={StaticResource Dpcviewobj}}"/>
+        <ListView x:Name="ListView" Margin="0,72,0,0" ItemsSource="{Binding LogEntries, Source={StaticResource Dpcviewobj}}">
+            <ListView.Resources>
+                <Style TargetType="{x:Type ListViewItem}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Level}" Value="ERROR">
+                            <Setter Property="Background" Value="Coral" />
+                            <Setter Property="Foreground" Value="White" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Level}" Value="WARNING">
+                            <Setter Property="Background" Value="Orange" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Level}" Value="FATAL">
+                            <Setter Property="Background" Value="Crimson" />
+                            <Setter Property="Foreground" Value="White" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.Resources>
+            <ListView.View>
+                <GridView>
+                    <GridView.Columns>
+                        <GridViewColumn>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate DataType="{x:Type model:NLogMessage}">
+                                    <Button Content="Detail" Command="{Binding ListClickComm,Source={StaticResource Dpcviewobj}}" CommandParameter="{Binding .}"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Timestamp" DisplayMemberBinding="{Binding Time}"/>
+                        <GridViewColumn Header="Level" DisplayMemberBinding="{Binding Level}"/>
+                        <GridViewColumn Header="Message" DisplayMemberBinding="{Binding Message}"/>
+                        <GridViewColumn Header="MethodName" DisplayMemberBinding="{Binding MethodName}"/>
+                        <GridViewColumn Header="ConflictMethodName" DisplayMemberBinding="{Binding ConflictMethodName}"/>
+                    </GridView.Columns>
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </Grid>
+</Window>
+    

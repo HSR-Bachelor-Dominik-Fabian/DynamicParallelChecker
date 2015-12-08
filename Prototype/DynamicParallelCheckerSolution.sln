@@ -5,11 +5,13 @@ VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProgram", "TestProgram\TestProgram.csproj", "{ED85DBE2-6EAC-4971-B787-E4363F2B6FD9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeInstrumentationTest", "CodeInstrumentationTest\CodeInstrumentationTest.csproj", "{3D9399B5-91C2-410C-8A9A-3BC469EEE0CB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeInstrumentation", "CodeInstrumentation\CodeInstrumentation.csproj", "{3D9399B5-91C2-410C-8A9A-3BC469EEE0CB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DPCLibrary", "DPCLibrary\DPCLibrary.csproj", "{BCFFB2EF-58C1-40D3-9344-46E5B95E70F2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DPCLibrary.Tests", "DPCLibrary.Tests\DPCLibrary.Tests.csproj", "{B279DFEF-6CA1-4DAF-87AE-49693FF7DDB8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DPCClient", "DPCClient\DPCClient.csproj", "{CFF5E031-E1E3-4DEC-B7AA-0B265D6A0543}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{B279DFEF-6CA1-4DAF-87AE-49693FF7DDB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B279DFEF-6CA1-4DAF-87AE-49693FF7DDB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B279DFEF-6CA1-4DAF-87AE-49693FF7DDB8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFF5E031-E1E3-4DEC-B7AA-0B265D6A0543}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFF5E031-E1E3-4DEC-B7AA-0B265D6A0543}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFF5E031-E1E3-4DEC-B7AA-0B265D6A0543}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFF5E031-E1E3-4DEC-B7AA-0B265D6A0543}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

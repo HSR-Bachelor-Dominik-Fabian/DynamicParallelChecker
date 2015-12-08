@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+
 // ReSharper disable All
 
 namespace TestProgram
@@ -16,17 +18,17 @@ namespace TestProgram
         private static readonly bool _bool = true;
         private static readonly char _char = 'a';
         private static readonly sbyte _sbyte = 2;
-        private static readonly Int16 _int16 = 23;
-        private static readonly Int32 _int32 = 2342;
-        private static readonly Int64 _int64 = 23429824398247198;
+        private static readonly short _int16 = 23;
+        private static readonly int _int32 = 2342;
+        private static readonly long _int64 = 23429824398247198;
         private static readonly IntPtr _intPtr = new IntPtr(0);
-        private static readonly Byte _byte = 2;
-        private static readonly UInt16 _uint16 = 23;
-        private static readonly UInt32 _uint32 = 2342;
-        private static readonly UInt64 _uint64 = 23984329479832;
+        private static readonly byte _byte = 2;
+        private static readonly ushort _uint16 = 23;
+        private static readonly uint _uint32 = 2342;
+        private static readonly ulong _uint64 = 23984329479832;
         private static readonly UIntPtr _uIntPtr = new UIntPtr(4);
-        private static readonly Single _single = 3F;
-        private static readonly Double _double = 3.2;
+        private static readonly float _single = 3F;
+        private static readonly double _double = 3.2;
         private static TestStruct _testStruct = new TestStruct();
         private static readonly string _string = "Test";
         private static object _arace = 1;
@@ -45,6 +47,8 @@ namespace TestProgram
             Test9();
             Test10();
             Test11();
+            Test12();
+            Test13();
             Console.ReadKey();
         }
 
@@ -229,8 +233,42 @@ namespace TestProgram
             object lockA = new object();
             object b = 1;
             object lockB = new object();
+            object[] test = new object[] {1, 2, 3};
+            object[] test3 = new object[] {1,2,null};
+            TestClass class123 = new TestClass();
+            string[] stringarray = new string[] {"Test", "Test2331", class123.B};
+            object[] test4 = new object[] {new NewObject(123), new Action(()=>Test12())};
+            string test2 = string.Concat(new string[] {"asdf", stringarray[0], "dasddad"});
 
-            Task.Factory.StartNew(() =>
+            object[][] objArray = new object[3][] {new object[3] {new NewObject(123), new Action(() => Test12()), 123 }, new object[3] {"Test", "123", 123}, new object[3] {323, 12332,12333}  };
+
+
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    objArray[i][j] = _uint16;
+                    for (int k = 0; i < 3; i++)
+                    {
+                        objArray[j][k] = _int32;
+                        for (int l = 0; j < 3; j++)
+                        {
+                            objArray[k][l] = _double;
+                            for (int m = 0; i < 3; i++)
+                            {
+                                objArray[l][m] = _single;
+                                for (int n = 0; j < 3; j++)
+                                {
+                                    objArray[m][n] = "123";
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            test4[1] = new Action(()=> {Console.WriteLine("Test");});
+            Task task = Task.Factory.StartNew(() =>
             {
                 lock (lockA)
                 {
@@ -249,6 +287,193 @@ namespace TestProgram
             {
                 b = 2;
             }
+            task.Wait();
+        }
+
+        public static void Test12()
+        {
+            Console.WriteLine("Test12()");
+            object a = 1;
+            object lockA = new object();
+            object b = 1;
+            object lockB = new object();
+            Thread thread1 = new Thread(() =>
+            {
+                a = 2;
+                b = 2;
+            });
+            thread1.Start();
+            thread1.Join();
+            a = 3;
+            b = 2;
+        }
+
+
+        public static void Test13()
+        {
+            Console.WriteLine("Test13()");
+            Console.WriteLine("Task");
+            _a = 4;
+            Task task = new Task(() => { _a = 5; });
+            task.Start();
+            //task.Start(TaskScheduler.Current);
+
+            task.Wait();
+            task.Wait(100);
+            task.Wait(new TimeSpan(0, 0, 1));
+            task.Wait(CancellationToken.None);
+            task.Wait(100, new CancellationToken(true));
+
+            _a = 4;
+            Task task2 = Task.Run(() => { });
+            Task task3 = Task.Run(() => { }, CancellationToken.None);
+
+            Task task4 = Task.Run(() => { return 2; });
+            Task task5 = Task.Run(() => { return 2; }, CancellationToken.None);
+
+            Task task6 = Task.Run(() => { return task; });
+            task6.Wait();
+            Task task7 = Task.Run(() => { return task; }, CancellationToken.None);
+            task7.Wait();
+
+            Task task8 = Task.Run(() => { return new Task<object>(() => { Console.Write("Task.Run() - func"); return _a; }); });
+            Task task9 = Task.Run(() => { return new Task<int>(() => { return 3; }); }, CancellationToken.None);
+
+            Console.WriteLine("Task.Factory");
+
+            Action action = new Action(() => { });
+
+            Task task10 = Task.Factory.StartNew(action);
+
+            task10.ContinueWith((x) => { return x; });
+
+            task10.Wait();
+
+            Task task11 = Task.Factory.StartNew(action, CancellationToken.None);
+
+            Task task12 = Task.Factory.StartNew(action, TaskCreationOptions.None);
+
+            Task task13 = Task.Factory.StartNew(action, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current);
+
+            Func<int> func = new Func<int>(() => { return 3; });
+
+            Task<int> task14 = Task.Factory.StartNew(func);
+
+            Task<int> task15 = Task.Factory.StartNew(func, CancellationToken.None);
+
+            Task<int> task16 = Task.Factory.StartNew(func, TaskCreationOptions.None);
+
+            Task<int> task17 = Task.Factory.StartNew(func, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current);
+
+            Task.WaitAll(new Task[] { task11, task12, task13, task14, task15, task16, task17 });
+
+            Action<object> action2 = new Action<object>((x) => { });
+
+            Task task18 = Task.Factory.StartNew(action2, new object());
+
+            Task task19 = Task.Factory.StartNew(action2, new object(), CancellationToken.None);
+
+            Task task20 = Task.Factory.StartNew(action2, new object(), TaskCreationOptions.None);
+
+            Task task21 = Task.Factory.StartNew(action2, new object(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current);
+
+            Func<object, int> func2 = o => { return 2; };
+
+            Task<int> task22 = Task.Factory.StartNew(func2, new object());
+
+            Task<int> task23 = Task.Factory.StartNew(func2, new object(), CancellationToken.None);
+
+            Task<int> task24 = Task.Factory.StartNew(func2, new object(), TaskCreationOptions.None);
+
+            Task<int> task25 = Task.Factory.StartNew(func2, new object(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current);
+
+            Task.WaitAll(new Task[] { task18, task19, task20, task21, task22, task23, task24, task25 });
+
+            Console.WriteLine("Task.Factory WaitAll/WaitAny");
+
+            Task<double>[] taskArray = { Task<double>.Factory.StartNew(() => DoComputation(1.0)),
+                                     Task<double>.Factory.StartNew(() => DoComputation(100.0)),
+                                     Task<double>.Factory.StartNew(() => DoComputation(1000.0)) };
+
+            Task.WaitAll(taskArray);
+
+            Console.WriteLine("");
+
+            taskArray = new Task<double>[] { Task<double>.Factory.StartNew(() => DoComputation(1.0)),
+                                     Task<double>.Factory.StartNew(() => DoComputation(100.0)),
+                                     Task<double>.Factory.StartNew(() => DoComputation(1000.0)) };
+
+            Task.WaitAny(taskArray);
+
+            Console.WriteLine("Thread.Start / Join");
+
+            Thread thread = new Thread(() => { DoComputation(100.0); });
+
+            thread.Start();
+
+            thread.Join();
+
+            thread = new Thread(() => { DoComputation(100.0); });
+
+            thread.Start();
+
+            thread.Join(100);
+
+            thread = new Thread(() => { DoComputation(100.0); });
+
+            thread.Start();
+
+            thread.Join(new TimeSpan(0, 0, 1));
+
+            Console.WriteLine("Thread.Start / Abort");
+
+            thread = new Thread(() => { DoComputation(100.0); });
+
+            thread.Start();
+
+            thread.Abort();
+
+            Console.WriteLine("Thread.Start / Interrupt");
+
+            thread = new Thread(() => { DoComputation(100.0); });
+
+            thread.Start();
+
+            thread.Interrupt();
+
+            Console.WriteLine("Parallel");
+
+            Parallel.Invoke(() => { DoComputation(10000.0); }, () => { DoComputation(10000.0); });
+
+            Parallel.For(0, 10, (x) => { DoComputation(x); });
+
+            double[] ints = new double[] { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 };
+
+            Parallel.ForEach(ints, (x) => { DoComputation(x); });
+
+        }
+
+        private static double DoComputation(double start)
+        {
+            double sum = 0;
+            for (var value = start; value <= start + 1000; value += .1)
+                sum += value;
+
+            return sum;
+        }
+    }
+
+    class TestClass
+    {
+        private string _b = "Test";
+
+        public string B
+        {
+            get
+            {
+                return _b;
+            }
+            set { _b = value; }
         }
     }
 

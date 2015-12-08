@@ -1,11 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using NLog;
 
 namespace DPCLibrary.Algorithm
 {
     class ThreadVectorHistory:IEnumerable<KeyValuePair<ThreadVectorClock,List<ThreadEvent>>>
     {
+        private readonly Logger _logger = LogManager.GetLogger("ThreadVectorHistory");
         private readonly Dictionary<ThreadVectorClock, List<ThreadEvent>> _dictionary;
 
         public ThreadVectorHistory()
@@ -40,9 +42,11 @@ namespace DPCLibrary.Algorithm
         /// <param name="threadEvent">Event that has to be saved</param>
         public void AddEvent(ThreadVectorClock clock, ThreadEvent threadEvent )
         {
+            _logger.ConditionalTrace("Try to Add Event...");
             List<ThreadEvent> events;
             if (!_dictionary.TryGetValue(clock, out events))
             {
+                _logger.ConditionalTrace("First Event added at clock: " + clock);
                 _dictionary.Add(clock.GetCopy(), new List<ThreadEvent> {threadEvent});
             }
             else
@@ -50,13 +54,18 @@ namespace DPCLibrary.Algorithm
                 ThreadEvent foundEvent = events.SingleOrDefault(x => x.CompareRessource(threadEvent));
                 if (foundEvent != null && foundEvent.ThreadEventType < threadEvent.ThreadEventType)
                 {
+                    _logger.ConditionalTrace("Event updated");
                     foundEvent.ThreadEventType = threadEvent.ThreadEventType;
+                    foundEvent.Row = threadEvent.Row;
+                    foundEvent.MethodName = threadEvent.MethodName;
                 }
                 else if (foundEvent == null)
                 {
+                    _logger.ConditionalTrace("Event added to others at clock: " + clock);
                     events.Add(threadEvent);
                 }
             }
+            _logger.ConditionalTrace("Try to Add Event... Done");
         }
 
         public IEnumerator<KeyValuePair<ThreadVectorClock, List<ThreadEvent>>> GetEnumerator()

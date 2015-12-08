@@ -1,11 +1,12 @@
 ﻿using System.Linq;
-using System.Threading;
+using NLog;
 
 namespace DPCLibrary.Algorithm
 {
     class ThreadVectorInstance
     {
-        public Thread Thread { get; }
+        private readonly Logger _logger = LogManager.GetLogger("ThreadVectorInstance");
+        public string ThreadId { get; }
 
         public int LockRessource { get; set; }
 
@@ -13,17 +14,18 @@ namespace DPCLibrary.Algorithm
 
         private readonly ThreadVectorHistory _threadVectorHistory; 
 
-        public ThreadVectorInstance(Thread thread)
+        public ThreadVectorInstance(string threadId)
         {
-            Thread = thread;
-            VectorClock = new ThreadVectorClock(thread);
+            _logger.ConditionalTrace("New VectorInstance with ThreadId: " + threadId);
+            ThreadId = threadId;
+            VectorClock = new ThreadVectorClock(threadId);
             _threadVectorHistory = new ThreadVectorHistory();
             LockRessource = 0;
         }
 
         public void IncrementClock()
         {
-            VectorClock[Thread] += 1;
+            VectorClock[ThreadId] += 1;
         }
 
         public ThreadVectorHistory GetConcurrentHistory(ThreadVectorClock vectorClock)
@@ -33,6 +35,7 @@ namespace DPCLibrary.Algorithm
 
         public void WriteHistory(ThreadEvent threadEvent)
         {
+            _logger.ConditionalTrace("Write History: " + threadEvent.Ressource + " with Level " + threadEvent.ThreadEventType);
             _threadVectorHistory.AddEvent(VectorClock, threadEvent);
         }
     }
