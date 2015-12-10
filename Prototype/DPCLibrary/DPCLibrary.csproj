@@ -45,7 +45,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithm\LockHistory.cs" />
+    <Compile Include="Algorithm\LockRessource.cs" />
     <Compile Include="Algorithm\ThreadEvent.cs" />
+    <Compile Include="Algorithm\ThreadId.cs" />
     <Compile Include="Algorithm\ThreadVectorClock.cs" />
     <Compile Include="Algorithm\ThreadVectorInstance.cs" />
     <Compile Include="Algorithm\Manager\ThreadVectorManager.cs" />
