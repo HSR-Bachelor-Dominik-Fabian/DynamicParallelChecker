@@ -16,19 +16,21 @@ namespace CodeInstrumentation
     {
         private static Dictionary<string, MethodReference> _methodReferences; 
         private static Dictionary<string, TypeReference> _typeReferences;
+        private static readonly string dpcLibraryPath = @"work\DPCLibrary.dll";
+        private static readonly string dpcLibraryName = "DpcLibrary";
 
         public static void InjectCodeInstrumentation(string fileName)
         {
             _methodReferences = new Dictionary<string, MethodReference>();
             _typeReferences = new Dictionary<string, TypeReference>();
-            ModuleDefinition refModul = ModuleDefinition.ReadModule(@"work\DPCLibrary.dll");
-            TypeDefinition typeDefinition = refModul.Types.First(x => x.Name == "DpcLibrary");
-            ModuleDefinition module = ModuleDefinition.ReadModule(fileName);
+            var refModul = ModuleDefinition.ReadModule(dpcLibraryPath);
+            var typeDefinition = refModul.Types.First(x => x.Name == dpcLibraryName);
+            var module = ModuleDefinition.ReadModule(fileName);
             ImportAllPublicMethods(typeDefinition, module);
 
             ImportAllTypes(module);
             
-            foreach (TypeDefinition type in module.Types)
+            foreach (var type in module.Types)
             {
                 InstrumentateType(type, module);
             }
@@ -40,174 +42,45 @@ namespace CodeInstrumentation
         {
             if (type.HasNestedTypes)
             {
-                foreach (TypeDefinition nestedType in type.NestedTypes)
+                foreach (var nestedType in type.NestedTypes)
                 {
                     InstrumentateType(nestedType, module);
                 }
             }
             if (type.HasMethods)
             {
-                foreach (MethodDefinition method in type.Methods.Where(method => method.Body != null))
+                foreach (var method in type.Methods.Where(method => method.Body != null))
                 {
                     method.Body.SimplifyMacros(); // convert every br.s (short branch) to a normal branch
-                    Dictionary<string, VariableDefinition> variableDefinitions = AddAllVariablesToMethod(method);
+                    var variableDefinitions = AddAllVariablesToMethod(method);
 
-                    ArrayList tempList = new ArrayList(method.Body.Instructions.ToList());
+                    var tempList = new ArrayList(method.Body.Instructions.ToList());
                     foreach (Instruction ins in tempList)
                     {
                         var processor = method.Body.GetILProcessor();
                         if (ins.OpCode.Equals(OpCodes.Ldsfld))
                         {
-                            FieldReference fieldDefinition = (FieldReference)ins.Operand;
-
-                            TypeReference fieldType = fieldDefinition.FieldType;
-                            if (fieldType.IsPrimitive ||
-                                (fieldType.IsDefinition && ((TypeDefinition)fieldType).IsValueType))
-                            {
-                                var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
-                                var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
-                                var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
-                                var readAccessLibraryCall = processor.Create(OpCodes.Call, _methodReferences["ReadAccess"]);
-                                processor.InsertAfter(ins, loadAddressInstruction);
-                                processor.InsertAfter(loadAddressInstruction, constLoad);
-                                processor.InsertAfter(constLoad, methodLoad);
-                                processor.InsertAfter(methodLoad, readAccessLibraryCall);
-                            }
-                            else if (!fieldType.IsPrimitive && !fieldType.IsValueType)
-                            {
-                                var dupInstruction = processor.Create(OpCodes.Dup);
-                                var readAccessLibraryCall = processor.Create(OpCodes.Call, _methodReferences["ReadAccess"]);
-                                var readAccessLibraryCall2 = processor.Create(OpCodes.Call, _methodReferences["ReadAccess"]);
-                                var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
-                                var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
-                                var constLoad2 = processor.Create(OpCodes.Ldc_I4, ins.Offset);
-                                var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
-                                var methodLoad2 = processor.Create(OpCodes.Ldstr, method.FullName);
-                                processor.InsertAfter(ins, dupInstruction);
-                                processor.InsertAfter(dupInstruction, constLoad);
-                                processor.InsertAfter(constLoad, methodLoad);
-                                processor.InsertAfter(methodLoad, readAccessLibraryCall);
-                                processor.InsertAfter(readAccessLibraryCall, loadAddressInstruction);
-                                processor.InsertAfter(loadAddressInstruction, constLoad2);
-                                processor.InsertAfter(constLoad2, methodLoad2);
-                                processor.InsertAfter(methodLoad2, readAccessLibraryCall2);
-                            }
+                            InstrumentateLdsfld(ins, processor, method);
                         }
                         else if (ins.OpCode.Equals(OpCodes.Initobj))
                         {
-                            TypeReference fieldType = (TypeReference)ins.Operand;
-                            if (fieldType.IsDefinition && ((TypeDefinition)fieldType).IsValueType)
-                            {
-                                var dupInstruction = processor.Create(OpCodes.Dup);
-                                var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
-                                var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
-                                var writeAccessLibraryCall = processor.Create(OpCodes.Call, _methodReferences["WriteAccess"]);
-                                processor.InsertBefore(ins, writeAccessLibraryCall);
-                                processor.InsertBefore(writeAccessLibraryCall, methodLoad);
-                                processor.InsertBefore(methodLoad, constLoad);
-                                processor.InsertBefore(constLoad, dupInstruction);
-                            }
+                            InstrumentateInitobj(ins, processor, method);
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stsfld))
                         {
-                            FieldReference fieldDefinition = (FieldReference)ins.Operand;
-                            var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
-                            var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
-                            var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
-                            var writeAccessLibraryCall = processor.Create(OpCodes.Call,
-                                _methodReferences["WriteAccess"]);
-                            processor.InsertBefore(ins, writeAccessLibraryCall);
-                            processor.InsertBefore(writeAccessLibraryCall, methodLoad);
-                            processor.InsertBefore(methodLoad, constLoad);
-                            processor.InsertBefore(constLoad, loadAddressInstruction);
+                            InstrumentateStsfld(ins, processor, method);
                         }
                         else if (ins.OpCode.Equals(OpCodes.Ldfld))
                         {
-                            FieldDefinition fieldDefinition = (FieldDefinition)ins.Operand;
-                            TypeReference fieldType = fieldDefinition.FieldType;
-                            if (fieldType.IsPrimitive ||
-                                (fieldType.IsDefinition && ((TypeDefinition)fieldType).IsValueType))
-                            {
-                                var dupInstruction = processor.Create(OpCodes.Dup);
-                                var loadAddressInstruction = processor.Create(OpCodes.Ldflda, fieldDefinition);
-                                var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
-                                var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
-                                var readAccessLibraryCall = processor.Create(OpCodes.Call,
-                                    _methodReferences["ReadAccess"]);
-                                processor.InsertBefore(ins, readAccessLibraryCall);
-                                processor.InsertBefore(readAccessLibraryCall, methodLoad);
-                                processor.InsertBefore(methodLoad, constLoad);
-                                processor.InsertBefore(constLoad, loadAddressInstruction);
-                                processor.InsertBefore(loadAddressInstruction, dupInstruction);
-                            }
-                            else if (!fieldType.IsPrimitive && !fieldType.IsValueType)
-                            {
-                                var dupInstruction = processor.Create(OpCodes.Dup);
-                                var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
-                                var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
-                                var readAccessLibraryCall = processor.Create(OpCodes.Call,
-                                    _methodReferences["ReadAccess"]);
-                                processor.InsertBefore(ins, readAccessLibraryCall);
-                                processor.InsertBefore(readAccessLibraryCall, methodLoad);
-                                processor.InsertBefore(methodLoad, constLoad);
-                                processor.InsertBefore(constLoad, dupInstruction);
-                            }
+                            InstrumentateLdfld(ins, processor, method);
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stfld))
                         {
-                            FieldDefinition fieldDefinition = (FieldDefinition)ins.Operand;
-                            VariableDefinition varDefinition;
-
-                            if (fieldDefinition.FieldType.Equals(_typeReferences["int8"]))
-                            {
-                                varDefinition = variableDefinitions["int8"];
-                            }
-                            else if (fieldDefinition.FieldType.Equals(_typeReferences["int16"]))
-                            {
-                                varDefinition = variableDefinitions["int16"];
-                            }
-                            else if (fieldDefinition.FieldType.Equals(_typeReferences["int32"]))
-                            {
-                                varDefinition = variableDefinitions["firstint32"];
-                            }
-                            else if (fieldDefinition.FieldType.Equals(_typeReferences["int64"]))
-                            {
-                                varDefinition = variableDefinitions["int64"];
-                            }
-                            else if (fieldDefinition.FieldType.Equals(_typeReferences["float32"]))
-                            {
-                                varDefinition = variableDefinitions["float32"];
-                            }
-                            else if (fieldDefinition.FieldType.Equals(_typeReferences["float64"]))
-                            {
-                                varDefinition = variableDefinitions["float64"];
-                            }
-                            else
-                            {
-                                varDefinition = new VariableDefinition(fieldDefinition.FieldType);
-                                method.Body.Variables.Add(varDefinition);
-                            }
-                            var storeLocalInstrution = processor.Create(OpCodes.Stloc, varDefinition);
-                            var dupInstruction = processor.Create(OpCodes.Dup);
-                            var loadAddressInstruction = processor.Create(OpCodes.Ldflda, fieldDefinition);
-                            var writeAccessLibraryCall = processor.Create(OpCodes.Call,
-                                _methodReferences["WriteAccess"]);
-                            var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
-                            var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
-                            var loadLocaleInstrucion = processor.Create(OpCodes.Ldloc, varDefinition);
-
-
-                            processor.InsertBefore(ins, loadLocaleInstrucion);
-                            processor.InsertBefore(loadLocaleInstrucion, writeAccessLibraryCall);
-                            processor.InsertBefore(writeAccessLibraryCall, methodLoad);
-                            processor.InsertBefore(methodLoad, constLoad);
-                            processor.InsertBefore(constLoad, loadAddressInstruction);
-                            processor.InsertBefore(loadAddressInstruction, dupInstruction);
-                            processor.InsertBefore(dupInstruction, storeLocalInstrution);
+                            InstrumentateStfld(ins, variableDefinitions, method, processor);
                         }
                         else if (ins.OpCode.Equals(OpCodes.Ldelem_Any))
                         {
-                            TypeReference arrayTypeReference = (TypeReference)ins.Operand;
+                            var arrayTypeReference = (TypeReference)ins.Operand;
                             InjectArrayLdElement(variableDefinitions["firstint32"], arrayTypeReference, method,
                                 _methodReferences["ReadAccess"], ins);
                         }
@@ -237,38 +110,8 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stelem_Any))
                         {
-                            TypeReference valueTypeReference = (TypeReference)ins.Operand;
                             VariableDefinition varDefinition;
-
-                            if (valueTypeReference.Equals(_typeReferences["int8"]))
-                            {
-                                varDefinition = variableDefinitions["int8"];
-                            }
-                            else if (valueTypeReference.Equals(_typeReferences["int16"]))
-                            {
-                                varDefinition = variableDefinitions["int16"];
-                            }
-                            else if (valueTypeReference.Equals(_typeReferences["int32"]))
-                            {
-                                varDefinition = variableDefinitions["firstint32"];
-                            }
-                            else if (valueTypeReference.Equals(_typeReferences["int64"]))
-                            {
-                                varDefinition = variableDefinitions["int64"];
-                            }
-                            else if (valueTypeReference.Equals(_typeReferences["float32"]))
-                            {
-                                varDefinition = variableDefinitions["float32"];
-                            }
-                            else if (valueTypeReference.Equals(_typeReferences["float64"]))
-                            {
-                                varDefinition = variableDefinitions["float64"];
-                            }
-                            else
-                            {
-                                varDefinition = new VariableDefinition(valueTypeReference);
-                                method.Body.Variables.Add(varDefinition);
-                            }
+                            var valueTypeReference = GetValueTypeReference(ins, variableDefinitions, method, out varDefinition);
                             InjectStrElement(varDefinition, variableDefinitions["secondint32"], valueTypeReference,
                                 method, _methodReferences["WriteAccess"], ins);
                         }
@@ -301,292 +144,500 @@ namespace CodeInstrumentation
                         }
                         if (ins.OpCode.Equals(OpCodes.Call))
                         {
-                            MethodReference reference = (MethodReference)ins.Operand;
-                            
-                            string monitorEnterFullName =
-                                "System.Void System.Threading.Monitor::Enter(System.Object,System.Boolean&)";
-                            string monitorExitFullName =
-                                "System.Void System.Threading.Monitor::Exit(System.Object)";
-
-                            if (monitorEnterFullName.Equals(reference.FullName))
-                            {
-                                var dupInstruction = processor.Create(OpCodes.Dup);
-                                var storeTempInstruction = processor.Create(OpCodes.Stloc,
-                                    variableDefinitions["firstint32"]);
-                                var loadTempInstruction = processor.Create(OpCodes.Ldloc,
-                                    variableDefinitions["firstint32"]);
-                                var lockObjectLibraryCall = processor.Create(OpCodes.Call,
-                                    _methodReferences["LockObject"]);
-
-                                processor.InsertBefore(ins, loadTempInstruction);
-                                processor.InsertBefore(loadTempInstruction, lockObjectLibraryCall);
-                                processor.InsertBefore(lockObjectLibraryCall, dupInstruction);
-                                processor.InsertBefore(dupInstruction, storeTempInstruction);
-                            }
-                            else if (monitorExitFullName.Equals(reference.FullName))
-                            {
-                                var dupInstruction = processor.Create(OpCodes.Dup);
-                                var unlockObjectLibraryCall = processor.Create(OpCodes.Call,
-                                    _methodReferences["UnLockObject"]);
-
-                                processor.InsertBefore(ins, unlockObjectLibraryCall);
-                                processor.InsertBefore(unlockObjectLibraryCall, dupInstruction);
-                            }
-                            else if (reference.FullName.Contains("System.Threading.Tasks.Task::Run"))
-                            {
-                                if (reference.Parameters[0].ParameterType.FullName.Equals("System.Action"))
-                                {
-                                    if (reference.Parameters.Count == 1)
-                                    {
-                                        ins.Operand = _methodReferences["RunTask"];
-                                    }
-                                    else if (reference.Parameters.Count == 2)
-                                    {
-                                        ins.Operand = _methodReferences["RunTaskCancel"];
-                                    }
-                                }
-                                else if (reference.Parameters[0].ParameterType.FullName.Equals("System.Func`1<!!0>"))
-                                {
-                                    MethodReference methodReference = (MethodReference) ins.Operand;
-                                    GenericInstanceMethod genericMethod = (GenericInstanceMethod) methodReference;
-                                    TypeReference genericArgument = genericMethod.GenericArguments[0];
-                                    if (reference.Parameters.Count == 1)
-                                    {
-                                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["RunTaskTResult"]);
-                                        newGenericMethod.GenericArguments.Add(genericArgument);
-                                        ins.Operand = newGenericMethod;
-                                    }
-                                    else if (reference.Parameters.Count == 2)
-                                    {
-                                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["RunTaskTResultCancel"]);
-                                        newGenericMethod.GenericArguments.Add(genericArgument);
-                                        ins.Operand = newGenericMethod;
-                                    }
-                                }
-                                else if (reference.Parameters[0].ParameterType.FullName.Equals("System.Func`1<System.Threading.Tasks.Task>"))
-                                {
-                                    if (reference.Parameters.Count == 1)
-                                    {
-                                        ins.Operand = _methodReferences["RunTaskFunc"];
-                                    }
-                                    else if (reference.Parameters.Count == 2)
-                                    {
-                                        ins.Operand = _methodReferences["RunTaskFuncCancel"];
-                                    }
-                                }
-                                else if (reference.Parameters[0].ParameterType.FullName.Equals("System.Func`1<System.Threading.Tasks.Task`1<!!0>>"))
-                                {
-                                    MethodReference methodReference = (MethodReference)ins.Operand;
-                                    GenericInstanceMethod genericMethod = (GenericInstanceMethod)methodReference;
-                                    TypeReference genericArgument = genericMethod.GenericArguments[0];
-                                    if (reference.Parameters.Count == 1)
-                                    {
-                                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["RunTaskTaskTResult"]);
-                                        newGenericMethod.GenericArguments.Add(genericArgument);
-                                        ins.Operand = newGenericMethod;
-                                    }
-                                    else if (reference.Parameters.Count == 2)
-                                    {
-                                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["RunTaskTaskTResultCancel"]);
-                                        newGenericMethod.GenericArguments.Add(genericArgument);
-                                        ins.Operand = newGenericMethod;
-                                    }
-                                }
-                            }
+                            InstrumentateCall(ins, processor, variableDefinitions);
                         }
                         else if (ins.OpCode.Equals(OpCodes.Callvirt))
                         {
-                            MethodReference reference = (MethodReference)ins.Operand;
-                            if (reference.FullName.Contains("System.Void System.Threading.Thread::Start"))
-                            {
-                                if (!reference.HasParameters)
-                                {
-                                    var ldNull = processor.Create(OpCodes.Ldnull);
-                                    processor.InsertBefore(ins, ldNull);
-                                }
-                                ins.OpCode = OpCodes.Call;
-                                ins.Operand = _methodReferences["StartThread"];
-                            }
-                            else if (reference.FullName.Contains("System.Void System.Threading.Thread::Join"))
-                            {
-                                ins.OpCode = OpCodes.Call;
-                                ins.Operand = _methodReferences["JoinThread"];
-                            }
-                            else if (reference.FullName.Contains("System.Boolean System.Threading.Thread::Join"))
-                            {
-                                ins.OpCode = OpCodes.Call;
-                                ins.Operand = reference.Parameters[0].ParameterType.IsPrimitive 
-                                    ? _methodReferences["JoinThreadMilliseconds"] 
-                                    : _methodReferences["JoinThreadTimeout"];
-                            }
-                            else if (reference.FullName.Contains("System.Void System.Threading.Tasks.Task::Start"))
-                            {
-                                if (!reference.HasParameters)
-                                {
-                                    var ldNull = processor.Create(OpCodes.Ldnull);
-                                    processor.InsertBefore(ins, ldNull);
-                                }
-                                ins.OpCode = OpCodes.Call;
-                                ins.Operand = _methodReferences["StartTask"];
-                            }
-                            else if (reference.FullName.Contains("System.Void System.Threading.Tasks.Task::Wait"))
-                            {
-                                ins.OpCode = OpCodes.Call;
-                                ins.Operand = !reference.HasParameters
-                                    ? _methodReferences["TaskWait"]
-                                    : _methodReferences["TaskWaitCancelToken"];
-                            }
-                            else if (reference.FullName.Contains("System.Boolean System.Threading.Tasks.Task::Wait"))
-                            {
-                                if (reference.Parameters.Count == 1 && reference.Parameters[0].ParameterType.IsPrimitive)
-                                {
-                                    ins.OpCode = OpCodes.Call;
-                                    ins.Operand = _methodReferences["TaskWaitTimeout"];
-                                }
-                                else if (reference.Parameters.Count == 2)
-                                {
-                                    ins.OpCode = OpCodes.Call;
-                                    ins.Operand = _methodReferences["TaskWaitTimeOutCancelToken"];
-                                }
-                                else
-                                {
-                                    ins.OpCode = OpCodes.Call;
-                                    ins.Operand = _methodReferences["TaskWaitTimespan"];
-                                }
-                            }
-                            else if (reference.FullName.Contains("System.Threading.Tasks.Task System.Threading.Tasks.TaskFactory::StartNew"))
-                            {
-                                if (reference.Parameters.Count > 0 && reference.Parameters[0].ParameterType.FullName.Equals("System.Action"))
-                                {
-                                    if (reference.Parameters.Count >= 2 &&
-                                        reference.Parameters[1].ParameterType.FullName.Equals(
-                                            "System.Threading.CancellationToken"))
-                                    {
-                                        ins.OpCode = OpCodes.Call;
-                                        ins.Operand = _methodReferences["StartNewCancel"];
-                                        if (reference.Parameters.Count == 2)
-                                        {
-                                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
-                                            var ldNull = processor.Create(OpCodes.Ldnull);
-                                            processor.InsertBefore(ins, ldNull);
-                                            processor.InsertBefore(ldNull, ldZero);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        ins.OpCode = OpCodes.Call;
-                                        ins.Operand = _methodReferences["StartNew"];
-                                        if (reference.Parameters.Count == 1)
-                                        {
-
-                                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
-                                            processor.InsertBefore(ins, ldZero);
-                                        }
-                                    }
-                                } else if (reference.Parameters.Count > 0 &&
-                                           reference.Parameters[0].ParameterType.FullName.Equals("System.Action`1<System.Object>"))
-                                {
-                                    if (reference.Parameters.Count > 2 &&
-                                        reference.Parameters[2].ParameterType.FullName.Equals(
-                                            "System.Threading.CancellationToken"))
-                                    {
-                                        ins.OpCode = OpCodes.Call;
-                                        ins.Operand = _methodReferences["StartNewObjectCancel"];
-                                        if (reference.Parameters.Count == 3)
-                                        {
-                                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
-                                            var ldNull = processor.Create(OpCodes.Ldnull);
-                                            processor.InsertBefore(ins, ldNull);
-                                            processor.InsertBefore(ldNull, ldZero);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        ins.OpCode = OpCodes.Call;
-                                        ins.Operand = _methodReferences["StartNewObject"];
-                                        if (reference.Parameters.Count == 2)
-                                        {
-                                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
-                                            processor.InsertBefore(ins, ldZero);
-                                        }
-                                    }
-                                }
-                                PopTaskFactory(module, method, ins, processor, variableDefinitions, false);
-                            }
-                            else if (reference.FullName.Contains("System.Threading.Tasks.Task`1<!!0> System.Threading.Tasks.TaskFactory::StartNew"))
-                            {
-                                MethodReference methodReference = (MethodReference)ins.Operand;
-                                GenericInstanceMethod genericMethod = (GenericInstanceMethod)methodReference;
-                                TypeReference genericArgument = genericMethod.GenericArguments[0];
-                                if (reference.Parameters.Count > 0 && reference.Parameters[0].ParameterType.FullName.Equals("System.Func`1<!!0>"))
-                                {
-                                    if (reference.Parameters.Count >= 2 &&
-                                    reference.Parameters[1].ParameterType.FullName.Equals(
-                                        "System.Threading.CancellationToken"))
-                                    {
-                                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["StartNewTResultCancel"]);
-                                        newGenericMethod.GenericArguments.Add(genericArgument);
-                                        ins.OpCode = OpCodes.Call;
-                                        ins.Operand = newGenericMethod;
-                                        if (reference.Parameters.Count == 2)
-                                        {
-                                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
-                                            var ldNull = processor.Create(OpCodes.Ldnull);
-                                            processor.InsertBefore(ins, ldNull);
-                                            processor.InsertBefore(ldNull, ldZero);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["StartNewTResult"]);
-                                        newGenericMethod.GenericArguments.Add(genericArgument);
-                                        ins.OpCode = OpCodes.Call;
-                                        ins.Operand = newGenericMethod;
-                                        if (reference.Parameters.Count == 1)
-                                        {
-                                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
-                                            processor.InsertBefore(ins, ldZero);
-                                        }
-                                    }
-                                }
-                                else if (reference.Parameters.Count > 0 &&
-                                         reference.Parameters[0].ParameterType.FullName.Equals("System.Func`2<System.Object,!!0>"))
-                                {
-                                    if (reference.Parameters.Count > 2 &&
-                                        reference.Parameters[2].ParameterType.FullName.Equals(
-                                            "System.Threading.CancellationToken"))
-                                    {
-                                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["StartNewObjectTResultCancel"]);
-                                        newGenericMethod.GenericArguments.Add(genericArgument);
-                                        ins.OpCode = OpCodes.Call;
-                                        ins.Operand = newGenericMethod;
-                                        if (reference.Parameters.Count == 3)
-                                        {
-                                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
-                                            var ldNull = processor.Create(OpCodes.Ldnull);
-                                            processor.InsertBefore(ins, ldNull);
-                                            processor.InsertBefore(ldNull, ldZero);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["StartNewObjectTResult"]);
-                                        newGenericMethod.GenericArguments.Add(genericArgument);
-                                        ins.OpCode = OpCodes.Call;
-                                        ins.Operand = newGenericMethod;
-                                        if (reference.Parameters.Count == 2)
-                                        {
-                                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
-                                            processor.InsertBefore(ins, ldZero);
-                                        }
-                                    }
-                                }
-                                PopTaskFactory(module, method, ins, processor, variableDefinitions, true);
-                            }
+                            InstrumentateCallvirt(module, ins, processor, method, variableDefinitions);
                         }
                     }
                     method.Body.OptimizeMacros(); // Convert the normal branches back to short branches if possible
                 }
+            }
+        }
+
+        private static void InstrumentateCallvirt(ModuleDefinition module, Instruction ins, ILProcessor processor,
+            MethodDefinition method, Dictionary<string, VariableDefinition> variableDefinitions)
+        {
+            var reference = (MethodReference) ins.Operand;
+            if (reference.FullName.Contains("System.Void System.Threading.Thread::Start"))
+            {
+                if (!reference.HasParameters)
+                {
+                    var ldNull = processor.Create(OpCodes.Ldnull);
+                    processor.InsertBefore(ins, ldNull);
+                }
+                ins.OpCode = OpCodes.Call;
+                ins.Operand = _methodReferences["StartThread"];
+            }
+            else if (reference.FullName.Contains("System.Void System.Threading.Thread::Join"))
+            {
+                ins.OpCode = OpCodes.Call;
+                ins.Operand = _methodReferences["JoinThread"];
+            }
+            else if (reference.FullName.Contains("System.Boolean System.Threading.Thread::Join"))
+            {
+                ins.OpCode = OpCodes.Call;
+                ins.Operand = reference.Parameters[0].ParameterType.IsPrimitive
+                    ? _methodReferences["JoinThreadMilliseconds"]
+                    : _methodReferences["JoinThreadTimeout"];
+            }
+            else if (reference.FullName.Contains("System.Void System.Threading.Tasks.Task::Start"))
+            {
+                if (!reference.HasParameters)
+                {
+                    var ldNull = processor.Create(OpCodes.Ldnull);
+                    processor.InsertBefore(ins, ldNull);
+                }
+                ins.OpCode = OpCodes.Call;
+                ins.Operand = _methodReferences["StartTask"];
+            }
+            else if (reference.FullName.Contains("System.Void System.Threading.Tasks.Task::Wait"))
+            {
+                ins.OpCode = OpCodes.Call;
+                ins.Operand = !reference.HasParameters
+                    ? _methodReferences["TaskWait"]
+                    : _methodReferences["TaskWaitCancelToken"];
+            }
+            else if (reference.FullName.Contains("System.Boolean System.Threading.Tasks.Task::Wait"))
+            {
+                if (reference.Parameters.Count == 1 && reference.Parameters[0].ParameterType.IsPrimitive)
+                {
+                    ins.OpCode = OpCodes.Call;
+                    ins.Operand = _methodReferences["TaskWaitTimeout"];
+                }
+                else if (reference.Parameters.Count == 2)
+                {
+                    ins.OpCode = OpCodes.Call;
+                    ins.Operand = _methodReferences["TaskWaitTimeOutCancelToken"];
+                }
+                else
+                {
+                    ins.OpCode = OpCodes.Call;
+                    ins.Operand = _methodReferences["TaskWaitTimespan"];
+                }
+            }
+            else if (reference.FullName.Contains("System.Threading.Tasks.Task System.Threading.Tasks.TaskFactory::StartNew"))
+            {
+                if (reference.Parameters.Count > 0 && reference.Parameters[0].ParameterType.FullName.Equals("System.Action"))
+                {
+                    if (reference.Parameters.Count >= 2 &&
+                        reference.Parameters[1].ParameterType.FullName.Equals(
+                            "System.Threading.CancellationToken"))
+                    {
+                        ins.OpCode = OpCodes.Call;
+                        ins.Operand = _methodReferences["StartNewCancel"];
+                        if (reference.Parameters.Count == 2)
+                        {
+                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
+                            var ldNull = processor.Create(OpCodes.Ldnull);
+                            processor.InsertBefore(ins, ldNull);
+                            processor.InsertBefore(ldNull, ldZero);
+                        }
+                    }
+                    else
+                    {
+                        ins.OpCode = OpCodes.Call;
+                        ins.Operand = _methodReferences["StartNew"];
+                        if (reference.Parameters.Count == 1)
+                        {
+                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
+                            processor.InsertBefore(ins, ldZero);
+                        }
+                    }
+                }
+                else if (reference.Parameters.Count > 0 &&
+                         reference.Parameters[0].ParameterType.FullName.Equals("System.Action`1<System.Object>"))
+                {
+                    if (reference.Parameters.Count > 2 &&
+                        reference.Parameters[2].ParameterType.FullName.Equals(
+                            "System.Threading.CancellationToken"))
+                    {
+                        ins.OpCode = OpCodes.Call;
+                        ins.Operand = _methodReferences["StartNewObjectCancel"];
+                        if (reference.Parameters.Count == 3)
+                        {
+                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
+                            var ldNull = processor.Create(OpCodes.Ldnull);
+                            processor.InsertBefore(ins, ldNull);
+                            processor.InsertBefore(ldNull, ldZero);
+                        }
+                    }
+                    else
+                    {
+                        ins.OpCode = OpCodes.Call;
+                        ins.Operand = _methodReferences["StartNewObject"];
+                        if (reference.Parameters.Count == 2)
+                        {
+                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
+                            processor.InsertBefore(ins, ldZero);
+                        }
+                    }
+                }
+                PopTaskFactory(module, method, ins, processor, variableDefinitions, false);
+            }
+            else if (
+                reference.FullName.Contains(
+                    "System.Threading.Tasks.Task`1<!!0> System.Threading.Tasks.TaskFactory::StartNew"))
+            {
+                var methodReference = (MethodReference) ins.Operand;
+                var genericMethod = (GenericInstanceMethod) methodReference;
+                var genericArgument = genericMethod.GenericArguments[0];
+                if (reference.Parameters.Count > 0 &&
+                    reference.Parameters[0].ParameterType.FullName.Equals("System.Func`1<!!0>"))
+                {
+                    if (reference.Parameters.Count >= 2 &&
+                        reference.Parameters[1].ParameterType.FullName.Equals(
+                            "System.Threading.CancellationToken"))
+                    {
+                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["StartNewTResultCancel"]);
+                        newGenericMethod.GenericArguments.Add(genericArgument);
+                        ins.OpCode = OpCodes.Call;
+                        ins.Operand = newGenericMethod;
+                        if (reference.Parameters.Count == 2)
+                        {
+                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
+                            var ldNull = processor.Create(OpCodes.Ldnull);
+                            processor.InsertBefore(ins, ldNull);
+                            processor.InsertBefore(ldNull, ldZero);
+                        }
+                    }
+                    else
+                    {
+                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["StartNewTResult"]);
+                        newGenericMethod.GenericArguments.Add(genericArgument);
+                        ins.OpCode = OpCodes.Call;
+                        ins.Operand = newGenericMethod;
+                        if (reference.Parameters.Count == 1)
+                        {
+                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
+                            processor.InsertBefore(ins, ldZero);
+                        }
+                    }
+                }
+                else if (reference.Parameters.Count > 0 &&
+                         reference.Parameters[0].ParameterType.FullName.Equals("System.Func`2<System.Object,!!0>"))
+                {
+                    if (reference.Parameters.Count > 2 &&
+                        reference.Parameters[2].ParameterType.FullName.Equals(
+                            "System.Threading.CancellationToken"))
+                    {
+                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["StartNewObjectTResultCancel"]);
+                        newGenericMethod.GenericArguments.Add(genericArgument);
+                        ins.OpCode = OpCodes.Call;
+                        ins.Operand = newGenericMethod;
+                        if (reference.Parameters.Count == 3)
+                        {
+                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
+                            var ldNull = processor.Create(OpCodes.Ldnull);
+                            processor.InsertBefore(ins, ldNull);
+                            processor.InsertBefore(ldNull, ldZero);
+                        }
+                    }
+                    else
+                    {
+                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["StartNewObjectTResult"]);
+                        newGenericMethod.GenericArguments.Add(genericArgument);
+                        ins.OpCode = OpCodes.Call;
+                        ins.Operand = newGenericMethod;
+                        if (reference.Parameters.Count == 2)
+                        {
+                            var ldZero = processor.Create(OpCodes.Ldc_I4_0);
+                            processor.InsertBefore(ins, ldZero);
+                        }
+                    }
+                }
+                PopTaskFactory(module, method, ins, processor, variableDefinitions, true);
+            }
+        }
+
+        private static void InstrumentateCall(Instruction ins, ILProcessor processor, Dictionary<string, VariableDefinition> variableDefinitions)
+        {
+            var reference = (MethodReference) ins.Operand;
+
+            var monitorEnterFullName =
+                "System.Void System.Threading.Monitor::Enter(System.Object,System.Boolean&)";
+            var monitorExitFullName =
+                "System.Void System.Threading.Monitor::Exit(System.Object)";
+
+            if (monitorEnterFullName.Equals(reference.FullName))
+            {
+                var dupInstruction = processor.Create(OpCodes.Dup);
+                var storeTempInstruction = processor.Create(OpCodes.Stloc,
+                    variableDefinitions["firstint32"]);
+                var loadTempInstruction = processor.Create(OpCodes.Ldloc,
+                    variableDefinitions["firstint32"]);
+                var lockObjectLibraryCall = processor.Create(OpCodes.Call,
+                    _methodReferences["LockObject"]);
+
+                processor.InsertBefore(ins, loadTempInstruction);
+                processor.InsertBefore(loadTempInstruction, lockObjectLibraryCall);
+                processor.InsertBefore(lockObjectLibraryCall, dupInstruction);
+                processor.InsertBefore(dupInstruction, storeTempInstruction);
+            }
+            else if (monitorExitFullName.Equals(reference.FullName))
+            {
+                var dupInstruction = processor.Create(OpCodes.Dup);
+                var unlockObjectLibraryCall = processor.Create(OpCodes.Call,
+                    _methodReferences["UnLockObject"]);
+
+                processor.InsertBefore(ins, unlockObjectLibraryCall);
+                processor.InsertBefore(unlockObjectLibraryCall, dupInstruction);
+            }
+            else if (reference.FullName.Contains("System.Threading.Tasks.Task::Run"))
+            {
+                if (reference.Parameters[0].ParameterType.FullName.Equals("System.Action"))
+                {
+                    if (reference.Parameters.Count == 1)
+                    {
+                        ins.Operand = _methodReferences["RunTask"];
+                    }
+                    else if (reference.Parameters.Count == 2)
+                    {
+                        ins.Operand = _methodReferences["RunTaskCancel"];
+                    }
+                }
+                else if (reference.Parameters[0].ParameterType.FullName.Equals("System.Func`1<!!0>"))
+                {
+                    var methodReference = (MethodReference) ins.Operand;
+                    var genericMethod = (GenericInstanceMethod) methodReference;
+                    var genericArgument = genericMethod.GenericArguments[0];
+                    if (reference.Parameters.Count == 1)
+                    {
+                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["RunTaskTResult"]);
+                        newGenericMethod.GenericArguments.Add(genericArgument);
+                        ins.Operand = newGenericMethod;
+                    }
+                    else if (reference.Parameters.Count == 2)
+                    {
+                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["RunTaskTResultCancel"]);
+                        newGenericMethod.GenericArguments.Add(genericArgument);
+                        ins.Operand = newGenericMethod;
+                    }
+                }
+                else if (reference.Parameters[0].ParameterType.FullName.Equals("System.Func`1<System.Threading.Tasks.Task>"))
+                {
+                    if (reference.Parameters.Count == 1)
+                    {
+                        ins.Operand = _methodReferences["RunTaskFunc"];
+                    }
+                    else if (reference.Parameters.Count == 2)
+                    {
+                        ins.Operand = _methodReferences["RunTaskFuncCancel"];
+                    }
+                }
+                else if (
+                    reference.Parameters[0].ParameterType.FullName.Equals(
+                        "System.Func`1<System.Threading.Tasks.Task`1<!!0>>"))
+                {
+                    var methodReference = (MethodReference) ins.Operand;
+                    var genericMethod = (GenericInstanceMethod) methodReference;
+                    var genericArgument = genericMethod.GenericArguments[0];
+                    if (reference.Parameters.Count == 1)
+                    {
+                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["RunTaskTaskTResult"]);
+                        newGenericMethod.GenericArguments.Add(genericArgument);
+                        ins.Operand = newGenericMethod;
+                    }
+                    else if (reference.Parameters.Count == 2)
+                    {
+                        var newGenericMethod = new GenericInstanceMethod(_methodReferences["RunTaskTaskTResultCancel"]);
+                        newGenericMethod.GenericArguments.Add(genericArgument);
+                        ins.Operand = newGenericMethod;
+                    }
+                }
+            }
+        }
+
+        private static TypeReference GetValueTypeReference(Instruction ins, Dictionary<string, VariableDefinition> variableDefinitions,
+            MethodDefinition method, out VariableDefinition varDefinition)
+        {
+            var valueTypeReference = (TypeReference) ins.Operand;
+
+            if (valueTypeReference.Equals(_typeReferences["int8"]))
+            {
+                varDefinition = variableDefinitions["int8"];
+            }
+            else if (valueTypeReference.Equals(_typeReferences["int16"]))
+            {
+                varDefinition = variableDefinitions["int16"];
+            }
+            else if (valueTypeReference.Equals(_typeReferences["int32"]))
+            {
+                varDefinition = variableDefinitions["firstint32"];
+            }
+            else if (valueTypeReference.Equals(_typeReferences["int64"]))
+            {
+                varDefinition = variableDefinitions["int64"];
+            }
+            else if (valueTypeReference.Equals(_typeReferences["float32"]))
+            {
+                varDefinition = variableDefinitions["float32"];
+            }
+            else if (valueTypeReference.Equals(_typeReferences["float64"]))
+            {
+                varDefinition = variableDefinitions["float64"];
+            }
+            else
+            {
+                varDefinition = new VariableDefinition(valueTypeReference);
+                method.Body.Variables.Add(varDefinition);
+            }
+            return valueTypeReference;
+        }
+
+        private static void InstrumentateStfld(Instruction ins, Dictionary<string, VariableDefinition> variableDefinitions, MethodDefinition method,
+            ILProcessor processor)
+        {
+            var fieldDefinition = (FieldDefinition) ins.Operand;
+            VariableDefinition varDefinition;
+
+            if (fieldDefinition.FieldType.Equals(_typeReferences["int8"]))
+            {
+                varDefinition = variableDefinitions["int8"];
+            }
+            else if (fieldDefinition.FieldType.Equals(_typeReferences["int16"]))
+            {
+                varDefinition = variableDefinitions["int16"];
+            }
+            else if (fieldDefinition.FieldType.Equals(_typeReferences["int32"]))
+            {
+                varDefinition = variableDefinitions["firstint32"];
+            }
+            else if (fieldDefinition.FieldType.Equals(_typeReferences["int64"]))
+            {
+                varDefinition = variableDefinitions["int64"];
+            }
+            else if (fieldDefinition.FieldType.Equals(_typeReferences["float32"]))
+            {
+                varDefinition = variableDefinitions["float32"];
+            }
+            else if (fieldDefinition.FieldType.Equals(_typeReferences["float64"]))
+            {
+                varDefinition = variableDefinitions["float64"];
+            }
+            else
+            {
+                varDefinition = new VariableDefinition(fieldDefinition.FieldType);
+                method.Body.Variables.Add(varDefinition);
+            }
+            var storeLocalInstrution = processor.Create(OpCodes.Stloc, varDefinition);
+            var dupInstruction = processor.Create(OpCodes.Dup);
+            var loadAddressInstruction = processor.Create(OpCodes.Ldflda, fieldDefinition);
+            var writeAccessLibraryCall = processor.Create(OpCodes.Call,
+                _methodReferences["WriteAccess"]);
+            var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
+            var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
+            var loadLocaleInstrucion = processor.Create(OpCodes.Ldloc, varDefinition);
+
+
+            processor.InsertBefore(ins, loadLocaleInstrucion);
+            processor.InsertBefore(loadLocaleInstrucion, writeAccessLibraryCall);
+            processor.InsertBefore(writeAccessLibraryCall, methodLoad);
+            processor.InsertBefore(methodLoad, constLoad);
+            processor.InsertBefore(constLoad, loadAddressInstruction);
+            processor.InsertBefore(loadAddressInstruction, dupInstruction);
+            processor.InsertBefore(dupInstruction, storeLocalInstrution);
+        }
+
+        private static void InstrumentateLdfld(Instruction ins, ILProcessor processor, MethodDefinition method)
+        {
+            var fieldDefinition = (FieldDefinition) ins.Operand;
+            var fieldType = fieldDefinition.FieldType;
+            if (fieldType.IsPrimitive ||
+                (fieldType.IsDefinition && ((TypeDefinition) fieldType).IsValueType))
+            {
+                var dupInstruction = processor.Create(OpCodes.Dup);
+                var loadAddressInstruction = processor.Create(OpCodes.Ldflda, fieldDefinition);
+                var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
+                var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
+                var readAccessLibraryCall = processor.Create(OpCodes.Call,
+                    _methodReferences["ReadAccess"]);
+                processor.InsertBefore(ins, readAccessLibraryCall);
+                processor.InsertBefore(readAccessLibraryCall, methodLoad);
+                processor.InsertBefore(methodLoad, constLoad);
+                processor.InsertBefore(constLoad, loadAddressInstruction);
+                processor.InsertBefore(loadAddressInstruction, dupInstruction);
+            }
+            else if (!fieldType.IsPrimitive && !fieldType.IsValueType)
+            {
+                var dupInstruction = processor.Create(OpCodes.Dup);
+                var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
+                var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
+                var readAccessLibraryCall = processor.Create(OpCodes.Call,
+                    _methodReferences["ReadAccess"]);
+                processor.InsertBefore(ins, readAccessLibraryCall);
+                processor.InsertBefore(readAccessLibraryCall, methodLoad);
+                processor.InsertBefore(methodLoad, constLoad);
+                processor.InsertBefore(constLoad, dupInstruction);
+            }
+        }
+
+        private static void InstrumentateStsfld(Instruction ins, ILProcessor processor, MethodDefinition method)
+        {
+            var fieldDefinition = (FieldReference) ins.Operand;
+            var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
+            var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
+            var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
+            var writeAccessLibraryCall = processor.Create(OpCodes.Call,
+                _methodReferences["WriteAccess"]);
+            processor.InsertBefore(ins, writeAccessLibraryCall);
+            processor.InsertBefore(writeAccessLibraryCall, methodLoad);
+            processor.InsertBefore(methodLoad, constLoad);
+            processor.InsertBefore(constLoad, loadAddressInstruction);
+        }
+
+        private static void InstrumentateInitobj(Instruction ins, ILProcessor processor, MethodDefinition method)
+        {
+            var fieldType = (TypeReference) ins.Operand;
+            if (fieldType.IsDefinition && ((TypeDefinition) fieldType).IsValueType)
+            {
+                var dupInstruction = processor.Create(OpCodes.Dup);
+                var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
+                var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
+                var writeAccessLibraryCall = processor.Create(OpCodes.Call, _methodReferences["WriteAccess"]);
+                processor.InsertBefore(ins, writeAccessLibraryCall);
+                processor.InsertBefore(writeAccessLibraryCall, methodLoad);
+                processor.InsertBefore(methodLoad, constLoad);
+                processor.InsertBefore(constLoad, dupInstruction);
+            }
+        }
+
+        private static void InstrumentateLdsfld(Instruction ins, ILProcessor processor, MethodDefinition method)
+        {
+            var fieldDefinition = (FieldReference) ins.Operand;
+
+            var fieldType = fieldDefinition.FieldType;
+            if (fieldType.IsPrimitive ||
+                (fieldType.IsDefinition && ((TypeDefinition) fieldType).IsValueType))
+            {
+                var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
+                var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
+                var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
+                var readAccessLibraryCall = processor.Create(OpCodes.Call, _methodReferences["ReadAccess"]);
+                processor.InsertAfter(ins, loadAddressInstruction);
+                processor.InsertAfter(loadAddressInstruction, constLoad);
+                processor.InsertAfter(constLoad, methodLoad);
+                processor.InsertAfter(methodLoad, readAccessLibraryCall);
+            }
+            else if (!fieldType.IsPrimitive && !fieldType.IsValueType)
+            {
+                var dupInstruction = processor.Create(OpCodes.Dup);
+                var readAccessLibraryCall = processor.Create(OpCodes.Call, _methodReferences["ReadAccess"]);
+                var readAccessLibraryCall2 = processor.Create(OpCodes.Call, _methodReferences["ReadAccess"]);
+                var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
+                var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
+                var constLoad2 = processor.Create(OpCodes.Ldc_I4, ins.Offset);
+                var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
+                var methodLoad2 = processor.Create(OpCodes.Ldstr, method.FullName);
+                processor.InsertAfter(ins, dupInstruction);
+                processor.InsertAfter(dupInstruction, constLoad);
+                processor.InsertAfter(constLoad, methodLoad);
+                processor.InsertAfter(methodLoad, readAccessLibraryCall);
+                processor.InsertAfter(readAccessLibraryCall, loadAddressInstruction);
+                processor.InsertAfter(loadAddressInstruction, constLoad2);
+                processor.InsertAfter(constLoad2, methodLoad2);
+                processor.InsertAfter(methodLoad2, readAccessLibraryCall2);
             }
         }
 
@@ -600,11 +651,11 @@ namespace CodeInstrumentation
             }
             else
             {
-                MethodReference methodReference = (MethodReference)ins.Operand;
-                GenericInstanceMethod genericMethod = (GenericInstanceMethod) methodReference;
-                GenericInstanceType genericType = new GenericInstanceType(genericMethod.ReturnType.GetElementType());
+                var methodReference = (MethodReference)ins.Operand;
+                var genericMethod = (GenericInstanceMethod) methodReference;
+                var genericType = new GenericInstanceType(genericMethod.ReturnType.GetElementType());
                 genericType.GenericArguments.Add(genericMethod.GenericArguments[0]);
-                TypeReference typeReference = module.Import(genericType);
+                var typeReference = module.Import(genericType);
                 varDefinition = new VariableDefinition(typeReference);
                 method.Body.Variables.Add(varDefinition);
             }
@@ -636,7 +687,7 @@ namespace CodeInstrumentation
 
         private static Dictionary<string, VariableDefinition> AddAllVariablesToMethod(MethodDefinition method)
         {
-            Dictionary<string, VariableDefinition> result = new Dictionary<string, VariableDefinition>();
+            var result = new Dictionary<string, VariableDefinition>();
             // ReSharper disable once JoinDeclarationAndInitializer
             VariableDefinition tempVariableDefinition;
             _typeReferences.ToList().ForEach(x => { if (!x.Key.Equals("int32"))
@@ -714,8 +765,8 @@ namespace CodeInstrumentation
 
         public static string DecompileCode(string fileName, string typeName, string methodName, int offset)
         {
-            FileInfo assemblyFile = new FileInfo(fileName);
-            string pathToAssembly = assemblyFile.FullName;
+            var assemblyFile = new FileInfo(fileName);
+            var pathToAssembly = assemblyFile.FullName;
             var resolver = new DefaultAssemblyResolver();
             resolver.AddSearchDirectory(assemblyFile.DirectoryName);
 
@@ -724,12 +775,12 @@ namespace CodeInstrumentation
                 AssemblyResolver =  resolver
             };
 
-            AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(pathToAssembly, parameters);
-            string result = string.Empty;
+            var assemblyDefinition = AssemblyDefinition.ReadAssembly(pathToAssembly, parameters);
+            var result = string.Empty;
 
             MethodDefinition method = null;
             TypeDefinition typeDefinition = null;
-            foreach (TypeDefinition type in assemblyDefinition.MainModule.Types)
+            foreach (var type in assemblyDefinition.MainModule.Types)
             {
                 method = GetMethodeDefinition(typeName, methodName, type, out typeDefinition);
                 if (method != null)
@@ -740,10 +791,10 @@ namespace CodeInstrumentation
 
             if (method != null)
             {
-                Instruction ins = method.Body.Instructions.SingleOrDefault(x => x.Offset == offset);
+                var ins = method.Body.Instructions.SingleOrDefault(x => x.Offset == offset);
 
                 AddDetectedInstructionBefore(assemblyDefinition.MainModule, method, ins);
-                AstBuilder astBuilder = new AstBuilder(new DecompilerContext(assemblyDefinition.MainModule)
+                var astBuilder = new AstBuilder(new DecompilerContext(assemblyDefinition.MainModule)
                 {
                     CurrentType = typeDefinition,
                     CurrentMethod = method
@@ -751,7 +802,7 @@ namespace CodeInstrumentation
                 
                 astBuilder.AddMethod(method);
                 
-                StringWriter output = new StringWriter();
+                var output = new StringWriter();
                 astBuilder.GenerateCode(new PlainTextOutput(output));
                 result = output.ToString();
                 output.Dispose();
@@ -761,11 +812,11 @@ namespace CodeInstrumentation
 
         private static void AddDetectedInstructionBefore(ModuleDefinition module, MethodDefinition method, Instruction ins)
         {
-            ModuleDefinition refModul = ModuleDefinition.ReadModule("DPCLibrary.dll");
-            TypeDefinition typeDefinition = refModul.Types.First(x => x.Name == "DpcLibrary");
-            MethodDefinition raceConditionDetectedDef =
+            var refModul = ModuleDefinition.ReadModule("DPCLibrary.dll");
+            var typeDefinition = refModul.Types.First(x => x.Name == "DpcLibrary");
+            var raceConditionDetectedDef =
                 typeDefinition.Methods.Single(x => x.Name == "RaceConditionDetectedIdentifier");
-            MethodReference raceConditionDetectedRef = module.Import(raceConditionDetectedDef);
+            var raceConditionDetectedRef = module.Import(raceConditionDetectedDef);
 
             var processor = method.Body.GetILProcessor();
             var raceDetectedLibraryCall = processor.Create(OpCodes.Call,
@@ -778,7 +829,7 @@ namespace CodeInstrumentation
             if (type.FullName.Equals(typeName))
             {
                 typeDefinition = type;
-                MethodDefinition method = type.Methods.SingleOrDefault(x => x.FullName.Equals(methodName));
+                var method = type.Methods.SingleOrDefault(x => x.FullName.Equals(methodName));
                 if (method != null)
                 {
                     return method;
@@ -787,9 +838,9 @@ namespace CodeInstrumentation
 
             if (type.HasNestedTypes)
             {
-                foreach (TypeDefinition nestedType in type.NestedTypes)
+                foreach (var nestedType in type.NestedTypes)
                 {
-                    MethodDefinition method = GetMethodeDefinition(typeName, methodName, nestedType, out typeDefinition);
+                    var method = GetMethodeDefinition(typeName, methodName, nestedType, out typeDefinition);
                     if (method != null)
                     {
                         return method;
@@ -799,5 +850,6 @@ namespace CodeInstrumentation
             typeDefinition = null;
             return null;
         }
+        
     }
 }

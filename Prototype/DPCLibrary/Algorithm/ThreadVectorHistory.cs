@@ -51,7 +51,7 @@ namespace DPCLibrary.Algorithm
             }
             else
             {
-                ThreadEvent foundEvent = events.SingleOrDefault(x => x.CompareRessource(threadEvent));
+                var foundEvent = events.SingleOrDefault(x => x.CompareRessource(threadEvent));
                 if (foundEvent != null && foundEvent.ThreadEventType < threadEvent.ThreadEventType)
                 {
                     _logger.ConditionalTrace("Event updated");

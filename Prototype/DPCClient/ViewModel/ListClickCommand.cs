@@ -24,9 +24,9 @@ namespace DPCClient.ViewModel
 
         public void Execute(object parameter)
         {
-            NLogMessage entry = (NLogMessage) parameter;
+            var entry = (NLogMessage) parameter;
             // ReSharper disable once AssignNullToNotNullAttribute
-            string path = Path.Combine(Directory.GetCurrentDirectory(), "work_decompile", Path.GetFileName(_obj.FilePath));
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "work_decompile", Path.GetFileName(_obj.FilePath));
             entry.MethodContent =
                 CodeInstrumentator.DecompileCode(path, NLogMessage.GetTypeName(entry.MethodName), entry.MethodName, entry.RowCount);
             entry.ConflictContent =

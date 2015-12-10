@@ -45,8 +45,8 @@ namespace DPCLibrary.Algorithm
         public void HandleReadAccess(string thread, int ressource, int rowNumber, string methodName)
         {
             _logger.ConditionalDebug("ReadAccess: " + thread + " on Ressource: " + ressource + "on Line:" + rowNumber);
-            ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(thread);
-            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, ressource, rowNumber, methodName);
+            var threadVectorInstance = GetThreadVectorInstance(thread);
+            var threadEvent = new ThreadEvent(ThreadEvent.EventType.Read, ressource, rowNumber, methodName);
             threadVectorInstance.WriteHistory(threadEvent);
             CheckForRaceCondition(threadEvent, threadVectorInstance, rowNumber, methodName);
         }
@@ -55,8 +55,8 @@ namespace DPCLibrary.Algorithm
         public void HandleWriteAccess(string thread, int ressource, int rowNumber, string methodName)
         {
             _logger.ConditionalDebug("WriteAccess: " + thread + " on Ressource: " + ressource + "on Line:" + rowNumber);
-            ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(thread);
-            ThreadEvent threadEvent = new ThreadEvent(ThreadEvent.EventType.Write, ressource,rowNumber, methodName);
+            var threadVectorInstance = GetThreadVectorInstance(thread);
+            var threadEvent = new ThreadEvent(ThreadEvent.EventType.Write, ressource,rowNumber, methodName);
             threadVectorInstance.WriteHistory(threadEvent);
             CheckForRaceCondition(threadEvent, threadVectorInstance, rowNumber, methodName);
         }
@@ -65,7 +65,7 @@ namespace DPCLibrary.Algorithm
         public void HandleLock(string thread, int lockRessource)
         {
             _logger.ConditionalDebug("Lock: " + thread + " on Ressource: " + lockRessource);
-            KeyValuePair<string, ThreadVectorClock> lockThreadIdClockPair;
+            KeyValuePair<ThreadId, ThreadVectorClock> lockThreadIdClockPair;
             if (CheckLockHistory(lockRessource, out lockThreadIdClockPair))
             {
                 SynchronizeVectorClock(thread, lockThreadIdClockPair);
@@ -76,8 +76,8 @@ namespace DPCLibrary.Algorithm
         public void HandleUnLock(string thread, int lockRessource)
         {
             _logger.ConditionalDebug("Unlock: " + thread + " on Ressource: " + lockRessource);
-            ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(thread);
-            _lockHistory.AddLockEntry(lockRessource, new KeyValuePair<string, ThreadVectorClock>(thread, threadVectorInstance.VectorClock));
+            var threadVectorInstance = GetThreadVectorInstance(thread);
+            _lockHistory.AddLockEntry(lockRessource, new KeyValuePair<ThreadId, ThreadVectorClock>(thread, threadVectorInstance.VectorClock));
             threadVectorInstance.IncrementClock();
         }
 
@@ -85,8 +85,8 @@ namespace DPCLibrary.Algorithm
         public void HandleThreadStart(string newThread, string currentThread)
         {
             _logger.ConditionalDebug("NewThread: " + newThread + " started from " + currentThread);
-            ThreadVectorInstance currentThreadInstance = GetThreadVectorInstance(currentThread);
-            KeyValuePair<string, ThreadVectorClock> threadIdClockPair = new KeyValuePair<string, ThreadVectorClock>(currentThread, currentThreadInstance.VectorClock);
+            var currentThreadInstance = GetThreadVectorInstance(currentThread);
+            var threadIdClockPair = new KeyValuePair<ThreadId, ThreadVectorClock>(currentThread, currentThreadInstance.VectorClock);
             SynchronizeVectorClock(newThread, threadIdClockPair);
             currentThreadInstance.IncrementClock();
         }
@@ -95,8 +95,8 @@ namespace DPCLibrary.Algorithm
         public void HandleThreadJoin(string joinedThread, string currentThread)
         {
             _logger.ConditionalDebug("Thread joined: " + joinedThread + " from Thread " + currentThread);
-            ThreadVectorInstance joinedThreadVectorInstance = GetThreadVectorInstance(joinedThread);
-            KeyValuePair<string, ThreadVectorClock> threadIdClockPair = new KeyValuePair<string, ThreadVectorClock>(joinedThread, joinedThreadVectorInstance.VectorClock); 
+            var joinedThreadVectorInstance = GetThreadVectorInstance(joinedThread);
+            var threadIdClockPair = new KeyValuePair<ThreadId, ThreadVectorClock>(joinedThread, joinedThreadVectorInstance.VectorClock); 
             SynchronizeVectorClock(currentThread, threadIdClockPair);
         }
 
@@ -104,8 +104,8 @@ namespace DPCLibrary.Algorithm
         public void HandleStartTask(string task, string currentTaskOrThread)
         {
             _logger.ConditionalDebug("New Task started: " + task + " from Thread " + Thread.CurrentThread.ManagedThreadId);
-            ThreadVectorInstance currentTaskOrThreadVectorInstance = GetThreadVectorInstance(currentTaskOrThread);
-            KeyValuePair<string, ThreadVectorClock> threadIdClockPair = new KeyValuePair<string, ThreadVectorClock>(currentTaskOrThread, currentTaskOrThreadVectorInstance.VectorClock);
+            var currentTaskOrThreadVectorInstance = GetThreadVectorInstance(currentTaskOrThread);
+            var threadIdClockPair = new KeyValuePair<ThreadId, ThreadVectorClock>(currentTaskOrThread, currentTaskOrThreadVectorInstance.VectorClock);
             SynchronizeVectorClock(task, threadIdClockPair);
             currentTaskOrThreadVectorInstance.IncrementClock();
         }
@@ -114,8 +114,8 @@ namespace DPCLibrary.Algorithm
         public void HandleTaskWait(string task, string currentTaskOrThread)
         {
             _logger.ConditionalDebug("Wait for task: " + task + " from Thread " + Thread.CurrentThread.ManagedThreadId);
-            ThreadVectorInstance waitedTaskOrThreadVectorInstance = GetThreadVectorInstance(task);
-            KeyValuePair<string, ThreadVectorClock> threadIdClockPair = new KeyValuePair<string, ThreadVectorClock>(task, waitedTaskOrThreadVectorInstance.VectorClock);
+            var waitedTaskOrThreadVectorInstance = GetThreadVectorInstance(task);
+            var threadIdClockPair = new KeyValuePair<ThreadId, ThreadVectorClock>(task, waitedTaskOrThreadVectorInstance.VectorClock);
             SynchronizeVectorClock(currentTaskOrThread, threadIdClockPair);
         }
 
@@ -123,8 +123,8 @@ namespace DPCLibrary.Algorithm
         public void HandleTaskRun(string task, string currentTaskOrThread)
         {
             _logger.ConditionalDebug("Run task: " + task + " from Thread " + Thread.CurrentThread.ManagedThreadId);
-            ThreadVectorInstance currentTakOrThreadVectorInstance = GetThreadVectorInstance(currentTaskOrThread);
-            KeyValuePair<string, ThreadVectorClock> threadIdClockPair = new KeyValuePair<string, ThreadVectorClock>(currentTaskOrThread, currentTakOrThreadVectorInstance.VectorClock);
+            var currentTakOrThreadVectorInstance = GetThreadVectorInstance(currentTaskOrThread);
+            var threadIdClockPair = new KeyValuePair<ThreadId, ThreadVectorClock>(currentTaskOrThread, currentTakOrThreadVectorInstance.VectorClock);
             SynchronizeVectorClock(task, threadIdClockPair);
             currentTakOrThreadVectorInstance.IncrementClock();
         }
@@ -133,8 +133,8 @@ namespace DPCLibrary.Algorithm
         public void HandleStartNewTask(string task, string currentTaskOrThread)
         {
             _logger.ConditionalDebug("StartNew task: " + task + " from Thread " + Thread.CurrentThread.ManagedThreadId);
-            ThreadVectorInstance currentTakOrThreadVectorInstance = GetThreadVectorInstance(currentTaskOrThread);
-            KeyValuePair<string, ThreadVectorClock> threadIdClockPair = new KeyValuePair<string, ThreadVectorClock>(currentTaskOrThread, currentTakOrThreadVectorInstance.VectorClock);
+            var currentTakOrThreadVectorInstance = GetThreadVectorInstance(currentTaskOrThread);
+            var threadIdClockPair = new KeyValuePair<ThreadId, ThreadVectorClock>(currentTaskOrThread, currentTakOrThreadVectorInstance.VectorClock);
             SynchronizeVectorClock(task, threadIdClockPair);
             currentTakOrThreadVectorInstance.IncrementClock();
         }
@@ -150,15 +150,15 @@ namespace DPCLibrary.Algorithm
             return threadVectorInstance;
         }
 
-        private bool CheckLockHistory(int lockRessource, out KeyValuePair<string, ThreadVectorClock> lockThreadIdClockPair)
+        private bool CheckLockHistory(int lockRessource, out KeyValuePair<ThreadId, ThreadVectorClock> lockThreadIdClockPair)
         {
             return _lockHistory.IsRessourceInLockHistory(lockRessource, out lockThreadIdClockPair);
         }
 
-        private void SynchronizeVectorClock(string ownThread, KeyValuePair<string, ThreadVectorClock> lockThreadIdClockPair)
+        private void SynchronizeVectorClock(string ownThread, KeyValuePair<ThreadId, ThreadVectorClock> lockThreadIdClockPair)
         {
-            ThreadVectorInstance threadVectorInstance = GetThreadVectorInstance(ownThread);
-            ThreadVectorClock vectorClock = threadVectorInstance.VectorClock;
+            var threadVectorInstance = GetThreadVectorInstance(ownThread);
+            var vectorClock = threadVectorInstance.VectorClock;
             vectorClock.Keys.ToList().ForEach(thread =>
             {
                 if (thread.Equals(ownThread))
@@ -182,18 +182,18 @@ namespace DPCLibrary.Algorithm
 
         private void CheckForRaceCondition(ThreadEvent ownThreadEvent, ThreadVectorInstance threadVectorInstance, int rowNumber, string methodName)
         {
-            List<ThreadVectorInstance> instances = 
+            var instances = 
                 (_threadVectorPool.Values.Where(instance => instance.ThreadId != threadVectorInstance.ThreadId)).ToList();
-            foreach (ThreadVectorInstance instance in instances) {
+            foreach (var instance in instances) {
                 foreach (
-                    List<ThreadEvent> concurrentEvents in
+                    var concurrentEvents in
                         instance.GetConcurrentHistory(threadVectorInstance.VectorClock).Values)
                 {
-                    foreach (ThreadEvent threadEvent in concurrentEvents)
+                    foreach (var threadEvent in concurrentEvents)
                     {
                         if (IsRaceCondition(ownThreadEvent, threadEvent))
                         {
-                            LogEventInfo info = new LogEventInfo {Level = LogLevel.Error};
+                            var info = new LogEventInfo {Level = LogLevel.Error};
                             info.Properties["RowCount"] = rowNumber;
                             info.Properties["MethodName"] = methodName;
                             info.Properties["ConflictMethodName"] = threadEvent.MethodName;

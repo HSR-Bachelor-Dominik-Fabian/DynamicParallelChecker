@@ -11,8 +11,8 @@ namespace DPCClient.Process
 
         public string Start(FilePathModel filePath)
         {
-            string directory = Path.GetDirectoryName(filePath.FilePath);
-            string fileName = Path.GetFileName(filePath.FilePath);
+            var directory = Path.GetDirectoryName(filePath.FilePath);
+            var fileName = Path.GetFileName(filePath.FilePath);
 
             if (Directory.Exists(_targetDirectory))
             {
@@ -42,13 +42,13 @@ namespace DPCClient.Process
 
         private void CopyLibrary()
         {
-            string libraryFileName = "DPCLibrary.dll";
+            var libraryFileName = "DPCLibrary.dll";
             File.Copy(libraryFileName, _targetDirectory + @"\" + libraryFileName);
 
-            string nLogFileName = "NLog.dll";
+            var nLogFileName = "NLog.dll";
             File.Copy(nLogFileName, _targetDirectory + @"\" + nLogFileName);
 
-            string nLogConfigFileName = "NLog.config";
+            var nLogConfigFileName = "NLog.config";
             File.Copy(nLogConfigFileName, _targetDirectory + @"\" + nLogConfigFileName);
         }
 
@@ -56,12 +56,12 @@ namespace DPCClient.Process
         {
             if (directory != null)
             {
-                foreach (string file in Directory.GetFiles(directory))
+                foreach (var file in Directory.GetFiles(directory))
                 {
-                    string fileName = Path.GetFileName(file);
+                    var fileName = Path.GetFileName(file);
                     if (!string.IsNullOrWhiteSpace(fileName))
                     {
-                        string pathDirectory = Path.Combine(targetDirectory, relative);
+                        var pathDirectory = Path.Combine(targetDirectory, relative);
                         if (!Directory.Exists(pathDirectory))
                         {
                             Directory.CreateDirectory(pathDirectory);
@@ -69,9 +69,9 @@ namespace DPCClient.Process
                         File.Copy(file, Path.Combine(pathDirectory, fileName), true);
                     }
                 }
-                foreach (string directoryTemp in Directory.GetDirectories(directory))
+                foreach (var directoryTemp in Directory.GetDirectories(directory))
                 {
-                    string dirName = new DirectoryInfo(directoryTemp).Name;
+                    var dirName = new DirectoryInfo(directoryTemp).Name;
                     Copy(directoryTemp, Path.Combine(relative, dirName));
                 }
             }
@@ -81,11 +81,11 @@ namespace DPCClient.Process
         {
             if (directory != null)
             {
-                foreach (string file in Directory.GetFiles(directory))
+                foreach (var file in Directory.GetFiles(directory))
                 {
                     File.Delete(file);
                 }
-                foreach (string directoryTemp in Directory.GetDirectories(directory))
+                foreach (var directoryTemp in Directory.GetDirectories(directory))
                 {
                     Delete(directoryTemp);
                     Directory.Delete(directoryTemp);

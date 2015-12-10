@@ -33,9 +33,9 @@ namespace DPCClient.Process
                             {
                                 if (ctx != null)
                                 {
-                                    StreamReader stream = new StreamReader(ctx.Request.InputStream);
-                                    string x = stream.ReadToEnd();
-                                    NLogMessage message = JsonConvert.DeserializeObject<NLogMessage>(x);
+                                    var stream = new StreamReader(ctx.Request.InputStream);
+                                    var x = stream.ReadToEnd();
+                                    var message = JsonConvert.DeserializeObject<NLogMessage>(x);
                                     dispacherObject.Invoke(() =>
                                     {
                                         viewModel.AddLogEntry(message);

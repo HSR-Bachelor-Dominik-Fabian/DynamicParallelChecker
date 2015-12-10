@@ -19,8 +19,8 @@
         {
             if (methodName != null)
             {
-                string[] parts = methodName.Split(' ');
-                string[] parts2 = parts[parts.Length - 1].Split(':');
+                var parts = methodName.Split(' ');
+                var parts2 = parts[parts.Length - 1].Split(':');
                 return parts2[0];
             }
             return null;

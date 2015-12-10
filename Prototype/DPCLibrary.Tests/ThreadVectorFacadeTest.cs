@@ -17,10 +17,10 @@ namespace DPCLibrary.Tests
             string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
 
-            int ressource = 1;
-            int ownLockRessource = 2;
-            int otherLockRessource = 3;
-            int lineofCode = 12;
+            var ressource = 1;
+            var ownLockRessource = 2;
+            var otherLockRessource = 3;
+            var lineofCode = 12;
 
             ThreadVectorFacade.GetInstance().HandleLock(thread, ownLockRessource);
             ThreadVectorFacade.GetInstance().HandleReadAccess(thread, ressource, lineofCode, "TestMethodName");
@@ -29,7 +29,7 @@ namespace DPCLibrary.Tests
             ThreadVectorFacade.GetInstance().HandleLock(thread2, otherLockRessource);
             ThreadVectorFacade.GetInstance().HandleWriteAccess(thread2, ressource, lineofCode, "TestMethodName");
             ThreadVectorFacade.GetInstance().HandleUnLock(thread2, otherLockRessource);
-            List<string> logs = GetMemoryLog();
+            var logs = GetMemoryLog();
             CollectionAssert.Contains(logs,
                 $"RaceCondition detected... Ressource: {ressource} -> Thread: {thread2} to Thread: {thread}");
             Assert.AreEqual(1, logs.Count);
@@ -41,10 +41,10 @@ namespace DPCLibrary.Tests
             string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
 
-            int ressource = 1;
-            int ownLockRessource = 2;
-            int otherLockRessource = 3;
-            int lineofCode = 12;
+            var ressource = 1;
+            var ownLockRessource = 2;
+            var otherLockRessource = 3;
+            var lineofCode = 12;
 
             ThreadVectorFacade.GetInstance().HandleLock(thread, ownLockRessource);
             ThreadVectorFacade.GetInstance().HandleWriteAccess(thread, ressource, lineofCode, "TestMethodName");
@@ -54,7 +54,7 @@ namespace DPCLibrary.Tests
             ThreadVectorFacade.GetInstance().HandleWriteAccess(thread2, ressource, lineofCode, "TestMethodName");
             ThreadVectorFacade.GetInstance().HandleUnLock(thread2, otherLockRessource);
 
-            List<string> logs = GetMemoryLog();
+            var logs = GetMemoryLog();
             CollectionAssert.Contains(logs,
                 $"RaceCondition detected... Ressource: {ressource} -> Thread: {thread2} to Thread: {thread}");
             Assert.AreEqual(1, logs.Count);
@@ -66,10 +66,10 @@ namespace DPCLibrary.Tests
             string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
 
-            int ressource = 1;
-            int ownLockRessource = 2;
-            int otherLockRessource = 3;
-            int lineofCode = 12;
+            var ressource = 1;
+            var ownLockRessource = 2;
+            var otherLockRessource = 3;
+            var lineofCode = 12;
 
             ThreadVectorFacade.GetInstance().HandleLock(thread, ownLockRessource);
             ThreadVectorFacade.GetInstance().HandleReadAccess(thread, ressource, lineofCode, "TestMethodName");
@@ -78,7 +78,7 @@ namespace DPCLibrary.Tests
             ThreadVectorFacade.GetInstance().HandleLock(thread2, otherLockRessource);
             ThreadVectorFacade.GetInstance().HandleReadAccess(thread2, ressource, lineofCode, "TestMethodName");
             ThreadVectorFacade.GetInstance().HandleUnLock(thread2, otherLockRessource);
-            List<string> logs = GetMemoryLog();
+            var logs = GetMemoryLog();
             Assert.AreEqual(0, logs.Count);
         }
 
@@ -88,10 +88,10 @@ namespace DPCLibrary.Tests
             string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
 
-            int ressource = 1;
-            int ownLockRessource = 2;
-            int otherLockRessource = 3;
-            int lineofCode = 12;
+            var ressource = 1;
+            var ownLockRessource = 2;
+            var otherLockRessource = 3;
+            var lineofCode = 12;
 
             ThreadVectorFacade.GetInstance().HandleLock(thread, ownLockRessource);
             ThreadVectorFacade.GetInstance().HandleWriteAccess(thread, ressource, lineofCode, "TestMethodName");
@@ -100,7 +100,7 @@ namespace DPCLibrary.Tests
             ThreadVectorFacade.GetInstance().HandleLock(thread2, otherLockRessource);
             ThreadVectorFacade.GetInstance().HandleReadAccess(thread2, ressource, lineofCode, "TestMethodName");
             ThreadVectorFacade.GetInstance().HandleUnLock(thread2, otherLockRessource);
-            List<string> logs = GetMemoryLog();
+            var logs = GetMemoryLog();
             CollectionAssert.Contains(logs,
                 $"RaceCondition detected... Ressource: {ressource} -> Thread: {thread2} to Thread: {thread}");
             Assert.AreEqual(1, logs.Count);
@@ -113,16 +113,16 @@ namespace DPCLibrary.Tests
             string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
 
-            int ressource = 1;
-            int ownLockRessource = 2;
-            int lineofCode = 12;
+            var ressource = 1;
+            var ownLockRessource = 2;
+            var lineofCode = 12;
 
             ThreadVectorFacade.GetInstance().HandleLock(thread, ownLockRessource);
             ThreadVectorFacade.GetInstance().HandleWriteAccess(thread, ressource, lineofCode, "TestMethodName");
             ThreadVectorFacade.GetInstance().HandleUnLock(thread, ownLockRessource);
 
             ThreadVectorFacade.GetInstance().HandleReadAccess(thread2, ressource, lineofCode, "TestMethodName");
-            List<string> logs = GetMemoryLog();
+            var logs = GetMemoryLog();
             CollectionAssert.Contains(logs,
                 $"RaceCondition detected... Ressource: {ressource} -> Thread: {thread2} to Thread: {thread}");
             Assert.AreEqual(1, logs.Count);
@@ -134,11 +134,11 @@ namespace DPCLibrary.Tests
             string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
 
-            int ownRessource = 1;
-            int otherRessource = 2;
-            int ownLockRessource = 2;
-            int otherLockRessource = 3;
-            int lineofCode = 12;
+            var ownRessource = 1;
+            var otherRessource = 2;
+            var ownLockRessource = 2;
+            var otherLockRessource = 3;
+            var lineofCode = 12;
 
             ThreadVectorFacade.GetInstance().HandleLock(thread, ownLockRessource);
             ThreadVectorFacade.GetInstance().HandleWriteAccess(thread, ownRessource, lineofCode, "TestMethodName");
@@ -148,7 +148,7 @@ namespace DPCLibrary.Tests
             ThreadVectorFacade.GetInstance().HandleWriteAccess(thread2, otherRessource, lineofCode, "TestMethodName");
             ThreadVectorFacade.GetInstance().HandleUnLock(thread2, otherLockRessource);
 
-            List<string> logs = GetMemoryLog();
+            var logs = GetMemoryLog();
             Assert.AreEqual(0, logs.Count);
         }
 
@@ -158,9 +158,9 @@ namespace DPCLibrary.Tests
             string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
 
-            int ownRessource = 1;
-            int ownLockRessource = 2;
-            int lineofCode = 12;
+            var ownRessource = 1;
+            var ownLockRessource = 2;
+            var lineofCode = 12;
 
             ThreadVectorFacade.GetInstance().HandleLock(thread, ownLockRessource);
             ThreadVectorFacade.GetInstance().HandleWriteAccess(thread, ownRessource, lineofCode, "TestMethodName");
@@ -170,7 +170,7 @@ namespace DPCLibrary.Tests
             ThreadVectorFacade.GetInstance().HandleWriteAccess(thread2, ownRessource, lineofCode, "TestMethodName");
             ThreadVectorFacade.GetInstance().HandleUnLock(thread2, ownLockRessource);
                 
-            List<string> logs = GetMemoryLog();
+            var logs = GetMemoryLog();
             Assert.AreEqual(0, logs.Count);
         }
 
@@ -180,9 +180,9 @@ namespace DPCLibrary.Tests
             string thread = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
 
-            int ownRessource = 1;
-            int ownLockRessource = 2;
-            int lineofCode = 12;
+            var ownRessource = 1;
+            var ownLockRessource = 2;
+            var lineofCode = 12;
 
             ThreadVectorFacade.GetInstance().HandleLock(thread, ownLockRessource);    // clock: 1=>1
             ThreadVectorFacade.GetInstance().HandleWriteAccess(thread, ownRessource, lineofCode, "TestMethodName");
@@ -193,7 +193,7 @@ namespace DPCLibrary.Tests
             ThreadVectorFacade.GetInstance().HandleUnLock(thread2, ownLockRessource); // clock: 1=>1, 2=>3
 
             ThreadVectorFacade.GetInstance().HandleWriteAccess(thread, ownRessource, lineofCode, "TestMethodName");
-            List<string> logs = GetMemoryLog();
+            var logs = GetMemoryLog();
             CollectionAssert.Contains(logs,
                 $"RaceCondition detected... Ressource: {ownRessource} -> Thread: {thread} to Thread: {thread2}");
             Assert.AreEqual(1, logs.Count);
@@ -206,12 +206,12 @@ namespace DPCLibrary.Tests
             string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
             string thread3 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 2}";
 
-            int ownRessource = 1;
-            int otherRessource = 2;
-            int ownLockRessource = 3;
-            int otherLockRessource = 4;
-            int otherotherLockRessource = 5;
-            int lineofCode = 12;
+            var ownRessource = 1;
+            var otherRessource = 2;
+            var ownLockRessource = 3;
+            var otherLockRessource = 4;
+            var otherotherLockRessource = 5;
+            var lineofCode = 12;
 
             ThreadVectorFacade.GetInstance().HandleLock(thread, ownLockRessource);
             ThreadVectorFacade.GetInstance().HandleWriteAccess(thread, ownRessource, lineofCode, "TestMethodName");
@@ -226,7 +226,7 @@ namespace DPCLibrary.Tests
             ThreadVectorFacade.GetInstance().HandleUnLock(thread3, otherotherLockRessource);
             ThreadVectorFacade.GetInstance().HandleUnLock(thread2, otherLockRessource);
                 
-            List<string> logs = GetMemoryLog();
+            var logs = GetMemoryLog();
             Assert.AreEqual(0, logs.Count);
         }
 
@@ -237,12 +237,12 @@ namespace DPCLibrary.Tests
             string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
             string thread3 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 2}";
 
-            int ownRessource = 1;
-            int otherRessource = 2;
-            int ownLockRessource = 3;
-            int otherLockRessource = 4;
-            int otherotherLockRessource = 5;
-            int lineofCode = 12;
+            var ownRessource = 1;
+            var otherRessource = 2;
+            var ownLockRessource = 3;
+            var otherLockRessource = 4;
+            var otherotherLockRessource = 5;
+            var lineofCode = 12;
 
             ThreadVectorFacade.GetInstance().HandleLock(thread, ownLockRessource);
             ThreadVectorFacade.GetInstance().HandleWriteAccess(thread, ownRessource, lineofCode, "TestMethodName");
@@ -257,7 +257,7 @@ namespace DPCLibrary.Tests
             ThreadVectorFacade.GetInstance().HandleUnLock(thread3, otherotherLockRessource);
             ThreadVectorFacade.GetInstance().HandleUnLock(thread2, otherLockRessource);
             
-            List<string> logs = GetMemoryLog();
+            var logs = GetMemoryLog();
             CollectionAssert.Contains(logs,
                 $"RaceCondition detected... Ressource: {otherRessource} -> Thread: {thread3} to Thread: {thread2}");
             Assert.AreEqual(1, logs.Count);
@@ -270,11 +270,11 @@ namespace DPCLibrary.Tests
             string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
             string thread3 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 2}";
 
-            int ownRessource = 1;
-            int otherRessource = 2;
-            int ownLockRessource = 3;
-            int otherLockRessource = 4;
-            int lineofCode = 12;
+            var ownRessource = 1;
+            var otherRessource = 2;
+            var ownLockRessource = 3;
+            var otherLockRessource = 4;
+            var lineofCode = 12;
 
             ThreadVectorFacade.GetInstance().HandleLock(thread, ownLockRessource);
             ThreadVectorFacade.GetInstance().HandleWriteAccess(thread, ownRessource, lineofCode, "TestMethodName");
@@ -289,7 +289,7 @@ namespace DPCLibrary.Tests
             ThreadVectorFacade.GetInstance().HandleUnLock(thread, ownLockRessource);
             ThreadVectorFacade.GetInstance().HandleUnLock(thread3, otherLockRessource);
 
-            List<string> logs = GetMemoryLog();
+            var logs = GetMemoryLog();
             Assert.AreEqual(0, logs.Count);
         }
 
@@ -300,9 +300,9 @@ namespace DPCLibrary.Tests
             string thread2 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 1}";
             string thread3 = $"Thread_{Thread.CurrentThread.ManagedThreadId + 2}";
 
-            int ownRessource = 1;
-            int ownLockRessource = 2;
-            int lineofCode = 12;
+            var ownRessource = 1;
+            var ownLockRessource = 2;
+            var lineofCode = 12;
 
             ThreadVectorFacade.GetInstance().HandleLock(thread, ownLockRessource);
             ThreadVectorFacade.GetInstance().HandleWriteAccess(thread, ownRessource, lineofCode, "TestMethodName");
@@ -328,7 +328,7 @@ namespace DPCLibrary.Tests
             ThreadVectorFacade.GetInstance().HandleWriteAccess(thread3, ownRessource, lineofCode, "TestMethodName");
             ThreadVectorFacade.GetInstance().HandleUnLock(thread3, ownLockRessource);
 
-            List<string> logs = GetMemoryLog();
+            var logs = GetMemoryLog();
             Assert.AreEqual(0, logs.Count);
         }
         
