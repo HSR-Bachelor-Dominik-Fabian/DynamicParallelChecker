@@ -166,7 +166,7 @@ namespace DPCLibrary.Algorithm
                 {
                     vectorClock[thread] += 1;
                 }
-                else if (thread.Equals(lockThreadIdClockPair.Key))
+                else if (thread.Equals(lockThreadIdClockPair.Key.Identifier))
                 {
                     vectorClock[thread] = lockThreadIdClockPair.Value[thread];
                 }
