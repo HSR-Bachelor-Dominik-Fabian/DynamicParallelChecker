@@ -61,7 +61,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ThreadVectorHistoryTests.cs" />
     <Compile Include="ThreadVectorInstanceTests.cs" />
-    <Compile Include="ThreadVectorManagerTest.cs" />
+    <Compile Include="ThreadVectorFacadeTest.cs" />
     <Compile Include="DpcLibraryTest.cs" />
   </ItemGroup>
   <ItemGroup>

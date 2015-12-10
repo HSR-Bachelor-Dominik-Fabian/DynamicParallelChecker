@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using DPCLibrary.Algorithm.Manager;
+using DPCLibrary.Algorithm;
 using NLog;
 
 namespace DPCLibrary
@@ -23,7 +23,7 @@ namespace DPCLibrary
                 threadId = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             }
             
-            ThreadVectorManager.GetInstance().HandleReadAccess(threadId, obj, rowNumber, methodName);
+            ThreadVectorFacade.GetInstance().HandleReadAccess(threadId, obj, rowNumber, methodName);
         }
 
         public static void WriteAccess(int obj, int rowNumber, string methodName)
@@ -39,7 +39,7 @@ namespace DPCLibrary
             {
                 threadId = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             }
-            ThreadVectorManager.GetInstance().HandleWriteAccess(threadId, obj, rowNumber, methodName);
+            ThreadVectorFacade.GetInstance().HandleWriteAccess(threadId, obj, rowNumber, methodName);
         }
 
         public static void LockObject(int obj)
@@ -55,7 +55,7 @@ namespace DPCLibrary
             {
                 threadId = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             }
-            ThreadVectorManager.GetInstance().HandleLock(threadId, obj);
+            ThreadVectorFacade.GetInstance().HandleLock(threadId, obj);
         }
 
         public static void UnLockObject(int obj)
@@ -71,14 +71,14 @@ namespace DPCLibrary
             {
                 threadId = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             }
-            ThreadVectorManager.GetInstance().HandleUnLock(threadId, obj);
+            ThreadVectorFacade.GetInstance().HandleUnLock(threadId, obj);
         }
 
         public static void StartThread(Thread thread, object parameter = null)
         {
             _logger.ConditionalTrace(
                 $"New threadId started: {thread.ManagedThreadId} from threadId {Thread.CurrentThread.ManagedThreadId}");
-            ThreadVectorManager.GetInstance().HandleThreadStart($"Thread_{thread.ManagedThreadId}", $"Thread_{Thread.CurrentThread.ManagedThreadId}");
+            ThreadVectorFacade.GetInstance().HandleThreadStart($"Thread_{thread.ManagedThreadId}", $"Thread_{Thread.CurrentThread.ManagedThreadId}");
             if (parameter != null)
             {
                 thread.Start(parameter);
@@ -123,7 +123,7 @@ namespace DPCLibrary
                 threadId = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             }
             
-            ThreadVectorManager.GetInstance().HandleThreadJoin($"Thread_{thread.ManagedThreadId}", threadId);
+            ThreadVectorFacade.GetInstance().HandleThreadJoin($"Thread_{thread.ManagedThreadId}", threadId);
         }
 
         public static void StartTask(Task task, TaskScheduler scheduler = null)
@@ -141,7 +141,7 @@ namespace DPCLibrary
                 currentThreadId = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             }
 
-            ThreadVectorManager.GetInstance().HandleStartTask($"Task_{task.Id}", currentThreadId);
+            ThreadVectorFacade.GetInstance().HandleStartTask($"Task_{task.Id}", currentThreadId);
             if (scheduler != null)
             {
                 task.Start(scheduler);
@@ -201,7 +201,7 @@ namespace DPCLibrary
                 _logger.ConditionalTrace($"Wait for Task: {task.Id} on Thread {Thread.CurrentThread.ManagedThreadId}");
                 currentThreadId = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             }
-            ThreadVectorManager.GetInstance().HandleTaskWait($"Task_{task.Id}", currentThreadId);
+            ThreadVectorFacade.GetInstance().HandleTaskWait($"Task_{task.Id}", currentThreadId);
         }
 
         public static Task RunTask(Action action)
@@ -283,7 +283,7 @@ namespace DPCLibrary
                 currentThreadId = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             }
 
-            ThreadVectorManager.GetInstance().HandleTaskRun($"Task_{task.Id}", currentThreadId);
+            ThreadVectorFacade.GetInstance().HandleTaskRun($"Task_{task.Id}", currentThreadId);
         }
 
         public static Task StartNew(Action action, TaskCreationOptions taskCreationOptions )
@@ -389,7 +389,7 @@ namespace DPCLibrary
                 currentThreadId = $"Thread_{Thread.CurrentThread.ManagedThreadId}";
             }
 
-            ThreadVectorManager.GetInstance().HandleStartNewTask($"Task_{task.Id}", currentThreadId);
+            ThreadVectorFacade.GetInstance().HandleStartNewTask($"Task_{task.Id}", currentThreadId);
         }
 
         public static void RaceConditionDetectedIdentifier()

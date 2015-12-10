@@ -5,14 +5,14 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using NLog;
 
-namespace DPCLibrary.Algorithm.Manager
+namespace DPCLibrary.Algorithm
 {
-    sealed class ThreadVectorManager
+    sealed class ThreadVectorFacade
     {
-        private static volatile ThreadVectorManager _instance;
+        private static volatile ThreadVectorFacade _instance;
         private static readonly object _syncRoot = new object();
         
-        public static ThreadVectorManager GetInstance()
+        public static ThreadVectorFacade GetInstance()
         {
             if (_instance == null)
             {
@@ -20,14 +20,14 @@ namespace DPCLibrary.Algorithm.Manager
                 {
                     if (_instance == null)
                     {
-                        _instance = new ThreadVectorManager();
+                        _instance = new ThreadVectorFacade();
                     }
                 }
             }
             return _instance;
         }
 
-        private ThreadVectorManager(){}
+        private ThreadVectorFacade(){}
 
         internal static void Reset()
         {
@@ -39,7 +39,7 @@ namespace DPCLibrary.Algorithm.Manager
 
         private readonly LockHistory _lockHistory = new LockHistory();
 
-        private readonly Logger _logger = LogManager.GetLogger("ThreadVectorManager");
+        private readonly Logger _logger = LogManager.GetLogger("ThreadVectorFacade");
 
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void HandleReadAccess(string thread, int ressource, int rowNumber, string methodName)

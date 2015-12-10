@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
-using DPCLibrary.Algorithm.Manager;
+using DPCLibrary.Algorithm;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NLog;
 using NLog.Targets;
@@ -171,7 +171,7 @@ namespace DPCLibrary.Tests
         [TestCleanup]
         public void CleanUp()
         {
-            ThreadVectorManager.Reset();
+            ThreadVectorFacade.Reset();
             GetMemoryLog().Clear();
         }
         private List<string> GetMemoryLog()
