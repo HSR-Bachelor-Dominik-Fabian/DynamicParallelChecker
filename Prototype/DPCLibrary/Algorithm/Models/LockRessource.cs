@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DPCLibrary.Algorithm
+namespace DPCLibrary.Algorithm.Models
 {
     class LockRessource : IComparable<LockRessource>
     {

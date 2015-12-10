@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using NLog;
 
-namespace DPCLibrary.Algorithm
+namespace DPCLibrary.Algorithm.Models
 {
     class LockHistory
     {

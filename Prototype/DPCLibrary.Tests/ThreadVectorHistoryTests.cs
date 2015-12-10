@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using DPCLibrary.Algorithm;
+using DPCLibrary.Algorithm.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DPCLibrary.Tests

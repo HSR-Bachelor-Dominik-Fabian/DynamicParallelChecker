@@ -1,4 +1,4 @@
-﻿namespace DPCLibrary.Algorithm
+﻿namespace DPCLibrary.Algorithm.Models
 {
     class ThreadEvent
     {

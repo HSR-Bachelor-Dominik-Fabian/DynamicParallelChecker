@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using NLog;
 
-namespace DPCLibrary.Algorithm
+namespace DPCLibrary.Algorithm.Models
 {
-    class ThreadVectorHistory:IEnumerable<KeyValuePair<ThreadVectorClock,List<ThreadEvent>>>
+    class ThreadVectorHistory:IEnumerable<KeyValuePair<ThreadVectorClock, List<ThreadEvent>>>
     {
         private readonly Logger _logger = LogManager.GetLogger("ThreadVectorHistory");
         private readonly Dictionary<ThreadVectorClock, List<ThreadEvent>> _dictionary;

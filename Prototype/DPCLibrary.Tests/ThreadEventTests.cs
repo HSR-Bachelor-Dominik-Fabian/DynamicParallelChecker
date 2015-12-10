@@ -1,4 +1,5 @@
 ﻿using DPCLibrary.Algorithm;
+using DPCLibrary.Algorithm.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DPCLibrary.Tests

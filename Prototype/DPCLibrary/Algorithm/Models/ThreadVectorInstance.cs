@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using NLog;
 
-namespace DPCLibrary.Algorithm
+namespace DPCLibrary.Algorithm.Models
 {
     class ThreadVectorInstance
     {

@@ -44,16 +44,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Algorithm\LockHistory.cs" />
-    <Compile Include="Algorithm\LockRessource.cs" />
-    <Compile Include="Algorithm\ThreadEvent.cs" />
-    <Compile Include="Algorithm\ThreadId.cs" />
-    <Compile Include="Algorithm\ThreadVectorClock.cs" />
-    <Compile Include="Algorithm\ThreadVectorInstance.cs" />
+    <Compile Include="Algorithm\Models\LockHistory.cs" />
+    <Compile Include="Algorithm\Models\LockRessource.cs" />
+    <Compile Include="Algorithm\Models\ThreadEvent.cs" />
+    <Compile Include="Algorithm\Models\ThreadId.cs" />
+    <Compile Include="Algorithm\Models\ThreadVectorClock.cs" />
+    <Compile Include="Algorithm\Models\ThreadVectorHistory.cs" />
+    <Compile Include="Algorithm\Models\ThreadVectorInstance.cs" />
     <Compile Include="Algorithm\ThreadVectorFacade.cs" />
     <Compile Include="DPCLibrary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Algorithm\ThreadVectorHistory.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="NLog.config">
@@ -64,9 +64,7 @@
     </None>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Algorithm\Models\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
