@@ -160,14 +160,14 @@ namespace DPCLibrary
 
         public static bool TaskWaitTimespan(Task task, TimeSpan timespan)
         {
-            bool result = task.Wait(timespan);
+            var result = task.Wait(timespan);
             TaskWaitAll(task);
             return result;
         }
 
         public static bool TaskWaitTimeout(Task task, int millisecondsTimeout)
         {
-            bool result = task.Wait(millisecondsTimeout);
+            var result = task.Wait(millisecondsTimeout);
             TaskWaitAll(task);
             return result;
 
@@ -182,7 +182,7 @@ namespace DPCLibrary
         public static bool TaskWaitTimeOutCancelToken(Task task, int millisecondsTimeout, 
             CancellationToken cancellationToken)
         {
-            bool result = task.Wait(millisecondsTimeout, cancellationToken);
+            var result = task.Wait(millisecondsTimeout, cancellationToken);
             TaskWaitAll(task);
             return result;
         }
@@ -206,7 +206,7 @@ namespace DPCLibrary
 
         public static Task RunTask(Action action)
         {
-            Task result = new Task(action);
+            var result = new Task(action);
             RunTaskAll(result);
             result.Start();
             return result;
@@ -214,7 +214,7 @@ namespace DPCLibrary
 
         public static Task RunTaskCancel(Action action, CancellationToken cancellationToken)
         {
-            Task result = new Task(action, cancellationToken);
+            var result = new Task(action, cancellationToken);
             RunTaskAll(result);
             result.Start();
             return result;
@@ -230,7 +230,7 @@ namespace DPCLibrary
 
         public static Task RunTaskFuncCancel(Func<Task> func, CancellationToken cancellationToken)
         {
-            Task<Task> result = new Task<Task>(func, cancellationToken, TaskCreationOptions.DenyChildAttach);
+            var result = new Task<Task>(func, cancellationToken, TaskCreationOptions.DenyChildAttach);
             RunTaskAll(result);
             result.Start();
             return result;
@@ -238,7 +238,7 @@ namespace DPCLibrary
 
         public static Task<TResult> RunTaskTResult<TResult>(Func<TResult> function)
         {
-            Task<TResult> result = new Task<TResult>(function);
+            var result = new Task<TResult>(function);
             RunTaskAll(result);
             result.Start();
             return result;
@@ -246,7 +246,7 @@ namespace DPCLibrary
 
         public static Task<TResult> RunTaskTResultCancel<TResult>(Func<TResult> function, CancellationToken cancellationToken)
         {
-            Task<TResult> result = new Task<TResult>(function, cancellationToken);
+            var result = new Task<TResult>(function, cancellationToken);
             RunTaskAll(result);
             result.Start();
             return result;
@@ -254,7 +254,7 @@ namespace DPCLibrary
 
         public static Task<TResult> RunTaskTaskTResult<TResult>(Func<Task<TResult>> function)
         {
-            Task<Task<TResult>> result = new Task<Task<TResult>>(function);
+            var result = new Task<Task<TResult>>(function);
             RunTaskAll(result);
             result.Start();
             return result.Result;
@@ -262,7 +262,7 @@ namespace DPCLibrary
 
         public static Task<TResult> RunTaskTaskTResultCancel<TResult>(Func<Task<TResult>> function, CancellationToken cancellationToken)
         {
-            Task<Task<TResult>> result = new Task<Task<TResult>>(function, cancellationToken);
+            var result = new Task<Task<TResult>>(function, cancellationToken);
             RunTaskAll(result);
             result.Start();
             return result.Result;
@@ -288,7 +288,7 @@ namespace DPCLibrary
 
         public static Task StartNew(Action action, TaskCreationOptions taskCreationOptions )
         {
-            Task result = taskCreationOptions.Equals(TaskCreationOptions.None)
+            var result = taskCreationOptions.Equals(TaskCreationOptions.None)
                 ? new Task(action) : new Task(action, taskCreationOptions);
             StartNewTaskAll(result);
             result.Start();
@@ -298,7 +298,7 @@ namespace DPCLibrary
         public static Task StartNewCancel(Action action, CancellationToken cancellationToken, 
             TaskCreationOptions taskCreationOptions, TaskScheduler taskScheduler)
         {
-            Task result = taskCreationOptions.Equals(TaskCreationOptions.None) 
+            var result = taskCreationOptions.Equals(TaskCreationOptions.None) 
                 ? new Task(action, cancellationToken) : new Task(action, cancellationToken, taskCreationOptions);
             StartNewTaskAll(result);
             if (taskScheduler != null)
@@ -310,7 +310,7 @@ namespace DPCLibrary
 
         public static Task StartNewObject(Action<object> action, object state, TaskCreationOptions creationOptions)
         {
-            Task result = creationOptions.Equals(TaskCreationOptions.None)
+            var result = creationOptions.Equals(TaskCreationOptions.None)
                 ? new Task(action, TaskCreationOptions.None) : new Task(action, creationOptions);
             StartNewTaskAll(result);
             result.Start();
@@ -320,7 +320,7 @@ namespace DPCLibrary
         public static Task StartNewObjectCancel(Action<object> action, object state, CancellationToken cancellationToken, 
             TaskCreationOptions creationOptions, TaskScheduler scheduler)
         {
-            Task result = creationOptions.Equals(TaskCreationOptions.None)
+            var result = creationOptions.Equals(TaskCreationOptions.None)
                 ? new Task(action, state, cancellationToken) : new Task(action, state, cancellationToken, creationOptions);
             StartNewTaskAll(result);
             if (scheduler != null)
@@ -332,7 +332,7 @@ namespace DPCLibrary
 
         public static Task<TResult> StartNewTResult<TResult>(Func<TResult> function, TaskCreationOptions creationOptions)
         {
-            Task<TResult> result = creationOptions.Equals(TaskCreationOptions.None)
+            var result = creationOptions.Equals(TaskCreationOptions.None)
                 ? new Task<TResult>(function, TaskCreationOptions.None) : new Task<TResult>(function, creationOptions);
             StartNewTaskAll(result);
             result.Start();
@@ -342,7 +342,7 @@ namespace DPCLibrary
         public static Task<TResult> StartNewTResultCancel<TResult>(Func<TResult> function, CancellationToken cancellationToken, 
             TaskCreationOptions creationOptions, TaskScheduler scheduler)
         {
-            Task<TResult> result = creationOptions.Equals(TaskCreationOptions.None)
+            var result = creationOptions.Equals(TaskCreationOptions.None)
                 ? new Task<TResult>(function, cancellationToken) : new Task<TResult>(function, cancellationToken, creationOptions);
             StartNewTaskAll(result);
             if (scheduler != null)
@@ -354,7 +354,7 @@ namespace DPCLibrary
 
         public static Task<TResult> StartNewObjectTResult<TResult>(Func<object, TResult> function, object state, TaskCreationOptions creationOptions)
         {
-            Task<TResult> result = creationOptions.Equals(TaskCreationOptions.None)
+            var result = creationOptions.Equals(TaskCreationOptions.None)
                 ? new Task<TResult>(function, state, TaskCreationOptions.None) : new Task<TResult>(function, state, creationOptions);
             StartNewTaskAll(result);
             result.Start();
@@ -364,7 +364,7 @@ namespace DPCLibrary
         public static Task<TResult> StartNewObjectTResultCancel<TResult>(Func<object, TResult> function, object state, CancellationToken cancellationToken,
             TaskCreationOptions creationOptions, TaskScheduler scheduler)
         {
-            Task<TResult> result = creationOptions.Equals(TaskCreationOptions.None)
+            var result = creationOptions.Equals(TaskCreationOptions.None)
                 ? new Task<TResult>(function, state, cancellationToken) : new Task<TResult>(function, state, cancellationToken, creationOptions);
             StartNewTaskAll(result);
             if (scheduler != null)

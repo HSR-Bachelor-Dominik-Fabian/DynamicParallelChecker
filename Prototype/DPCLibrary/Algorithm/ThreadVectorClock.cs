@@ -24,7 +24,7 @@ namespace DPCLibrary.Algorithm
         public int HappenedBefore(ThreadVectorClock other)
         {
             Debug.Assert(!Equals(other),"Logical Error: There shouldn't be two Equal Vectors to compare. For Equals comparison use Equals");
-            int compared = 0;
+            var compared = 0;
             int myValueInOther, otherValueInMe, myValueInMe, otherValueInOther;
 
             if(!other.TryGetValue(OwnThreadId, out myValueInOther) )
@@ -53,11 +53,11 @@ namespace DPCLibrary.Algorithm
 
         public override bool Equals(object obj)
         {
-            bool equals = false;
+            var equals = false;
             var clock = obj as ThreadVectorClock;
             if (clock != null)
             {
-                ThreadVectorClock dict2 = clock;
+                var dict2 = clock;
                 equals = OwnThreadId.Equals(clock.OwnThreadId) && Keys.Count == dict2.Keys.Count && Keys.All(k => dict2.ContainsKey(k) && Equals(dict2[k], this[k]));
             }
             return equals;
@@ -70,7 +70,7 @@ namespace DPCLibrary.Algorithm
 
         public ThreadVectorClock GetCopy()
         {
-            ThreadVectorClock newClock = new ThreadVectorClock(OwnThreadId);
+            var newClock = new ThreadVectorClock(OwnThreadId);
             foreach (var key in Keys)
             {
                 if (!key.Equals(OwnThreadId))
@@ -87,7 +87,7 @@ namespace DPCLibrary.Algorithm
 
         public override string ToString()
         {
-            string output = string.Empty;
+            var output = string.Empty;
             output += "{";
             output = this.Aggregate(output, (current, entry) => current + ("{" + entry.Key + " : " + entry.Value + "}"));
             output += "}";

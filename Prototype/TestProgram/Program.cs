@@ -55,10 +55,10 @@ namespace TestProgram
         public static void Test()
         {
             Console.WriteLine("Test()");
-            NewObject newObject = new NewObject(123);
+            var newObject = new NewObject(123);
             _a = newObject.C;
-            int f = _k[1];
-            long h = _i[2];
+            var f = _k[1];
+            var h = _i[2];
             lock (_b)
             {
                 _b = 4;
@@ -75,11 +75,11 @@ namespace TestProgram
         public static void Test3()
         {
             Console.WriteLine("Test3()");
-            int[] intArray = new int[5];
-            long[] longArray = new long[5];
-            float[] floatArray = new float[5];
-            double[] doubleArray = new double[5];
-            NewObject[] newObjectArray = new NewObject[5];
+            var intArray = new int[5];
+            var longArray = new long[5];
+            var floatArray = new float[5];
+            var doubleArray = new double[5];
+            var newObjectArray = new NewObject[5];
 
             intArray[0] = 5;
             longArray[0] = 4294967296L;
@@ -87,11 +87,11 @@ namespace TestProgram
             doubleArray[0] = 3D;
             newObjectArray[0] = new NewObject(6);
 
-            int tempInt = intArray[0];
-            long tempLong = longArray[0];
-            float tempFloat = floatArray[0];
-            double tempDouble = doubleArray[0];
-            NewObject tempObject = newObjectArray[0];
+            var tempInt = intArray[0];
+            var tempLong = longArray[0];
+            var tempFloat = floatArray[0];
+            var tempDouble = doubleArray[0];
+            var tempObject = newObjectArray[0];
         }
 
         public static void Test4()
@@ -100,18 +100,18 @@ namespace TestProgram
             short[][] shortArray = { new short[] { 1, 3 }, new short[] { 1, 3 } };
             int[][] intArray = { new[] { 2, 123213 }, new[] { 1232, 423 }, new[] { 421452, 1233 }, new[] { 2123, 3432 } };
             var objectArray = new[] { new[] { new[] { new NewObject(122), new NewObject(3322) }, new[] { new NewObject(122), new NewObject(3322) }, new[] { new NewObject(122), new NewObject(3322) } }, new[] { new[] { new NewObject(122), new NewObject(3322) }, new[] { new NewObject(122), new NewObject(3322) }, new[] { new NewObject(122), new NewObject(3322) } } };
-            TestStruct[][] structArray = new[] { new[] { new TestStruct(), new TestStruct() }, new[] { new TestStruct(), new TestStruct() } };
-            short a = shortArray[0][1];
+            var structArray = new[] { new[] { new TestStruct(), new TestStruct() }, new[] { new TestStruct(), new TestStruct() } };
+            var a = shortArray[0][1];
             a += 2;
             shortArray[1][0] = a;
 
-            int b = intArray[2][1];
+            var b = intArray[2][1];
             b += 213;
             intArray[1][1] = b;
 
-            NewObject obj = objectArray[1][0][1];
+            var obj = objectArray[1][0][1];
 
-            TestStruct struct1 = structArray[0][1];
+            var struct1 = structArray[0][1];
             struct1.GetA();
             struct1.GetB();
         }
@@ -119,11 +119,11 @@ namespace TestProgram
         public static void Test5()
         {
             Console.WriteLine("Test5()");
-            List<int> listArray = new List<int> { 1, 23, 54, 1231, 213 };
-            List<NewObject> objectArray = new List<NewObject> { new NewObject(332), new NewObject(13331), new NewObject(3323241) };
+            var listArray = new List<int> { 1, 23, 54, 1231, 213 };
+            var objectArray = new List<NewObject> { new NewObject(332), new NewObject(13331), new NewObject(3323241) };
 
-            int a = listArray[3];
-            NewObject obj = objectArray[2];
+            var a = listArray[3];
+            var obj = objectArray[2];
             a += 231;
             obj.C = 13333333;
             listArray[0] = a;
@@ -133,11 +133,11 @@ namespace TestProgram
         public static void Test6()
         {
             Console.WriteLine("Test6()");
-            TestStruct[] testStructArray = new TestStruct[2];
-            TestStruct testStruct = new TestStruct();
+            var testStructArray = new TestStruct[2];
+            var testStruct = new TestStruct();
             testStructArray[0] = testStruct;
-            object a = testStructArray[0].GetA();
-            object b = testStructArray[0].GetB();
+            var a = testStructArray[0].GetA();
+            var b = testStructArray[0].GetB();
 
         }
 
@@ -155,30 +155,30 @@ namespace TestProgram
         public static void Test9()
         {
             Console.WriteLine("Test9");
-            bool temp1 = _bool;
-            char temp2 = _char;
-            sbyte temp3 = _sbyte;
-            Int16 temp4 = _int16;
-            Int32 temp5 = _int32;
-            Int64 temp6 = _int64;
-            IntPtr temp7 = _intPtr;
-            Byte temp8 = _byte;
-            UInt16 temp9 = _uint16;
-            UInt32 temp10 = _uint32;
-            UInt64 temp11 = _uint64;
-            UIntPtr temp12 = _uIntPtr;
-            Single temp13 = _single;
-            Double temp14 = _double;
-            string temp17 = _string;
+            var temp1 = _bool;
+            var temp2 = _char;
+            var temp3 = _sbyte;
+            var temp4 = _int16;
+            var temp5 = _int32;
+            var temp6 = _int64;
+            var temp7 = _intPtr;
+            var temp8 = _byte;
+            var temp9 = _uint16;
+            var temp10 = _uint32;
+            var temp11 = _uint64;
+            var temp12 = _uIntPtr;
+            var temp13 = _single;
+            var temp14 = _double;
+            var temp17 = _string;
 
-            object temp15 = _c;
+            var temp15 = _c;
 
             _testStruct.GetA();
             _testStruct.GetB();
-            TestStruct temp16 = _testStruct;
+            var temp16 = _testStruct;
             _testStruct = new TestStruct();
-            object a = temp16.GetA();
-            object b = temp16.GetB();
+            var a = temp16.GetA();
+            var b = temp16.GetB();
         }
 
         public static void Test10()
@@ -187,7 +187,7 @@ namespace TestProgram
             var lockA = new object();
             var lockB = new object();
             _brace = 2;
-            List<Task> taskPool = new List<Task>();
+            var taskPool = new List<Task>();
             taskPool.Add(Task.Factory.StartNew(() =>
             {
                 lock (lockB)
@@ -230,34 +230,34 @@ namespace TestProgram
         {
             Console.WriteLine("Test11()");
             object a = 1;
-            object lockA = new object();
+            var lockA = new object();
             object b = 1;
-            object lockB = new object();
-            object[] test = new object[] {1, 2, 3};
-            object[] test3 = new object[] {1,2,null};
-            TestClass class123 = new TestClass();
-            string[] stringarray = new string[] {"Test", "Test2331", class123.B};
-            object[] test4 = new object[] {new NewObject(123), new Action(()=>Test12())};
-            string test2 = string.Concat(new string[] {"asdf", stringarray[0], "dasddad"});
+            var lockB = new object();
+            var test = new object[] {1, 2, 3};
+            var test3 = new object[] {1,2,null};
+            var class123 = new TestClass();
+            var stringarray = new string[] {"Test", "Test2331", class123.B};
+            var test4 = new object[] {new NewObject(123), new Action(()=>Test12())};
+            var test2 = string.Concat(new string[] {"asdf", stringarray[0], "dasddad"});
 
-            object[][] objArray = new object[3][] {new object[3] {new NewObject(123), new Action(() => Test12()), 123 }, new object[3] {"Test", "123", 123}, new object[3] {323, 12332,12333}  };
+            var objArray = new object[3][] {new object[3] {new NewObject(123), new Action(() => Test12()), 123 }, new object[3] {"Test", "123", 123}, new object[3] {323, 12332,12333}  };
 
 
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
-                for (int j = 0; j < 3; j++)
+                for (var j = 0; j < 3; j++)
                 {
                     objArray[i][j] = _uint16;
-                    for (int k = 0; i < 3; i++)
+                    for (var k = 0; i < 3; i++)
                     {
                         objArray[j][k] = _int32;
-                        for (int l = 0; j < 3; j++)
+                        for (var l = 0; j < 3; j++)
                         {
                             objArray[k][l] = _double;
-                            for (int m = 0; i < 3; i++)
+                            for (var m = 0; i < 3; i++)
                             {
                                 objArray[l][m] = _single;
-                                for (int n = 0; j < 3; j++)
+                                for (var n = 0; j < 3; j++)
                                 {
                                     objArray[m][n] = "123";
                                 }
@@ -268,7 +268,7 @@ namespace TestProgram
             }
 
             test4[1] = new Action(()=> {Console.WriteLine("Test");});
-            Task task = Task.Factory.StartNew(() =>
+            var task = Task.Factory.StartNew(() =>
             {
                 lock (lockA)
                 {
@@ -294,10 +294,10 @@ namespace TestProgram
         {
             Console.WriteLine("Test12()");
             object a = 1;
-            object lockA = new object();
+            var lockA = new object();
             object b = 1;
-            object lockB = new object();
-            Thread thread1 = new Thread(() =>
+            var lockB = new object();
+            var thread1 = new Thread(() =>
             {
                 a = 2;
                 b = 2;
@@ -314,7 +314,7 @@ namespace TestProgram
             Console.WriteLine("Test13()");
             Console.WriteLine("Task");
             _a = 4;
-            Task task = new Task(() => { _a = 5; });
+            var task = new Task(() => { _a = 5; });
             task.Start();
             //task.Start(TaskScheduler.Current);
 
@@ -325,15 +325,15 @@ namespace TestProgram
             task.Wait(100, new CancellationToken(true));
 
             _a = 4;
-            Task task2 = Task.Run(() => { });
-            Task task3 = Task.Run(() => { }, CancellationToken.None);
+            var task2 = Task.Run(() => { });
+            var task3 = Task.Run(() => { }, CancellationToken.None);
 
             Task task4 = Task.Run(() => { return 2; });
             Task task5 = Task.Run(() => { return 2; }, CancellationToken.None);
 
-            Task task6 = Task.Run(() => { return task; });
+            var task6 = Task.Run(() => { return task; });
             task6.Wait();
-            Task task7 = Task.Run(() => { return task; }, CancellationToken.None);
+            var task7 = Task.Run(() => { return task; }, CancellationToken.None);
             task7.Wait();
 
             Task task8 = Task.Run(() => { return new Task<object>(() => { Console.Write("Task.Run() - func"); return _a; }); });
@@ -341,51 +341,51 @@ namespace TestProgram
 
             Console.WriteLine("Task.Factory");
 
-            Action action = new Action(() => { });
+            var action = new Action(() => { });
 
-            Task task10 = Task.Factory.StartNew(action);
+            var task10 = Task.Factory.StartNew(action);
 
             task10.ContinueWith((x) => { return x; });
 
             task10.Wait();
 
-            Task task11 = Task.Factory.StartNew(action, CancellationToken.None);
+            var task11 = Task.Factory.StartNew(action, CancellationToken.None);
 
-            Task task12 = Task.Factory.StartNew(action, TaskCreationOptions.None);
+            var task12 = Task.Factory.StartNew(action, TaskCreationOptions.None);
 
-            Task task13 = Task.Factory.StartNew(action, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current);
+            var task13 = Task.Factory.StartNew(action, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current);
 
-            Func<int> func = new Func<int>(() => { return 3; });
+            var func = new Func<int>(() => { return 3; });
 
-            Task<int> task14 = Task.Factory.StartNew(func);
+            var task14 = Task.Factory.StartNew(func);
 
-            Task<int> task15 = Task.Factory.StartNew(func, CancellationToken.None);
+            var task15 = Task.Factory.StartNew(func, CancellationToken.None);
 
-            Task<int> task16 = Task.Factory.StartNew(func, TaskCreationOptions.None);
+            var task16 = Task.Factory.StartNew(func, TaskCreationOptions.None);
 
-            Task<int> task17 = Task.Factory.StartNew(func, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current);
+            var task17 = Task.Factory.StartNew(func, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current);
 
             Task.WaitAll(new Task[] { task11, task12, task13, task14, task15, task16, task17 });
 
-            Action<object> action2 = new Action<object>((x) => { });
+            var action2 = new Action<object>((x) => { });
 
-            Task task18 = Task.Factory.StartNew(action2, new object());
+            var task18 = Task.Factory.StartNew(action2, new object());
 
-            Task task19 = Task.Factory.StartNew(action2, new object(), CancellationToken.None);
+            var task19 = Task.Factory.StartNew(action2, new object(), CancellationToken.None);
 
-            Task task20 = Task.Factory.StartNew(action2, new object(), TaskCreationOptions.None);
+            var task20 = Task.Factory.StartNew(action2, new object(), TaskCreationOptions.None);
 
-            Task task21 = Task.Factory.StartNew(action2, new object(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current);
+            var task21 = Task.Factory.StartNew(action2, new object(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current);
 
             Func<object, int> func2 = o => { return 2; };
 
-            Task<int> task22 = Task.Factory.StartNew(func2, new object());
+            var task22 = Task.Factory.StartNew(func2, new object());
 
-            Task<int> task23 = Task.Factory.StartNew(func2, new object(), CancellationToken.None);
+            var task23 = Task.Factory.StartNew(func2, new object(), CancellationToken.None);
 
-            Task<int> task24 = Task.Factory.StartNew(func2, new object(), TaskCreationOptions.None);
+            var task24 = Task.Factory.StartNew(func2, new object(), TaskCreationOptions.None);
 
-            Task<int> task25 = Task.Factory.StartNew(func2, new object(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current);
+            var task25 = Task.Factory.StartNew(func2, new object(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current);
 
             Task.WaitAll(new Task[] { task18, task19, task20, task21, task22, task23, task24, task25 });
 
@@ -407,7 +407,7 @@ namespace TestProgram
 
             Console.WriteLine("Thread.Start / Join");
 
-            Thread thread = new Thread(() => { DoComputation(100.0); });
+            var thread = new Thread(() => { DoComputation(100.0); });
 
             thread.Start();
 
@@ -447,7 +447,7 @@ namespace TestProgram
 
             Parallel.For(0, 10, (x) => { DoComputation(x); });
 
-            double[] ints = new double[] { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 };
+            var ints = new double[] { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 };
 
             Parallel.ForEach(ints, (x) => { DoComputation(x); });
 

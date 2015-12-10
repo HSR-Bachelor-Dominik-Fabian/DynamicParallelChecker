@@ -41,8 +41,8 @@ namespace DPCClient.ViewModel
             IsReadyForChecking = false;
             _obj.LogEntries = new ObservableCollection<NLogMessage>();
             _checkingProcessManager = new CheckingProcessManager();
-            Dispatcher dispatcher = Dispatcher.CurrentDispatcher;
-            Thread checkingThread = new Thread(() =>
+            var dispatcher = Dispatcher.CurrentDispatcher;
+            var checkingThread = new Thread(() =>
             {
                 _checkingProcessManager.Start(_obj, dispatcher, this);
             });

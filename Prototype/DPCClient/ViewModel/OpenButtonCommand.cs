@@ -18,13 +18,13 @@ namespace DPCClient.ViewModel
 
         public void Execute(object parameter)
         {
-            Microsoft.Win32.OpenFileDialog fileDialog = new Microsoft.Win32.OpenFileDialog
+            var fileDialog = new Microsoft.Win32.OpenFileDialog
             {
                 DefaultExt = ".exe",
                 Filter = "Executable (*.exe)|*.exe"
             };
             
-            bool? result = fileDialog.ShowDialog();
+            var result = fileDialog.ShowDialog();
 
             if (result == true)
             {

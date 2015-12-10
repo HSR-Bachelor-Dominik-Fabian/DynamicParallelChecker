@@ -53,7 +53,7 @@ namespace DPCClient.ViewModel
             set
             {
                 _logEntryModels.Clear();
-                foreach (NLogMessage message in value)
+                foreach (var message in value)
                 {
                     _logEntryModels.Add(message);
                 }

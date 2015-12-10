@@ -16,19 +16,21 @@ namespace CodeInstrumentation
     {
         private static Dictionary<string, MethodReference> _methodReferences; 
         private static Dictionary<string, TypeReference> _typeReferences;
+        private static readonly string dpcLibraryPath = @"work\DPCLibrary.dll";
+        private static readonly string dpcLibraryName = "DpcLibrary";
 
         public static void InjectCodeInstrumentation(string fileName)
         {
             _methodReferences = new Dictionary<string, MethodReference>();
             _typeReferences = new Dictionary<string, TypeReference>();
-            ModuleDefinition refModul = ModuleDefinition.ReadModule(@"work\DPCLibrary.dll");
-            TypeDefinition typeDefinition = refModul.Types.First(x => x.Name == "DpcLibrary");
-            ModuleDefinition module = ModuleDefinition.ReadModule(fileName);
+            var refModul = ModuleDefinition.ReadModule(dpcLibraryPath);
+            var typeDefinition = refModul.Types.First(x => x.Name == dpcLibraryName);
+            var module = ModuleDefinition.ReadModule(fileName);
             ImportAllPublicMethods(typeDefinition, module);
 
             ImportAllTypes(module);
             
-            foreach (TypeDefinition type in module.Types)
+            foreach (var type in module.Types)
             {
                 InstrumentateType(type, module);
             }
@@ -40,27 +42,27 @@ namespace CodeInstrumentation
         {
             if (type.HasNestedTypes)
             {
-                foreach (TypeDefinition nestedType in type.NestedTypes)
+                foreach (var nestedType in type.NestedTypes)
                 {
                     InstrumentateType(nestedType, module);
                 }
             }
             if (type.HasMethods)
             {
-                foreach (MethodDefinition method in type.Methods.Where(method => method.Body != null))
+                foreach (var method in type.Methods.Where(method => method.Body != null))
                 {
                     method.Body.SimplifyMacros(); // convert every br.s (short branch) to a normal branch
-                    Dictionary<string, VariableDefinition> variableDefinitions = AddAllVariablesToMethod(method);
+                    var variableDefinitions = AddAllVariablesToMethod(method);
 
-                    ArrayList tempList = new ArrayList(method.Body.Instructions.ToList());
+                    var tempList = new ArrayList(method.Body.Instructions.ToList());
                     foreach (Instruction ins in tempList)
                     {
                         var processor = method.Body.GetILProcessor();
                         if (ins.OpCode.Equals(OpCodes.Ldsfld))
                         {
-                            FieldReference fieldDefinition = (FieldReference)ins.Operand;
+                            var fieldDefinition = (FieldReference)ins.Operand;
 
-                            TypeReference fieldType = fieldDefinition.FieldType;
+                            var fieldType = fieldDefinition.FieldType;
                             if (fieldType.IsPrimitive ||
                                 (fieldType.IsDefinition && ((TypeDefinition)fieldType).IsValueType))
                             {
@@ -95,7 +97,7 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Initobj))
                         {
-                            TypeReference fieldType = (TypeReference)ins.Operand;
+                            var fieldType = (TypeReference)ins.Operand;
                             if (fieldType.IsDefinition && ((TypeDefinition)fieldType).IsValueType)
                             {
                                 var dupInstruction = processor.Create(OpCodes.Dup);
@@ -110,7 +112,7 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stsfld))
                         {
-                            FieldReference fieldDefinition = (FieldReference)ins.Operand;
+                            var fieldDefinition = (FieldReference)ins.Operand;
                             var loadAddressInstruction = processor.Create(OpCodes.Ldsflda, fieldDefinition);
                             var constLoad = processor.Create(OpCodes.Ldc_I4, ins.Offset);
                             var methodLoad = processor.Create(OpCodes.Ldstr, method.FullName);
@@ -123,8 +125,8 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Ldfld))
                         {
-                            FieldDefinition fieldDefinition = (FieldDefinition)ins.Operand;
-                            TypeReference fieldType = fieldDefinition.FieldType;
+                            var fieldDefinition = (FieldDefinition)ins.Operand;
+                            var fieldType = fieldDefinition.FieldType;
                             if (fieldType.IsPrimitive ||
                                 (fieldType.IsDefinition && ((TypeDefinition)fieldType).IsValueType))
                             {
@@ -155,7 +157,7 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stfld))
                         {
-                            FieldDefinition fieldDefinition = (FieldDefinition)ins.Operand;
+                            var fieldDefinition = (FieldDefinition)ins.Operand;
                             VariableDefinition varDefinition;
 
                             if (fieldDefinition.FieldType.Equals(_typeReferences["int8"]))
@@ -207,7 +209,7 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Ldelem_Any))
                         {
-                            TypeReference arrayTypeReference = (TypeReference)ins.Operand;
+                            var arrayTypeReference = (TypeReference)ins.Operand;
                             InjectArrayLdElement(variableDefinitions["firstint32"], arrayTypeReference, method,
                                 _methodReferences["ReadAccess"], ins);
                         }
@@ -237,7 +239,7 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Stelem_Any))
                         {
-                            TypeReference valueTypeReference = (TypeReference)ins.Operand;
+                            var valueTypeReference = (TypeReference)ins.Operand;
                             VariableDefinition varDefinition;
 
                             if (valueTypeReference.Equals(_typeReferences["int8"]))
@@ -301,11 +303,11 @@ namespace CodeInstrumentation
                         }
                         if (ins.OpCode.Equals(OpCodes.Call))
                         {
-                            MethodReference reference = (MethodReference)ins.Operand;
+                            var reference = (MethodReference)ins.Operand;
                             
-                            string monitorEnterFullName =
+                            var monitorEnterFullName =
                                 "System.Void System.Threading.Monitor::Enter(System.Object,System.Boolean&)";
-                            string monitorExitFullName =
+                            var monitorExitFullName =
                                 "System.Void System.Threading.Monitor::Exit(System.Object)";
 
                             if (monitorEnterFullName.Equals(reference.FullName))
@@ -347,9 +349,9 @@ namespace CodeInstrumentation
                                 }
                                 else if (reference.Parameters[0].ParameterType.FullName.Equals("System.Func`1<!!0>"))
                                 {
-                                    MethodReference methodReference = (MethodReference) ins.Operand;
-                                    GenericInstanceMethod genericMethod = (GenericInstanceMethod) methodReference;
-                                    TypeReference genericArgument = genericMethod.GenericArguments[0];
+                                    var methodReference = (MethodReference) ins.Operand;
+                                    var genericMethod = (GenericInstanceMethod) methodReference;
+                                    var genericArgument = genericMethod.GenericArguments[0];
                                     if (reference.Parameters.Count == 1)
                                     {
                                         var newGenericMethod = new GenericInstanceMethod(_methodReferences["RunTaskTResult"]);
@@ -376,9 +378,9 @@ namespace CodeInstrumentation
                                 }
                                 else if (reference.Parameters[0].ParameterType.FullName.Equals("System.Func`1<System.Threading.Tasks.Task`1<!!0>>"))
                                 {
-                                    MethodReference methodReference = (MethodReference)ins.Operand;
-                                    GenericInstanceMethod genericMethod = (GenericInstanceMethod)methodReference;
-                                    TypeReference genericArgument = genericMethod.GenericArguments[0];
+                                    var methodReference = (MethodReference)ins.Operand;
+                                    var genericMethod = (GenericInstanceMethod)methodReference;
+                                    var genericArgument = genericMethod.GenericArguments[0];
                                     if (reference.Parameters.Count == 1)
                                     {
                                         var newGenericMethod = new GenericInstanceMethod(_methodReferences["RunTaskTaskTResult"]);
@@ -396,7 +398,7 @@ namespace CodeInstrumentation
                         }
                         else if (ins.OpCode.Equals(OpCodes.Callvirt))
                         {
-                            MethodReference reference = (MethodReference)ins.Operand;
+                            var reference = (MethodReference)ins.Operand;
                             if (reference.FullName.Contains("System.Void System.Threading.Thread::Start"))
                             {
                                 if (!reference.HasParameters)
@@ -515,9 +517,9 @@ namespace CodeInstrumentation
                             }
                             else if (reference.FullName.Contains("System.Threading.Tasks.Task`1<!!0> System.Threading.Tasks.TaskFactory::StartNew"))
                             {
-                                MethodReference methodReference = (MethodReference)ins.Operand;
-                                GenericInstanceMethod genericMethod = (GenericInstanceMethod)methodReference;
-                                TypeReference genericArgument = genericMethod.GenericArguments[0];
+                                var methodReference = (MethodReference)ins.Operand;
+                                var genericMethod = (GenericInstanceMethod)methodReference;
+                                var genericArgument = genericMethod.GenericArguments[0];
                                 if (reference.Parameters.Count > 0 && reference.Parameters[0].ParameterType.FullName.Equals("System.Func`1<!!0>"))
                                 {
                                     if (reference.Parameters.Count >= 2 &&
@@ -600,11 +602,11 @@ namespace CodeInstrumentation
             }
             else
             {
-                MethodReference methodReference = (MethodReference)ins.Operand;
-                GenericInstanceMethod genericMethod = (GenericInstanceMethod) methodReference;
-                GenericInstanceType genericType = new GenericInstanceType(genericMethod.ReturnType.GetElementType());
+                var methodReference = (MethodReference)ins.Operand;
+                var genericMethod = (GenericInstanceMethod) methodReference;
+                var genericType = new GenericInstanceType(genericMethod.ReturnType.GetElementType());
                 genericType.GenericArguments.Add(genericMethod.GenericArguments[0]);
-                TypeReference typeReference = module.Import(genericType);
+                var typeReference = module.Import(genericType);
                 varDefinition = new VariableDefinition(typeReference);
                 method.Body.Variables.Add(varDefinition);
             }
@@ -636,7 +638,7 @@ namespace CodeInstrumentation
 
         private static Dictionary<string, VariableDefinition> AddAllVariablesToMethod(MethodDefinition method)
         {
-            Dictionary<string, VariableDefinition> result = new Dictionary<string, VariableDefinition>();
+            var result = new Dictionary<string, VariableDefinition>();
             // ReSharper disable once JoinDeclarationAndInitializer
             VariableDefinition tempVariableDefinition;
             _typeReferences.ToList().ForEach(x => { if (!x.Key.Equals("int32"))
@@ -714,8 +716,8 @@ namespace CodeInstrumentation
 
         public static string DecompileCode(string fileName, string typeName, string methodName, int offset)
         {
-            FileInfo assemblyFile = new FileInfo(fileName);
-            string pathToAssembly = assemblyFile.FullName;
+            var assemblyFile = new FileInfo(fileName);
+            var pathToAssembly = assemblyFile.FullName;
             var resolver = new DefaultAssemblyResolver();
             resolver.AddSearchDirectory(assemblyFile.DirectoryName);
 
@@ -724,12 +726,12 @@ namespace CodeInstrumentation
                 AssemblyResolver =  resolver
             };
 
-            AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(pathToAssembly, parameters);
-            string result = string.Empty;
+            var assemblyDefinition = AssemblyDefinition.ReadAssembly(pathToAssembly, parameters);
+            var result = string.Empty;
 
             MethodDefinition method = null;
             TypeDefinition typeDefinition = null;
-            foreach (TypeDefinition type in assemblyDefinition.MainModule.Types)
+            foreach (var type in assemblyDefinition.MainModule.Types)
             {
                 method = GetMethodeDefinition(typeName, methodName, type, out typeDefinition);
                 if (method != null)
@@ -740,10 +742,10 @@ namespace CodeInstrumentation
 
             if (method != null)
             {
-                Instruction ins = method.Body.Instructions.SingleOrDefault(x => x.Offset == offset);
+                var ins = method.Body.Instructions.SingleOrDefault(x => x.Offset == offset);
 
                 AddDetectedInstructionBefore(assemblyDefinition.MainModule, method, ins);
-                AstBuilder astBuilder = new AstBuilder(new DecompilerContext(assemblyDefinition.MainModule)
+                var astBuilder = new AstBuilder(new DecompilerContext(assemblyDefinition.MainModule)
                 {
                     CurrentType = typeDefinition,
                     CurrentMethod = method
@@ -751,7 +753,7 @@ namespace CodeInstrumentation
                 
                 astBuilder.AddMethod(method);
                 
-                StringWriter output = new StringWriter();
+                var output = new StringWriter();
                 astBuilder.GenerateCode(new PlainTextOutput(output));
                 result = output.ToString();
                 output.Dispose();
@@ -761,11 +763,11 @@ namespace CodeInstrumentation
 
         private static void AddDetectedInstructionBefore(ModuleDefinition module, MethodDefinition method, Instruction ins)
         {
-            ModuleDefinition refModul = ModuleDefinition.ReadModule("DPCLibrary.dll");
-            TypeDefinition typeDefinition = refModul.Types.First(x => x.Name == "DpcLibrary");
-            MethodDefinition raceConditionDetectedDef =
+            var refModul = ModuleDefinition.ReadModule("DPCLibrary.dll");
+            var typeDefinition = refModul.Types.First(x => x.Name == "DpcLibrary");
+            var raceConditionDetectedDef =
                 typeDefinition.Methods.Single(x => x.Name == "RaceConditionDetectedIdentifier");
-            MethodReference raceConditionDetectedRef = module.Import(raceConditionDetectedDef);
+            var raceConditionDetectedRef = module.Import(raceConditionDetectedDef);
 
             var processor = method.Body.GetILProcessor();
             var raceDetectedLibraryCall = processor.Create(OpCodes.Call,
@@ -778,7 +780,7 @@ namespace CodeInstrumentation
             if (type.FullName.Equals(typeName))
             {
                 typeDefinition = type;
-                MethodDefinition method = type.Methods.SingleOrDefault(x => x.FullName.Equals(methodName));
+                var method = type.Methods.SingleOrDefault(x => x.FullName.Equals(methodName));
                 if (method != null)
                 {
                     return method;
@@ -787,9 +789,9 @@ namespace CodeInstrumentation
 
             if (type.HasNestedTypes)
             {
-                foreach (TypeDefinition nestedType in type.NestedTypes)
+                foreach (var nestedType in type.NestedTypes)
                 {
-                    MethodDefinition method = GetMethodeDefinition(typeName, methodName, nestedType, out typeDefinition);
+                    var method = GetMethodeDefinition(typeName, methodName, nestedType, out typeDefinition);
                     if (method != null)
                     {
                         return method;
@@ -799,5 +801,6 @@ namespace CodeInstrumentation
             typeDefinition = null;
             return null;
         }
+        
     }
 }

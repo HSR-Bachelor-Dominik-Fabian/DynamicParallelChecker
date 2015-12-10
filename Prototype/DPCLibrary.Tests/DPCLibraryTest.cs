@@ -15,10 +15,10 @@ namespace DPCLibrary.Tests
         [TestMethod]
         public void TestNoRaceConditionRead()
         {
-            int a = 1;
-            object obj = new object();
-            int lineofCode = 12;
-            Thread thread2 = new Thread(() =>
+            var a = 1;
+            var obj = new object();
+            var lineofCode = 12;
+            var thread2 = new Thread(() =>
             {
                 lock (obj)
                 {
@@ -37,17 +37,17 @@ namespace DPCLibrary.Tests
             }
             thread2.Join();
 
-            List<string> logs = GetMemoryLog();
+            var logs = GetMemoryLog();
             Assert.AreEqual(0, logs.Count);
         }
 
         [TestMethod]
         public void TestNoRaceConditionReadWrite()
         {
-            int a = 1;
-            object obj = new object();
-            int lineofCode = 12;
-            Thread thread2 = new Thread(() =>
+            var a = 1;
+            var obj = new object();
+            var lineofCode = 12;
+            var thread2 = new Thread(() =>
             {
                 lock (obj)
                 {
@@ -67,19 +67,19 @@ namespace DPCLibrary.Tests
             
             thread2.Join();
 
-            List<string> logs = GetMemoryLog();
+            var logs = GetMemoryLog();
             Assert.AreEqual(0, logs.Count);
         }
 
         [TestMethod]
         public void TestRaceConditionReadWrite()
         {
-            int a = 1;
-            int b = 2;
-            object obj = new object();
-            object objB = new object();
-            int lineofCode = 12;
-            Thread thread2 = new Thread(() =>
+            var a = 1;
+            var b = 2;
+            var obj = new object();
+            var objB = new object();
+            var lineofCode = 12;
+            var thread2 = new Thread(() =>
             {
                 lock (objB)
                 {
@@ -98,7 +98,7 @@ namespace DPCLibrary.Tests
             thread2.Join();
 
             string expected = $"RaceCondition detected... Ressource: {a} -> Thread: ";
-            List<string> logs = GetMemoryLog();
+            var logs = GetMemoryLog();
             Assert.AreEqual(1, logs.Count);
             Assert.AreEqual(expected, logs[0].Substring(0, 50));
             
@@ -107,12 +107,12 @@ namespace DPCLibrary.Tests
         [TestMethod]
         public void TestNoRaceConditionThreeThreads()
         {
-            int a = 1;
-            int b = 2;
-            object obj = new object();
-            object objB = new object();
-            int lineofCode = 12;
-            Thread thread2 = new Thread(() =>
+            var a = 1;
+            var b = 2;
+            var obj = new object();
+            var objB = new object();
+            var lineofCode = 12;
+            var thread2 = new Thread(() =>
             {
                 lock (objB)
                 {
@@ -122,7 +122,7 @@ namespace DPCLibrary.Tests
                 }
             });
             thread2.Start();
-            Thread thread3 = new Thread(() =>
+            var thread3 = new Thread(() =>
             {
                 lock (objB)
                 {
@@ -142,7 +142,7 @@ namespace DPCLibrary.Tests
             thread3.Join();
 
             string expected = $"RaceCondition detected... Ressource: {a} -> Thread: ";
-            List<string> logs = GetMemoryLog();
+            var logs = GetMemoryLog();
             Assert.AreNotEqual(0,logs.Count);
             Assert.AreEqual(expected, logs[0].Substring(0, 50));
         }
@@ -150,11 +150,11 @@ namespace DPCLibrary.Tests
         [TestMethod]
         public void TestNoRaceConditionStartThreads()
         {
-            int a = 1;
-            int b = 2;
-            int lineofCode = 12;
+            var a = 1;
+            var b = 2;
+            var lineofCode = 12;
             DpcLibrary.WriteAccess(a, lineofCode, "TestMethod");
-            Thread thread2 = new Thread(() =>
+            var thread2 = new Thread(() =>
             {
                 DpcLibrary.LockObject(b);
                 DpcLibrary.WriteAccess(a, lineofCode, "TestMethod");
@@ -163,7 +163,7 @@ namespace DPCLibrary.Tests
             DpcLibrary.StartThread(thread2);
             thread2.Join();
 
-            List<string> logs = GetMemoryLog();
+            var logs = GetMemoryLog();
             Assert.AreEqual(0, logs.Count);
         }
 
