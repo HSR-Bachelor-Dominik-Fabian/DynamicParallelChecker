@@ -10,21 +10,11 @@ namespace DPCLibrary.Algorithm
 {
     sealed class ThreadVectorFacade
     {
-        private static volatile ThreadVectorFacade _instance;
+        private static volatile ThreadVectorFacade _instance = new ThreadVectorFacade();
         private static readonly object _syncRoot = new object();
-        
+
         public static ThreadVectorFacade GetInstance()
         {
-            if (_instance == null)
-            {
-                lock (_syncRoot)
-                {
-                    if (_instance == null)
-                    {
-                        _instance = new ThreadVectorFacade();
-                    }
-                }
-            }
             return _instance;
         }
 
@@ -32,7 +22,7 @@ namespace DPCLibrary.Algorithm
 
         internal static void Reset()
         {
-            _instance = null;
+            _instance = new ThreadVectorFacade();
         }
 
         private readonly Dictionary<string, ThreadVectorInstance> _threadVectorPool
